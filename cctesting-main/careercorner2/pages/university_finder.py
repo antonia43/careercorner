@@ -1,8 +1,8 @@
+import logging
 import re
 import streamlit as st
 import pandas as pd
 import folium
-import sys
 from streamlit_folium import st_folium
 import unicodedata
 from utils.database import (
@@ -99,12 +99,19 @@ def get_student_admission_average():
 
 
 def render_university_finder():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    
     """
     Finding universities offering the student's chosen degree
     Shows on map with filters using real DGES data
     """
     st.header("𖤣 University Finder")
-    print("1",file=sys.stderr, flush=True)
+    
+    logging.info("DEBUG 1")
+    
     user_id = get_user_id()
 
     # one time gate flag
@@ -144,11 +151,14 @@ def render_university_finder():
                 )
         # return
     
-    print("2",file=sys.stderr, flush=True)
+    logging.info("DEBUG 2")
+    
     # loading degree reports from our database
 
     degree_reports = load_reports(user_id, "degree")
-    print(degree_reports,file=sys.stderr, flush=True)
+    
+    logging.info("Degree reports", degree_reports)
+    
     has_degree_reports = bool(degree_reports)
 
     if not has_degree_reports:
