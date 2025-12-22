@@ -56,10 +56,7 @@ def calculate_and_save_grade():
     grades_data = st.session_state.student_grades_data
     current_year = grades_data.get("current_year", "12th Grade (Completed)")
     
-    if st.button("← Back to Grades Entry", key="btn_back_to_grades_entry"):
-        st.session_state.student_grades_data = None
-        st.session_state.final_grade_calculated = False
-        st.rerun()
+
     
     st.markdown("---")
     
