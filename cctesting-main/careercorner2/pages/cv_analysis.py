@@ -5,9 +5,9 @@ import io
 import PyPDF2
 import docx2txt
 from dotenv import load_dotenv
-from langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
+from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
 from datetime import datetime
-from database import save_report, save_user_cv, load_reports
+from utils.database import save_report, save_user_cv, load_reports
 
 load_dotenv()
 
