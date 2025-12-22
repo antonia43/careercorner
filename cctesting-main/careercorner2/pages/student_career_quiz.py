@@ -1,6 +1,6 @@
 import streamlit as st
 from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
-from utils.database import save_report
+from utils.database import save_report,save_quiz_result
 from datetime import datetime
 import os
 import re
