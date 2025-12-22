@@ -229,7 +229,7 @@ def log_user_feedback(trace_id: str, score: float, comment: str = None):
 def get_user_id():
     """Helper to get current user ID from session state"""
     user = st.session_state.get("user", {})
-    return user.get("username") or user.get("email") or "anonymous"
+    return st.session_state.username
 
 
 def get_session_id():
