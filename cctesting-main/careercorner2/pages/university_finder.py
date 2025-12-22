@@ -114,7 +114,7 @@ def render_university_finder():
     
     logging.info("DEBUG 1")
     
-    user_id = st.session_state.username
+    user_id = get_user_id()
 
     # one time gate flag
     if "university_pt_gate_done" not in st.session_state:
