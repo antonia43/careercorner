@@ -242,7 +242,7 @@ def load_reports(user_id: str, report_type: str):
 
     logger = logging.getLogger(__name__)
 
-    logger.info("load_reports calledwith type {report_type} and user id {user_id}!")
+    logger.info(f"load_reports calledwith type {report_type} and user id {user_id}!")
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
