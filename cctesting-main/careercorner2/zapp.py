@@ -217,15 +217,16 @@ if (
         "My Reports"
     ]
 
+    # Handle redirect FIRST - set current but DON'T touch session_state.student_choice
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in STUDENT_OPTIONS:
+        current = redirect_target
         del st.session_state.redirect_to
-        st.session_state.student_choice = redirect_target
         st.rerun()
-    
-    current = st.session_state.get("student_choice", "Dashboard")
-    if current not in STUDENT_OPTIONS:
-        current = "Dashboard"
+    else:
+        current = st.session_state.get("student_choice", "Dashboard")
+        if current not in STUDENT_OPTIONS:
+            current = "Dashboard"
 
     choice = st.sidebar.radio(
         "Go to:",
@@ -235,7 +236,6 @@ if (
     )
 
     st.sidebar.button("← Back", on_click=reset)
-
     render_student_dashboard(choice)
 
 
@@ -254,13 +254,13 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
     
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in PROF_OPTIONS:
+        current_prof = redirect_target
         del st.session_state.redirect_to
-        st.session_state.professional_choice = redirect_target
         st.rerun()
-    
-    current_prof = st.session_state.get("professional_choice", "Dashboard")
-    if current_prof not in PROF_OPTIONS:
-        current_prof = "Dashboard"
+    else:
+        current_prof = st.session_state.get("professional_choice", "Dashboard")
+        if current_prof not in PROF_OPTIONS:
+            current_prof = "Dashboard"
     
     choice = st.sidebar.radio(
         "Go to:",
@@ -270,5 +270,5 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
     )
     
     st.sidebar.button("← Back", on_click=reset)
-    
     render_professional_dashboard(choice)
+
