@@ -112,7 +112,7 @@ Previous context:
             ai_message = gemini_client.generate_content(
                 prompt=user_input,
                 system_instruction=system_instruction,
-                temperature=0.5,
+                temperature=0.4,
                 user_id=user_id,
                 session_id=session_id,
                 metadata={
