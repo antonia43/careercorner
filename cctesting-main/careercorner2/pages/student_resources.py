@@ -279,25 +279,27 @@ def render_student_main_resources():
         grades_reports = load_reports(user_id, "grades")
         saved_unis = get_saved_universities(user_id)
         
-        has_data = degree_reports or grades_reports or saved_unis
+        has_degree = len(degree_reports) > 0
+        has_grades = len(grades_reports) > 0
+        has_unis = len(saved_unis) > 0
         
-        if not has_data:
+        if has_degree or has_grades or has_unis:
+            st.success(f"✓ Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
+        else:
             st.info("⚠︎ Try Degree Picker or Grades Analysis first!")
-            
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("← Degree Picker", key="degree_btn"):
+                if st.button("← Degree Picker", key="degree_picker_btn", use_container_width=True):
                     st.session_state.redirect_to = "Degree Picker"
                     st.rerun()
-            
             with col2:
-                if st.button("← Grades Analysis", key="grades_btn"):
+                if st.button("← Grades Analysis", key="grades_analysis_btn", use_container_width=True):
                     st.session_state.redirect_to = "Grades Analysis"
                     st.rerun()
-            
             return
     except:
         pass
+    
     
     st.divider()
     st.caption("ⓘ Try: 'biology resources', 'engineering scholarships', 'CIF 15.2 tips'")
