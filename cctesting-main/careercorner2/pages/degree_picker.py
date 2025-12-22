@@ -81,6 +81,9 @@ def render_degree_picker():
         st.session_state.get("quiz_result")
         or st.session_state.get("career_quiz_final_report")
     )
+
+    print(f"debug: {quiz_result}")
+    
     if not quiz_result:
         quiz_result = load_user_quiz(user_id)  # returns dict if you used json.loads
 
