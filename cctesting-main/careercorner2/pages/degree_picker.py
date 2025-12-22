@@ -85,12 +85,16 @@ def render_degree_picker():
         quiz_result = load_user_quiz(user_id)  # returns dict if you used json.loads
 
     if quiz_result:
-        # Expecting quiz_result like {"sector": "...", "sectors": {...}, "sectors_display": "...", ...}
+        if isinstance(quiz_result, str):
+            import json
+            quiz_result = json.loads(quiz_result)
+        
         primary_sector = quiz_result.get("sector")
         sectors_dict = quiz_result.get("sectors", {})
         sectors_display = quiz_result.get("sectors_display")
 
-        # If sectors_dict exists, let user pick between them
+
+        # if sectors_dict exists, let user pick between them
         if sectors_dict:
             display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
             selected_display = st.selectbox(
