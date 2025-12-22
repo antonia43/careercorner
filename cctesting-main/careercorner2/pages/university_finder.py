@@ -183,7 +183,7 @@ def render_university_finder():
 
             if st.button("🗑️ Clear All Saved", type="secondary"):
                 if clear_all_saved(user_id):
-                    from utils.database import load_reports, delete_report
+
                     uni_reports = load_reports(user_id, "university")
                     for report in uni_reports:
                         delete_report(report['id'])
