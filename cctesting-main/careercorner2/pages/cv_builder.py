@@ -3,8 +3,8 @@ import json
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-from langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
-from database import save_report, load_reports
+from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
+from utils.database import save_report, load_reports
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
