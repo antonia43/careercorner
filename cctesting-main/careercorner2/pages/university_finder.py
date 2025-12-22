@@ -1,4 +1,3 @@
-import logging
 import re
 import streamlit as st
 import pandas as pd
@@ -99,20 +98,11 @@ def get_student_admission_average():
 
 
 def render_university_finder():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
-
-    logger = logging.getLogger(__name__)
-    
     """
     Finding universities offering the student's chosen degree
     Shows on map with filters using real DGES data
     """
     st.header("𖤣 University Finder")
-    
-    logging.info("DEBUG 1")
     
     user_id = get_user_id()
 
@@ -153,14 +143,9 @@ def render_university_finder():
                 )
         return
     
-    logging.info("DEBUG 2")
-    
     # loading degree reports from our database
 
     degree_reports = load_reports(user_id, "degree")
-    
-    logger.info(f"Degree Reports: {degree_reports}")
-    
     has_degree_reports = bool(degree_reports)
 
     if not has_degree_reports:
