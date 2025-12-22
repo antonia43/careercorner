@@ -727,15 +727,7 @@ def render_manual_grades_input():
     
     st.subheader("✍︎ Manual Grades Entry")
     
-    if st.button("← Back to Input Method Selection", key="btn_back_from_manual_entry"):
-        st.session_state.grades_input_method = None
-        if "temp_grades" in st.session_state:
-            del st.session_state.temp_grades
-        if "custom_subjects" in st.session_state:
-            del st.session_state.custom_subjects
-        if "last_selected_track" in st.session_state:
-            del st.session_state.last_selected_track
-        st.rerun()
+
     
     st.markdown("---")
     
