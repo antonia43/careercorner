@@ -201,7 +201,8 @@ if st.session_state.get("logged_in") and st.session_state.user:
         st.session_state.quiz_result = quiz_row
 
     with st.sidebar:
-        st.image("careercornermini.png", width='stretch')
+        BASE_DIR = Path(__file__).parent
+        st.image(BASE_DIR / "data" / "careercornermini.png", width='stretch')
         st.success(f"Logged in as {st.session_state.user['display_name']}")
 
         def logout():
