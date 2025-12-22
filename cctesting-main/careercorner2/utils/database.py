@@ -213,17 +213,7 @@ def load_user_cv(user_id: str):
         print(f"Error loading CV: {e}")
         return None
 
-def load_user_quiz(user_id: str):
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT quiz_data FROM user_quizzes WHERE user_id = ?", (user_id,))
-        result = c.fetchone()
-        conn.close()
-        return result[0] if result else None
-    except Exception as e:
-        print(f"Error loading quiz: {e}")
-        return None
+
 
 # reports functions
 def save_report(user_id: str, report_type: str, title: str, content: str, cv_data: dict = None):
