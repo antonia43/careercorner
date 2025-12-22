@@ -304,7 +304,7 @@ def render_student_main_resources():
     st.divider()
     st.caption("ⓘ Try: 'biology resources', 'engineering scholarships', 'CIF 15.2 tips'")
     
-    user_query = st.text_input("Quick search:", placeholder="e.g., past exam papers")
+    user_query = st.text_input("Quick search:", placeholder="e.g., math study resources")
     
     if st.button("⟡ Search", width='stretch'):
         if user_query:
