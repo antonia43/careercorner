@@ -270,7 +270,7 @@ When users ask about study resources, scholarships, exams or CIF tips:
 def render_student_main_resources():
     """Quick student tools with function calling"""
     st.header("✄ Student Resources")
-    st.info("ⓘ In this section you can quickly find study resources, scholarships, exam papers, and CIF tips based on what you type, then use the support chat if you want help planning your next steps or guidance!")
+    st.info("ⓘ Quick search or personalized support chat")
 
     user_id = st.session_state.get("username", "demo_user")
     
@@ -279,24 +279,22 @@ def render_student_main_resources():
         grades_reports = load_reports(user_id, "grades")
         saved_unis = get_saved_universities(user_id)
         
-        has_degree = len(degree_reports) > 0
-        has_grades = len(grades_reports) > 0
-        has_unis = len(saved_unis) > 0
+        has_data = degree_reports or grades_reports or saved_unis
         
-        if has_degree or has_grades or has_unis:
-            st.success(f"Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
-        else:
-            if not st.session_state.get("redirect_to"):
-                st.info("ⓘ Try Degree Picker or Grades Analysis first!")        
-                col1, col2 = st.columns(2)                                      
-                with col1:                                                      
-                    if st.button("← Degree Picker", width='stretch', key="degree_picker_btn"):           
-                        st.session_state.redirect_to = "Degree Picker"          
-                        st.rerun()                                              
-                with col2:                                                      
-                    if st.button("← Grades Analysis", width='stretch', key="grades_analysis_btn"):     
-                        st.session_state.redirect_to = "Grades Analysis"        
-                        st.rerun()                                              
+        if not has_data:
+            st.info("⚠︎ Try Degree Picker or Grades Analysis first!")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Degree Picker", key="degree_btn"):
+                    st.session_state.redirect_to = "Degree Picker"
+                    st.rerun()
+            
+            with col2:
+                if st.button("← Grades Analysis", key="grades_btn"):
+                    st.session_state.redirect_to = "Grades Analysis"
+                    st.rerun()
+            
             return
     except:
         pass
