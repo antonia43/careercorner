@@ -1,0 +1,707 @@
+# README
+
+# Career Corner
+
+Helping you build your career, every step of the way.
+
+## Overview
+
+Career Corner is an AI-powered application developed to help high-school students and professionals make career based decisions. Whether you're a student preparing for exams or struggling to pick a degree, a professional wanting a career change or to find job opportunities based on your skills, Career Corner has got you covered. The app comprises two menus, one specifically catered to high-school students and one catered to university students and professionals, where you can find multiple features to navigate and expand your career.
+
+As former high-school students and aspiring data scientists, the creators of Career Corner have noticed a lack of information and guidance during career based processes and decisions. Most students do not know what they like to do or what degree to pick, and psychotechnical tests at school are extremely vague, sometimes lacking accuracy. Moreover, professionals struggle every single day to find jobs, and some may want a career change but feel desamparados and can be blind to their own skills.
+Career Corner was built to mitigate this problem. By combining conversational AI, real educational data, and practical career tools, it gives users clearer, more personalized guidance than traditional tests or generic advice. For students, it connects school performance, interests, and real university options into one place. For professionals and university students, it focuses on understanding their skills, exploring realistic paths, and taking concrete steps toward internships, first jobs, or career transitions.
+
+Career Corner is an AI-powered platform built for Portuguese high school students planning university paths and professionals seeking job market advancement. Students get adaptive career quizzes, CIF grade calculators, degree/university matchers, and study resources. Professionals access CV parsing, career growth quizzes, interview simulators, and tailored job applications. Both use conversational AI chat that routes to the right tools after 5 natural questions.
+We noticed Portuguese students struggle with vague school career tests and scattered DGES university data while professionals fight to tailor CVs and prepare interviews. Career Corner combines real Portuguese education data (CIF scores, IAVE exams, DGES degrees) with practical tools into one platform. Everything auto-saves to My Reports with delete options.
+
+**Target Audience:**
+- **High school students** (Career and degree discovery, grade caculation/preparing for university admission)
+- **University students & professionals** (CV analysis, Career Recommendations, Interview preparation)
+- **Focus:** Portuguese education system (DGES degrees, national exams)
+
+---
+
+## The Problem
+
+### For Students:
+
+Students face vague psycotechnical tests at school that don't connect interests to real university options. Grades exist in isolation requiring manual calculation of the final highschool grade and university degree search.
+Professionals send CVs everyday but get no structured skill analysis or interview practice catered to their needs. Information scatters across DGES sites, LinkedIn and generic, easily bypassable career quizzes.
+
+- Vague school career tests lacking personalization
+- Confusion about degree choices and university options
+- No connection between grades, interests, and real admission data
+- Information scattered across multiple platforms (DGES, university sites)
+
+### For Professionals:
+
+- Difficulty identifying transferable skills for career changes
+- Generic job search tools without personalized insights
+- No structured way to connect CV strengths to career paths
+- Overwhelming job market navigation
+
+
+## Our Solution
+
+Career Corner delivers personalized guidance through conversational AI that adapts to user responses. Students answer 10 creative questions to get sector matches (Healthcare 60%), upload grade reports for CIF scores (+2 point plans), and match to real DGES degrees/universities. Professionals parse CVs into structured JSON, get CV-aware career quizzes, practice mock interviews with feedback, and generate tailored cover letters. All results persist in SQLite with tabbed My Reports access.
+
+1. **Conversational AI:** Interactive quizzes that adapt to user responses (not static multiple-choice)
+2. **Real Data Integration:** Uses DGES university data, admission grades, and Portuguese scholarship info
+3. **Personalization:** Connects quiz results → grades → degree recommendations → university matches
+4. **Actionable Tools:** for example, CV analysis, grades analysis, university search, career path recommendations
+5. **Observability:** Langfuse tracks all AI interactions for quality assurance
+
+
+## Features
+Shared for all users:
+- **Data Persistence:** SQLite database stores reports, saved universities, user preferences.
+- **Google OAuth Login:** Secure login with Google accounts.
+- **Local Login:** Secure login with accounts created directly on the platform and stored in the database.
+- **Dashboard:** Dashboard: a dashboard with an AI career assistant chatbot that starts with natural conversation, asks 5+ genuine questions about your situation before recommending tools, and routes you to the perfect feature after understanding your needs. The chatbot never mentions tool names during the first 5 turns, building context through casual dialogue like "What challenges are you facing with your studies?" or "What's frustrating about your job search?" On turn 6+, it confidently recommends "Career Quiz would suit you best because..." with clear reasoning. Both student and professional dashboards use separate chat histories with dedicated trace IDs in Langfuse for observability.
+- **Reports Section** a section where all results from quizzes and analyses can be accessed and deleted by the user.
+- **Custom CSS styling** custom green and yellow UI with animations.
+
+
+### For students:
+
+#### **Career Discovery Quiz**
+- Career and skillset quiz - an interactive quiz operated through a conversational AI interface, to help students figure out their most valuable skills and biggest interests. At the end, a sector, or a mix of sectors (such as technology, health, business) is attributed to the student. Aditionally, a report is delivered, highlighting possible career paths based on the student's answers.
+
+- **What it does:** Interactive conversational quiz (10-15 questions) to identify interests and strengths
+- **Output:** 
+  - Career sector match (Technology, Health, Business, Arts, etc.)
+  - Top 3-5 degree recommendations with fit scores
+  - Detailed report with reasoning
+- **Tech:** Multi-turn chat with Gemini 2.5-flash-lite, response validation
+
+- Grades Analysis - A guided tool that collects school grades (through manual input or file ingestion) and calculates both Portuguese and International final grades, helping students understand their academic profile, how far they are from getting into a certain university, and use this grade to find a university that they can get in. You can upload your grade report as a photo or PDF, or enter grades manually to calculate your final admission score. Career Corner supports both Portuguese CIF (Classificação de Ingresso Final) and international grade systems, showing exactly where you stand for university admission and providing personalized improvement plans to reach your target universities.
+
+**Portuguese System:**
+- **What it does:** Calculates CIF using the official Portuguese formula: school average (65% weight) plus two national exam scores (35% weight). Upload a grade report image and the AI extracts your subjects and grades automatically. Enter your planned or completed exam scores to see your final CIF on the 0-20 scale.
+- **Output:** 
+  - Final CIF score (e.g., 15.8/20)
+  - Comparison to saved university thresholds from University Finder
+  - +2 points improvement plan personalized to your CIF tier (strategies differ for 12-14 vs 16-18)
+  - Breakdown showing which subjects/exams impact your score most
+- **Tech:** Gemini multimodal vision for PDF/image parsing, formula `(school_avg × 0.65) + ((exam1 + exam2)/2 × 0.35)`
+
+**International System (IB/A-Levels):**
+- **What it does:** Converts IB Diploma or A-Level grades to Portuguese 0-20 scale using DGES conversion formulas. IB grades (1-7 scale plus TOK/EE points) convert to 0-200 Portuguese scale, then to 0-20 for university matching. A-Level grades (A*-E) follow similar conversion tables.
+- **Output:** 
+  - Converted final grade on Portuguese 0-20 scale
+  - Subject-by-subject breakdown showing IB/A-Level equivalents
+  - University eligibility based on converted score
+  - Missing subject recommendations for DGES requirements
+- **Tech:** DGES conversion formula `Cfinal = {[(C-Cmin)/(Cmax-Cmin)]*10} + 10`, supports IB (max 45 points) and A-Levels
+
+#### **Degree Picker**
+An interactive assistant that uses the students interests (results from career quiz if applicable, grades analysis results if applicable) to suggest concrete degree programs, compare options, and narrow it down to a shortlist of degrees that best fit the student.
+- **What it does:** AI assistant that narrows down degree choices through conversation
+- **Input:** Career quiz results (if available), student preferences
+- **Output:** 
+  - 2-stage dropdown selection (Career Area → Specific Sector)
+  - Top 3 DGES-accredited degrees with:
+    - Fit percentage
+    - Curriculum overview
+    - Career paths in Portugal
+    - Entry requirements
+- **Tech:** RAG-style retrieval from DGES data, Gemini reasoning
+
+#### **University Finder**
+A search tool that uses real Portuguese higher-education data to show universities offering the chosen degree, including entry grades, location and an interactive map so students can explore and save their options.
+
+Search Portuguese universities offering your chosen degree with real DGES admission data from 2024-2025. Filter by your CIF score range, location preferences, and institution type (public/private). An interactive Folium map shows all matching universities with clickable markers displaying admission grades, campus locations, and official website links. Save your favorite universities to compare later or match against your Grades Analysis CIF score to see which are realistic targets.
+
+- **What it does:** Search and filter Portuguese universities by degree program using live DGES data
+- **Features:**
+  - **CIF Range Filter:** Only show universities you can realistically get into (e.g., 14.0-16.0)
+  - **Location Filter:** Lisbon, Porto, Coimbra, or nationwide search
+  - **Public/Private Toggle:** Filter tuition types
+  - **Interactive Map:** Folium map with university markers, click to see admission grades
+  - **Save System:** Store favorite universities with timestamps, access in My Reports
+  - **Individual Delete:** Remove saved universities one-by-one
+- **Output:** University cards showing institution name, program name, location, admission grade, duration, acceptance rate, website link
+- **Tech:** DGES dataset (20+ universities), Folium maps, SQLite saved_universities table with user_id tracking
+
+#### **Student Resources**
+Dual-mode tool combining quick search and support chat. Quick search mode uses 6 Portuguese-specific tools with function calling: get study resources for any subject (returns Khan Academy, Coursera, YouTube, Quizlet, Reddit links), get Portugal scholarships (DGES, FCT, Erasmus+ opportunities), get IAVE exam past papers (latest + archive), and get CIF improvement tips (personalized +2 point plans by score tier). Support chat mode switches off function calling for natural guidance conversations where you can select degree/grades reports from dropdowns and ask for advice without getting bombarded with links.
+
+- **Quick Search Features:**
+  - Study resources: Khan Academy, Coursera, YouTube tutorials, Quizlet flashcards for any subject
+  - Scholarships: DGES bolsas, FCT grants, Erasmus+ programs
+  - Exam papers: IAVE nacional exam archives (all subjects, past years)
+  - CIF tips: +2 point improvement strategies by score tier (12-14: focus exams 35%, 16-18: perfect execution)
+- **Support Chat Mode:**
+  - Select saved degree/grades reports from dropdowns
+  - AI references your specific data for personalized advice
+  - Ask: "Help me understand my CIF" or "Should I apply to Nova with 15.2?"
+  - No tool spam, just guidance
+- **Tech:** Gemini 2.0 Flash function calling (6 tools) for quick search, Gemini 2.5 Flash (temp 0.7) for support chat
+
+
+### For Professionals:
+
+#### **CV Analysis**
+Upload any PDF or DOCX CV and the AI extracts structured data: skills (technical like Python/SQL + soft like leadership), work experience (roles, companies, years, achievements), education background, and hidden strengths. Saved CVs auto-load on login via My Reports. The parsed JSON feeds directly into Career Growth Quiz for personalized questions and CV Builder for tailoring. Get benchmarking against job market standards and actionable optimization tips like "Add metrics to your achievements" or "Highlight AWS experience more prominently."
+- CV Analysis - A CV document parser that scans uploaded CVs (can be auto-reloaded from database on login), extracting skills, experience, achievements, and strenghts into structured insights. It highlights what makes your profile stand out, benchmarks afainst job market standards, siggests optimizations and feeds directly into the Career Growth Quiz for hyper-personalizer recommendations, or into the CV editor to enhance it or cater it to a specific job offering and position.
+
+- **What it does:** Multimodal CV parser using Gemini vision to handle any PDF/DOCX/image format
+- **Extracts:**
+  - Technical skills (programming languages, tools, certifications)
+  - Soft skills (leadership, communication, problem-solving)
+  - Work experience (job titles, companies, duration, bullet achievements)
+  - Education (degrees, institutions, graduation years)
+  - Strengths (what makes profile stand out)
+  - Gaps (missing keywords or experience for target roles)
+- **Features:**
+  - Auto-reload: Saved CVs appear in My Reports CV selector dropdown
+  - Benchmarking: Compares your profile to industry standards
+  - Optimization tips: "Add quantified achievements" or "Strengthen technical section"
+  - Integration: Parsed JSON flows to Career Quiz + CV Builder
+- **Tech:** Gemini 2.5 Flash multimodal (handles scanned PDFs, images, any format), JSON storage in professional_reports table
+
+#### **Career Growth Quiz**
+An immersive 12-question conversational quiz designed for professionals and university students seeking career advancement or transitions. If you've uploaded a CV, questions adapt to your experience (e.g., "Given your 3 years in data analysis, how do you handle ambiguous stakeholder requests?"). Without a CV, questions focus on work preferences and soft skills. The quiz covers two phases: Experience & Preferences (6Q about teamwork, pressure, autonomy) and Soft Skills (6Q about leadership, communication, adaptability). Final report provides career sector match, growth paths (management track vs technical specialist vs entrepreneurship), skills to develop next, and 3-month action plan.
+- Career growth quiz - an interactive, immersive quiz operated through a conversational AI interface, made for professionals find possible  figure out their most valuable skills and biggest interests. At the end, a sector (such as technology, health, business) is attributed to the student. Aditionally, a report is delivered, highlighting possible career paths based on the student's answers.
+
+- **What it does:** CV-aware conversational assessment across experience preferences and soft skills dimensions
+- **Input:** Parsed CV data (optional), work history, professional goals
+- **Output:** 
+  - Career sector match with reasoning
+  - Growth path recommendations (management, technical deepening, lateral moves, entrepreneurship)
+  - Top 3 skills to develop with concrete next steps
+  - 3-month action plan with resources
+  - Profile summary describing your work style
+- **Tech:** Gemini 2.5 Flash (temp 0.3 for deterministic analysis), CV JSON integration, auto-saves to professional_reports
+
+#### **CV Builder**
+Three AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info → education → experience → skills → achievements) that generates a polished CV with your target job/industry. Tailor existing CV by selecting a saved CV from My Reports, pasting a job description, and letting AI reorder bullets and inject relevant keywords. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
+
+- **What it does:** Three modes in one tabbed interface
+  1. **Build CV Quiz (Tab 1):** 5-step guided quiz collecting name/email, education, work experience, skills, achievements → AI polishes into complete CV JSON
+  2. **Tailor CV to Job (Tab 2):** Select saved CV from dropdown, enter target job + company, paste job description → AI reorders bullets and adds missing keywords
+  3. **Cover Letter (Tab 3):** Uses CV data + job description → generates 200-350 word letter in professional/enthusiastic tone
+- **Output:** 
+  - Pretty PDF CVs with custom ReportLab styling (DM Sans font, lime/yellow branding)
+  - JSON backup downloads for editing
+  - TXT cover letters ready to paste
+- **Tech:** Gemini 2.5 Flash (temp 0.4 for CV building, 0.7 for cover letters), ReportLab PDF generation, auto-saves to professional_reports
+
+#### **Interview Simulator**
+Practice job interviews with AI-generated questions tailored to your CV and target role. Quick Practice mode (10-15 mins) lets you select focus areas (Behavioral, Technical, Situational) for 3-6 questions with instant per-answer feedback. Mock Interview mode (30 mins) generates 10 role-specific questions for full interview simulation with comprehensive feedback report including overall score (1-10), best answer, answer that needs work, STAR method analysis, and recommended practice areas. Upload cover letter for even more personalized questions.
+
+- **What it does:** Two modes for interview practice with AI feedback
+  - **Quick Practice:** Select focus areas (Behavioral/Technical/Situational/Strengths-Weaknesses/Career Goals) → 3-6 questions → instant feedback per answer
+  - **Mock Interview:** Enter target role + company → 10 comprehensive questions → full feedback report
+- **Features:**
+  - CV-aware questions (references your experience if CV uploaded)
+  - Cover letter upload for additional personalization
+  - Progress tracking (Question 3 of 10)
+  - Back/Next/Skip navigation
+  - Text area for typed answers (1-3 minute responses)
+- **Output:** 
+  - Per-answer feedback (Quick Practice)
+  - Comprehensive report (Mock Interview): overall score 1-10, strengths, areas for improvement, best answer analysis, answer that needs work with fixes, key takeaways, recommended practice
+  - STAR method evaluation (Situation, Task, Action, Result)
+- **Tech:** Gemini 2.5 Flash (temp 0.5 for questions, 0.6 for feedback), CV JSON integration, session state for multi-question flow
+
+#### **Professional Resources - Your Next Steps**
+Job search and course recommendation tools with conversational chat. Quick search returns real LinkedIn job links (Portugal-focused, recent postings) and Coursera/Udemy courses for skill development. Chat mode lets you select CV/quiz reports from dropdowns so AI references your specific profile when answering questions like "Find data science jobs matching my skills" or "Show me Python courses to fill my gaps." No function calling in chat mode to prevent link spam, just natural career guidance.
+
+- **What it does:** Two-mode professional resource finder
+  - **Quick Search:** Function calling tools return LinkedIn jobs + Coursera/Udemy courses
+  - **Chat Mode:** AI advisor with CV/quiz report dropdown selection for personalized guidance
+- **Features:**
+  - Job search: LinkedIn links filtered to Portugal, recent postings, matches your sector
+  - Course recommendations: Coursera, Udemy, skill-specific
+  - Report selection: Choose which CV/quiz to reference in chat
+  - Context-aware answers: AI knows your parsed CV skills + quiz sector
+- **Tech:** Gemini 2.0 Flash function calling (2 tools: get_jobs, get_courses), Gemini 2.5 Flash chat (temp 0.7), report dropdown integration
+
+
+## Tech Stack
+
+### Backend
+- **Python 3.13** powers all 18 modular files with clean separation (pages/services/utils)
+- **Google Gemini API** dual-model approach for optimal performance:
+  - `gemini-2.5-flash` / `gemini-2.5-flash-lite` handles creative tasks (temp 0.9 adaptive quizzes, 0.6 sector analysis, 0.7 natural chat)
+  - `gemini-2.0-flash-001` for precise function calling (temp 0.2-0.3 tool routing) !!!!!
+- **SQLite** lightweight tempdir database (`/tmp/career_corner.db`) with 4 tables:
+  - `professional_reports` (CV/quiz/grades results with cv_json)
+  - `saved_universities` (user favorites with admission data)
+  - `user_cvs` (parsed CV JSON with timestamps)
+  - `users` (authentication with hashed passwords)
+- **Langfuse v3.11.1** traces every Gemini call through `LangfuseGeminiWrapper`
+
+### Frontend
+- **Streamlit 1.40+** native Python web framework handles all UI:
+  - Session_state for 10Q quizzes, mock interviews, multi-step workflows
+  - Progress bars, tabs, expanders, chat interfaces, file uploaders
+  - Back/Next navigation with `st.rerun()` for smooth UX
+- **ReportLab 4.2.2** generates professional PDF CVs with custom DM Sans typography and lime/yellow branding
+
+### Database
+- **SQLite tempdir** (`/tmp/career_corner.db`) provides zero-config persistence:
+  - **Why perfect:** No external hosting, survives Streamlit restarts, automatic `init_database()` creates all tables
+  - **Handy for production:** Works instantly on Streamlit Cloud, no connection strings/secrets needed
+  - **Scales to 1000s:** Handles thousands of user reports/universities with indexes on user_id/report_type
+  - **Structured data:** CV JSON, university data, timestamps enable My Reports dropdowns
+
+### Authentication
+- **Werkzeug 3.0.4** secure password hashing (`generate_password_hash/check_password_hash`)
+- **Google OAuth 2.0** via native client credentials with localhost/production redirect URIs
+- **Session management** through `st.session_state.logged_in` + `st.session_state.username`
+
+### AI/ML
+- **Langfuse** production observability wrapping 95% of Gemini calls:
+  - Traces prompts/responses/tokens/temperature/metadata per generation
+  - User feedback scoring (thumbs up/down → 0.0-1.0)
+  - Conversation turn tracking (5Q chat routing validation)
+- **Function Calling** 8 Gemini-native tools total:
+  - **6 Student tools** (student_resources.py): study links, DGES scholarships, IAVE exams, CIF tips
+  - **2 Pro tools** (resources.py): LinkedIn jobs, Coursera/Udemy courses
+- **Multimodal AI** Gemini vision processes:
+  - CV parsing (PDF/DOCX → skills/work/education JSON)
+  - Grade reports (images → subject scores → CIF calculation)
+
+### Data Sources
+- **DGES** Portuguese higher education (degrees, universities, 2024-2025 admission grades)
+- **IAVE** national exam archives (past papers, all subjects/years)
+- **Scholarships** DGES/FCT/Erasmus+ direct program links
+- **Study platforms** dynamic search links (Khan Academy, Coursera, YouTube, Quizlet, Reddit)
+- **No external APIs** - all resources retrieved via URLs + function calling
+
+
+
+## Architecture
+
+
+### Layer Structure
+
+**Presentation Layer** (`zapp.py`, `pages/`)
+12 modular UI files, one per feature: `student_career_quiz.py` (10Q adaptive quiz), `cv_analysis.py` (PDF parsing), `interview_simulator.py` (mock interviews), etc. Each handles its own session_state, progress bars, back/next navigation, and auto-save confirmations. Streamlit widgets (tabs, expanders, chat, sliders) create intuitive multi-step workflows.
+
+**Service Layer** (`services/`)
+`authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping 95% of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 12 UI files.
+
+**Data Layer** (`utils/`)
+`database.py` handles all SQLite CRUD across 4 tables (professional_reports, saved_universities, user_cvs, users) with tempdir persistence. `reports.py` renders tabbed My Reports with CV selectors and delete functionality. Zero external database configuration.
+
+**Tools Layer** (`tools/` - empty)
+All 8 tools (6 student, 2 pro) implemented inline in `student_resources.py` and `resources.py`. Gemini function calling routes directly to inline functions. Empty folder maintains future-proof structure.
+
+**Styling Layer** (`styles.py`)
+Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide animations, hover effects, and responsive components. `apply_custom_css()` called from `zapp.py` ensures consistent branding.
+
+### Key Design Decisions
+
+1. **Dual Dashboard Architecture:** Separate `student_dashboard.py` vs `professional_dashboard.py` prevents feature overload while sharing common services/database. Onboarding gates confirm user type before access.
+
+2. **LangfuseGeminiWrapper Pattern:** Single wrapper handles 95% of Gemini calls with automatic tracing (user_id, session_id, temperature, metadata). Raw Gemini client used only for function calling in resources. Graceful fallback if Langfuse unavailable.
+
+3. **Database-First Persistence:** SQLite tempdir stores everything (reports, CVs, universities) enabling dropdown selection in chats ("Select CV: My Resume - 2025-12-21"). No data loss across Streamlit reruns/sessions.
+
+4. **One File Per Feature:** 12 UI files (`student_career_quiz.py`, `cv_builder.py`, etc.) = modular development, easy Git branching, clear ownership. Each file self-contained with session_state management.
+
+5. **5-Question Chat Routing:** Dashboard chatbots (`student_chat.py`, `professional_chat.py`) ask 5 natural questions before recommending tools ("Career Quiz would suit you best because..."). Prevents premature tool spam, builds context. Traced in Langfuse by conversation turn.
+
+6. **Function Calling Simplicity:** 8 tools (6 functions to call + 2 chats) live inline in resource files (no separate `tools/` complexity). Gemini 2.0 Flash routes naturally ("biology resources" → `get_study_resources`). Dual-mode resources toggle tools on/off.
+
+7. **Streamlit-Native Workflows:** No FastAPI/React. Session_state + `st.rerun()` handles complex multi-step flows (10Q quizzes, 10Q interviews). Progress bars + back/next navigation prevent user frustration.
+
+8. **Zero External Dependencies:** SQLite tempdir + standard library (json/re/os/datetime) = instant deployment. Only 6 pip packages needed. Works offline except Gemini API calls.
+
+**Why This Works:** All files are production-ready, so zero configurations are needed to deploy to Streamlit Cloud. The project relies only on a small, well-defined set of Python dependencies and the built-in SQLite database, which means there is no need to provision external services, containers, or complex infrastructure. The folder structure is clear and consistent, with each major feature living in its own file, so the application can be understood and modified quickly even by someone new joining the project.
+
+The use of a single Gemini wrapper with integrated tracing ensures that every AI interaction is automatically logged with the same pattern, instead of each page having its own fragile API logic. This makes it much easier to debug quizzes, CV analysis, or interview feedback without hunting through different files or logging systems. Observability becomes a built-in part of the architecture rather than an afterthought, so prompt iterations and quality improvements can be done with confidence.
+
+Because each feature is encapsulated in its own Streamlit page file, the codebase scales very naturally: new tools can be added as new files, and existing ones can be refactored in isolation. At the same time, the shared services and database utilities keep repeated logic in one place, so the overall complexity stays low. The result is a system that is modular enough to support team development—different people can own different feature files—but still simple enough that a single maintainer can understand, debug, and extend the whole application without feeling overwhelmed.
+
+
+
+## Installation & Setup
+
+### Prerequisites
+### **Prerequisites**
+- **Python 3.10+**
+- **Google Gemini API Key:** [Get it here](https://ai.google.dev)
+- **Langfuse Account (Optional):** [Sign up](https://langfuse.com)
+- **Google OAuth Credentials (Optional):** [Google Cloud Console](https://console.cloud.google.com)
+
+### Installation Steps
+
+1. Clone the repository:
+```bash
+git clone [your-repo-url]
+cd [careercorner1]
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your API keys MUDARRRRRRRRR?
+
+```
+
+### **Step 4: Run the Application**
+
+4. Run the application:
+```bash
+streamlit run zapp.py  
+```
+
+**App will open at:** `http://localhost:8501`
+
+
+**Required Packages:**
+streamlit>=1.40.0
+google-generativeai>=0.8.3
+langfuse>=3.11.1
+python-dotenv>=1.0.1
+reportlab>=4.2.2
+werkzeug>=3.0.4
+sqlite3
+
+**Required environment variables:**
+```
+GOOGLE_API_KEY=AIzaSyCIjBehkD7cLEPUzsZuX8TUIHbHAPg2Au0
+
+LANGFUSE_SECRET_KEY = "sk-lf-3fe016aa-a78f-4caa-8f42-768881db8d15"
+LANGFUSE_PUBLIC_KEY = "pk-lf-cecc0a5f-2302-4ae7-9ae8-fe3313faa923"
+LANGFUSE_HOST = "https://cloud.langfuse.com"
+```
+**Optional environment variables:**
+```
+GOOGLE_CLIENT_ID=35671753897-jppuv5lu96hsos86k16ifum43kp2mrtc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+
+DATABASE_PATH=./data/career_corner.db (defaults to /tmp/career_corner.db)
+```
+
+**Security Note:** 
+- **NEVER commit `.env` to Git!** It's already in `.gitignore`
+- For deployment, use Streamlit Secrets (see [Deployment](#deployment))
+
+
+---
+
+## Usage Guide
+
+### First-Time Setup
+1. **Launch App:** Run `streamlit run zapp.py` (opens http://localhost:8501)
+2. **Choose Dashboard:** 
+   - **Student Dashboard** → high school students planning university
+   - **Professional Dashboard** → university students/professionals job hunting
+3. **Onboarding:** Confirm your user type (student gate prevents pro tool access)
+4. **Start Chat:** AI asks 5 natural questions before recommending tools
+
+---
+**Example Workflow (Student):**
+
+```
+1. Dashboard Chat (2 mins)
+├─ AI: "What challenges are you facing with your studies?"
+├─ You: "I'm confused about degrees and my grades"
+└─ AI: "Career Quiz would suit you best because you're exploring options"
+```
+![alt text](image-4.png)
+
+```
+2. Career Discovery Quiz (10 mins)
+├─ Answer 10 adaptive questions ("Perfect day starts with what sound?")
+├─ Results: "Healthcare 60%, Education 40%" + Nursing/Teaching paths
+└─ Auto-saves to My Reports
+```
+![alt text](image-3.png)
+```
+3. Grades Analysis (10 mins)
+├─ Enter your grades
+├─ CIF calculation: School 65% + Exams 35% = 15.8/20
+└─ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+```
+```
+4. Degree Picker (5 mins)
+├─ Select sector from quiz (Healthcare → Nursing/Physiotherapy)
+├─ Top 3 DGES degrees with entry requirements/CIF needed
+└─ Auto-saves recommendations
+```
+![alt text](image-1.png)
+![alt text](image-2.png)
+```
+5. University Finder (10 mins)
+├─ Search "Nursing" universities matching your CIF 15.8
+├─ Filter: Lisbon, public unis, 14.0-16.0 admission range
+├─ Interactive map → click Nova marker → "CIF required: 15.2"
+└─ Save favorite universities (accessible at the top of the page)
+```
+```
+6. Student Resources (Chat Mode)
+├─ Click "Need personalized help?"
+├─ Select degree/grades from dropdowns
+└─ Ask: Please help me decipher me results, i wasn't expecting them.
+```
+![alt text](<Screenshot 2025-12-22 at 9.18.48 PM.png>)
+
+**Example Workflow (Professional):**
+```
+1. Dashboard Chat (2 mins)
+├─ AI: "What's frustrating about your job search?"
+├─ You: "My CV isn't getting responses"
+└─ AI: "CV Analysis would suit you best because..."
+```
+
+```
+2. CV Analysis (5 mins)
+├─ Upload CV (PDF/image)
+├─ AI extracts skills, experience, strengths
+├─ Get benchmarking + optimization tips
+└─ JSON saved to My Reports
+```
+```
+3. Career Growth Quiz (10 mins)
+├─ CV-aware questions: "Given your data analysis exp, prefer teams or solo?
+├─ 2 phases: Experience prefs (6Q) + Soft skills (6Q)
+└─ Results: Receive personalized report (auto saved)
+```
+
+```
+4. Interview Prep (30 mins)
+├─ Mock Interview: "Senior Data Analyst @ Nova"
+├─ 10 questions → type answers (Situation/Task/Action/Result)
+└─ Feedback: "Score 7.5/10, Best answer: Q3 leadership, Improve: Q7 metrics"
+```
+```
+5. CV Builder (10 mins)
+├─ Tab 1: Build new CV from quiz (5-step: info/education/exp/skills)
+├─ Tab 2: Tailor saved CV → "Data Scientist @ Google" + job desc
+├─ Tab 3: Cover letter (350 words, enthusiastic tone)
+└─ Download PDF CV + JSON backup and Branded ReportLab styling
+```
+```
+6. Professional Resources (Short Mode)
+└─ Ask: "Find data science jobs" or "Python courses"
+```
+
+
+### **Key Features to Highlight**
+
+#### **Data Persistence**
+- All reports saved in SQLite database
+- Reload past quizzes, CVs, grades, degrees
+- Delete individual saved universities
+
+#### **Auto-saving results**
+- Avoids data loss
+
+#### **Interactive Maps**
+- Click university markers on Folium map
+- See admission grades, location, website
+- Filter by CIF range
+
+#### **Document Upload**
+- Supports PDF and images (JPG, PNG)
+- Multimodal Gemini extracts text from any format
+- Works with messy/scanned documents
+
+#### **Dropdown Selection in Resources Chat**
+- Both student and professional chat modes have dropdowns
+- Select which report to reference (e.g., "CV: My Resume - 2025-12-11")
+- AI uses selected report content for personalized answers
+
+
+
+## Deployment
+
+**Live Application:** https://careercorner.streamlit.app
+
+**Deployment Platform:** Streamlit Cloud
+
+### **Streamlit Cloud**
+1. **Push Code to GitHub:**
+```
+git add .
+git commit -m "Ready for deployment"
+git push origin main
+```
+
+2. **Deploy on Streamlit Cloud:**
+- Go to [share.streamlit.io](https://share.streamlit.io)
+- Click "New app"
+- Select your GitHub repo (career-corner)
+- Set main file: `zapp.py`
+
+3. **Add Secrets:**
+- In Streamlit Cloud dashboard -> "Settings" -> "Secrets"
+- Paste your `.env` content:
+
+4. **Deploy:**
+- Click "Deploy"
+- App will be live at your preferred https address
+
+### **Google OAuth Setup (Optional)**
+
+If deploying with Google login:
+
+1. **Create OAuth Credentials:**
+- Go to [Google Cloud Console](https://console.cloud.google.com)
+- Enable "Google+ API"
+- Create OAuth 2.0 Client ID
+- **Authorized redirect URIs:** 
+  ```
+  https://your-app.streamlit.app !!!!!!!!!!!!!!!!!!!!!!!!!
+  http://localhost:8501
+  ```
+2. **Add to Secrets:**
+GOOGLE_CLIENT_ID=35671753897-jppuv5lu96hsos86k16ifum43kp2mrtc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+
+3. **Update Code:**
+- Ensure `zapp.py` has Google OAuth logic enabled
+
+
+### **Local Deployment (Testing)**
+
+Run with custom port
+streamlit run zapp.py --server.port 8502
+
+Run with network access
+streamlit run zapp.py --server.address 0.0.0.0
+
+Run with production-like settings
+streamlit run zapp.py --server.headless true
+
+## Project Structure
+
+```
+careercorner1/
+├── zapp.py # Main Streamlit entry
+├── styles.py # Custom CSS styling functions
+├── pages/ # User-facing pages
+│ ├── student_dashboard.py
+│ ├── student_chat.py
+│ ├── degree_picker.py
+│ ├── grades_analysis.py
+│ ├── university_finder.py
+│ ├── student_resources.py
+│ ├── professional_dashboard.py
+│ ├── professional_chat.py
+│ ├── career_growth_quiz.py
+│ ├── cv_analysis.py
+│ ├── interview_simulator.py
+│ ├── cv_builder.py
+│ └── resources.py
+
+├── services/ # Business logic + external integrations
+│ ├── init.py
+│ ├── authentication.py  # Manual and Google Login/session helpers
+│ └── langfuse_helper.py  # Langfuse + Gemini wrappers
+
+├── tools/  #empty
+│ └── init.py
+
+├── utils/ # Shared helpers and data access
+│ ├── init.py
+│ ├── database.py
+│ └── reports.py
+
+├── scripts/ 
+│ ├── init.py
+│ └── build_dges_universities.py
+
+├── data/ # Static files
+│ ├── bg1.png
+│ ├── bg2.png
+│ ├── careercornerlogo2.png
+│ ├── careercornermini.png
+│ ├── crumpledpaper2.jpg
+│ └── crumpledpaper3.avif
+ADD CSV FOR UNIVERSITIES???????????????????????
+
+├── docs/
+│ └── ARCHITECTURE.md
+
+├── README.md
+├── requirements.txt
+└── .env.example
+```
+
+
+### **Key Files Explained**
+
+| File | Purpose |
+|------|---------|
+| `zapp.py` | Main Streamlit entry point with student/professional dashboard routing and sidebar navigation |
+| `styles.py` | Custom CSS styling with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
+| `langfuse_helper.py` | **LangfuseGeminiWrapper** for all Gemini calls with v3 tracing, user_id/session_id tracking, feedback logging (95% of AI calls) |
+| `database.py` | **SQLite CRUD** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
+| `reports.py` | Tabbed My Reports interface with CV selectors, delete buttons, student/pro separate tabs |
+| `authentication.py` | Local login/register + Google OAuth with Werkzeug password hashing and session management |
+| `student_dashboard.py` | Student onboarding gate + tool routing (Career Quiz, Grades, Degree Picker, etc.) |
+| `professional_dashboard.py` | Professional tool routing (CV Analysis, Career Growth, Interview Prep, CV Builder) |
+| `student_career_quiz.py` | **Adaptive 10Q career quiz** → sector matches (Healthcare 60%) + degree paths, auto-saves |
+| `career_growth_quiz.py` | **CV-aware 12Q pro quiz** (Experience + Soft Skills phases) → growth paths, uses parsed CV JSON |
+| `cv_analysis.py` | **Multimodal PDF/DOCX parser** → structured CV JSON (skills/experience/education) |
+| `cv_builder.py` | **3-tab CV toolkit** (quiz→CV, tailor to job, cover letters) → ReportLab PDF + JSON export |
+| `interview_simulator.py` | **Mock interviews** (Quick Practice 3-6Q + Mock 10Q) with STAR feedback scoring (1-10) |
+| `student_resources.py` | **6 PT student tools** (Khan/IAVE/DGES) + support chat with report dropdowns |
+| `resources.py` | **Pro resources** (LinkedIn jobs, Coursera courses) + chat with CV/quiz dropdowns |
+| `student_chat.py` | **Student dashboard AI** (5Q rule → tool recs: "Career Quiz would suit you best") |
+| `professional_chat.py` | **Pro dashboard AI** (5Q rule → "CV Analysis would suit you best") |
+| `.env` | **API secrets** (Gemini/Langfuse keys) - **NEVER commit to Git!** (.gitignore protected) |
+| `requirements.txt` | **6 core dependencies** for pip install (streamlit, google-generativeai, langfuse, etc.) |
+
+# License
+
+MIT License
+
+Copyright (c) 2025 Antónia Lemos & Matilde Maximiano
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+## Team
+
+- **Antónia Lemos** - Core development (student + professional features)
+- **Matilde Maximiano** - Core development (student + professional features)
+
+
+**Both contributed equally across all aspects of the project including:**
+- Architecture design and modular file structure
+- Langfuse observability implementation
+- Gemini API wrapper and prompt engineering
+- Authentication (Google OAuth + local login)
+- Production deployment to Streamlit Cloud
+- Documentation (README, ARCHITECTURE.md)
+
+**Institution:** Nova IMS, Universidade Nova de Lisboa  
+**Course:** BSc in Data Science 
+**Project:** Capstone Project (December 2025)
+
+
+Career Corner by Matilde Maximiano and Antónia Lemos (Nova IMS, December 2025)
+GitHub: https://github.com/antonia43/careercorner1
+
+---
