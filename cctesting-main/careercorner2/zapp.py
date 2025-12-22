@@ -5,8 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from functions1 import reset, google_login_button
-from services.authentication import init_db, login_ui, register_ui
+from services.authentication import init_db, login_ui, register_ui, google_login_button
 
 from services.langfuse_helper import get_user_id
 
@@ -15,8 +14,6 @@ from styles import apply_custom_css
 from utils.database import load_user_cv, load_user_quiz
 from pages.professional_dashboard import render_professional_dashboard
 from pages.student_dashboard import render_student_dashboard
-
-
 
 st.set_page_config(
     page_title="Career Corner",
@@ -47,13 +44,15 @@ def load_dges_df():
         return pd.read_csv(DATA_PATH)
     return pd.DataFrame()
 
-
 if "universities_df" not in st.session_state:
     st.session_state["universities_df"] = load_dges_df()
 
 if st.session_state["universities_df"].empty and not DATA_PATH.exists():
     st.error("DGES data not found")
-
+    
+# reset function to go back to main welcome screen
+def reset():
+    st.session_state.user_type = None
 
 conn = init_db()
 
