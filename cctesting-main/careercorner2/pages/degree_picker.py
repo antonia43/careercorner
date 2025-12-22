@@ -55,7 +55,7 @@ def render_degree_picker():
             st.caption("International: Global universities and programs")
 
 
-        # return
+        return
 
     print("2")
 
