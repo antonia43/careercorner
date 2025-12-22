@@ -5,20 +5,17 @@ import pandas as pd
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-
-from authentication import init_db, login_ui, register_ui
 from functions1 import reset, google_login_button
-from langfuse_helper import (
-    get_user_id,
-)
+from services.authentication import init_db, login_ui, register_ui
 
-from student_dashboard import render_student_dashboard
+from services.langfuse_helper import get_user_id
 
+from pages.student_dashboard import render_student_dashboard
 from styles import apply_custom_css
-from database import load_user_cv, load_user_quiz
+from utils.database import load_user_cv, load_user_quiz
+from pages.professional_dashboard import render_professional_dashboard
+from pages.student_dashboard import render_student_dashboard
 
-from professional_dashboard import render_professional_dashboard
-from student_dashboard import render_student_dashboard
 
 
 # page + global styling
