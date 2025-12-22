@@ -237,20 +237,15 @@ if (
         "My Reports"
     ]
 
-    if "student_choice" not in st.session_state:
-        st.session_state.student_choice = "Dashboard"
-
-    # handling redirects before creating the radio
+    # handling redirects BEFORE initializing session state
     redirect_target = st.session_state.get("redirect_to")
-    if redirect_target in STUDENT_OPTIONS:
-        st.session_state.student_choice = redirect_target
+    if redirect_target and redirect_target in STUDENT_OPTIONS:
+        current = redirect_target
         del st.session_state.redirect_to
-        st.rerun()
-
-    current = st.session_state.get("student_choice", "Dashboard")
-    if current not in STUDENT_OPTIONS:
-        current = "Dashboard"
-        st.session_state.student_choice = current
+    else:
+        current = st.session_state.get("student_choice", "Dashboard")
+        if current not in STUDENT_OPTIONS:
+            current = "Dashboard"
 
     choice = st.sidebar.radio(
         "Go to:",
@@ -269,11 +264,6 @@ if (
 elif st.session_state.get("logged_in") and st.session_state.user and st.session_state.user_type == "professional":
     st.sidebar.title("Professional Menu")
     
-    if "redirect_to" not in st.session_state:
-        st.session_state.redirect_to = None
-    if "professional_choice" not in st.session_state:
-        st.session_state.professional_choice = "Dashboard"
-    
     PROF_OPTIONS = [
         "Dashboard",
         "CV Analysis",
@@ -284,26 +274,23 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
         "My Reports"
     ]
     
-    if st.session_state.redirect_to:
-        st.session_state.professional_choice = st.session_state.redirect_to
-        st.session_state.redirect_to = None
-    
-    current_prof = st.session_state.get("professional_choice")
-    if current_prof not in PROF_OPTIONS:
-        current_prof = "Dashboard"
-        st.session_state.professional_choice = current_prof
-    
-    default_idx = PROF_OPTIONS.index(current_prof)
+    # handle redirects without modifying session_state before widget creation
+    redirect_target = st.session_state.get("redirect_to")
+    if redirect_target and redirect_target in PROF_OPTIONS:
+        current_prof = redirect_target
+        del st.session_state.redirect_to
+    else:
+        current_prof = st.session_state.get("professional_choice", "Dashboard")
+        if current_prof not in PROF_OPTIONS:
+            current_prof = "Dashboard"
     
     choice = st.sidebar.radio(
         "Go to:",
         PROF_OPTIONS,
-        index=default_idx,
+        index=PROF_OPTIONS.index(current_prof),
         key="professional_choice",
     )
     
     st.sidebar.button("← Back", on_click=reset)
     
     render_professional_dashboard(choice)
-
-
