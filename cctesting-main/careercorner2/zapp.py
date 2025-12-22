@@ -41,7 +41,8 @@ if "reports" not in st.session_state:
 
 # loading DGES data once
 
-DATA_PATH = Path("data/universities_2025_1f.csv")
+BASE_DIR = Path(__file__).parent
+DATA_PATH = BASE_DIR / "data" / "universities_2025_1f.csv"
 
 
 @st.cache_resource
