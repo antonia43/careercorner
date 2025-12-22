@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.database import load_reports, delete_report
+from services.langfuse_helper import get_user_id()
 
 
 def load_user_reports(user_id):
@@ -23,7 +24,7 @@ def render_reports_center_student():
        # st.warning("⚠︎ Please log in first!")
        # return
     
-    user_id = st.session_state.username
+    user_id = get_user_id()
     load_user_reports(user_id)
 
     st.header("✉ My Reports")
