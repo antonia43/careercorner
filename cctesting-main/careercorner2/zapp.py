@@ -68,7 +68,7 @@ if "username" not in st.session_state:
 if "redirect_to" not in st.session_state:
     st.session_state.redirect_to = None
     
-print("hello world!)
+print("hello world!")
 
 query_params = st.query_params
 
