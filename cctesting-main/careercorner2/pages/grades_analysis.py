@@ -1,13 +1,13 @@
 import streamlit as st
-from langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
+from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
 import os
 import re
 from dotenv import load_dotenv
 import json
 import pandas as pd
-from database import save_report, load_reports
+from utils.database import save_report, load_reports
 from datetime import datetime
-from university_finder import normalize_text
+from pages.university_finder import normalize_text
 import base64
 import mimetypes
 
