@@ -15,7 +15,7 @@ client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 # wrapper for the chat mode with no function calling
 GEMINI_CHAT = LangfuseGeminiWrapper(
     api_key=os.getenv("GOOGLE_API_KEY"),
-    model="gemini-2.5-flash-lite"
+    model="gemini-2.5-flash"
 )
 
 def get_job_listings(role: str, location: str = "Portugal") -> dict:
