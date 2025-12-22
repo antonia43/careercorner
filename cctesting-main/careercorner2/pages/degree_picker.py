@@ -1,14 +1,8 @@
-"""
-degree_picker.py
-Portuguese Student (DGES only) and Non-Portuguese Student (International)
-Strict DGES validation for Portugal
-Career Quiz integration
-Auto-save to database
-"""
+
 
 import streamlit as st
 from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
-from utils.database import save_report
+from utils.database import save_report, load_user_quiz
 from datetime import datetime
 import os
 import re
