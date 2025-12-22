@@ -103,6 +103,8 @@ def render_university_finder():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
+
+    logger = logging.getLogger(__name__)
     
     """
     Finding universities offering the student's chosen degree
@@ -157,7 +159,7 @@ def render_university_finder():
 
     degree_reports = load_reports(user_id, "degree")
     
-    logging.info("Degree reports", degree_reports)
+    logger.info(f"Degree Reports: {degree_reports}")
     
     has_degree_reports = bool(degree_reports)
 
