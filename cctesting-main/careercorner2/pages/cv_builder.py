@@ -16,7 +16,7 @@ from reportlab.lib import colors
 load_dotenv()
 GEMINI = LangfuseGeminiWrapper(
     api_key=os.getenv("GOOGLE_API_KEY"),
-    model="gemini-2.0-flash-exp",
+    model="gemini-2.5-flash",
 )
 
 
