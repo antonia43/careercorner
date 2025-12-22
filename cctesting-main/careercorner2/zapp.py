@@ -37,7 +37,8 @@ if "reports" not in st.session_state:
     }
 
 
-DATA_PATH = Path("data/universities_2025_1f.csv")
+BASE_DIR = Path(__file__).parent
+DATA_PATH = BASE_DIR / "data" / "universities_2025_1f.csv"
 
 
 @st.cache_resource
