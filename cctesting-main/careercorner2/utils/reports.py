@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.database import load_reports, delete_report
-from services.langfuse_helper import get_user_id()
+from services.langfuse_helper import get_user_id
 
 
 def load_user_reports(user_id):
