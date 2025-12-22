@@ -12,13 +12,7 @@ from pages.professional_dashboard import render_professional_dashboard
 from styles import apply_custom_css
 from utils.database import load_user_cv, load_user_quiz
 import warnings
-from streamlit.runtime.scriptrunner import get_script_run_ctx
-
-warnings.filterwarnings("ignore", category=UserWarning)
-st._suppress_warnings(["session_state"])
-if get_script_run_ctx():
-    ctx = get_script_run_ctx()
-    ctx._suppress_warnings(["session_state"])
+warnings.filterwarnings("ignore", message=".*Session State.*|.*widget with key.*")
 
 
 st.set_page_config(
