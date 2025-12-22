@@ -227,9 +227,15 @@ def log_user_feedback(trace_id: str, score: float, comment: str = None):
 
 
 def get_user_id():
-    """Helper to get current user ID from session state"""
-    user = st.session_state.get("user", {})
-    return st.session_state.username
+    # Try multiple sources, fallback to email
+    return (
+        st.session_state.get("user_id") or 
+        st.session_state.get("username") or
+        st.session_state.user.get("email") or  # Full email as fallback
+        st.session_state.user.get("display_name") or
+        "anonymous"
+    )
+
 
 
 def get_session_id():
