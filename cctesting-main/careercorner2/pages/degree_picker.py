@@ -33,8 +33,6 @@ def _sector_with_other(label: str, key_prefix: str, default: str | None = None):
 def render_degree_picker():
     st.header("Interactive Degree Picker")
 
-    print("1")
-
     # step 1 is picking portuguese or international
     if "degree_region" not in st.session_state:
         st.session_state.degree_region = None
@@ -57,8 +55,6 @@ def render_degree_picker():
 
         return
 
-    print("2")
-
     # showing selected profile
     region_label = (
         "Portuguese Student (DGES only)"
@@ -73,13 +69,10 @@ def render_degree_picker():
 
     st.divider()
 
-    print("3")
-
     if "use_manual_sector" not in st.session_state:
         st.session_state.use_manual_sector = False
 
     # loading career quiz reports from database
-
 
     user_id = get_user_id()
 
@@ -87,8 +80,6 @@ def render_degree_picker():
         st.session_state.get("quiz_result")
         or st.session_state.get("career_quiz_final_report")
     )
-
-    print(f"debug: {quiz_result}")
     
     if not quiz_result:
         quiz_result = load_user_quiz(user_id)  # returns dict if you used json.loads
