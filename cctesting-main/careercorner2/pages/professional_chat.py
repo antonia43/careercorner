@@ -8,7 +8,6 @@ from services.langfuse_helper import (
     log_user_feedback,
 )
 
-
 load_dotenv()
 
 def render_dashboard_chat():
@@ -42,10 +41,10 @@ def render_dashboard_chat():
     
     col1, col2 = st.columns([3, 1])
     with col2:
-        if st.button("⟲ Start Over", key="prof_reset"):
+        if st.button("⟲ Start Over"):
             st.session_state.professional_chat_history = []
-            st.session_state.professional_conversation_turn = 0
-            st.session_state.professional_recommended_option = None
+            st.session_state.conversation_turn = 0
+            st.session_state.recommended_option = None
             if "professional_trace_ids" in st.session_state:
                 st.session_state.professional_trace_ids = []
             st.rerun()
@@ -57,19 +56,16 @@ def render_dashboard_chat():
         st.error("GOOGLE_API_KEY not found in your .env file.")
         return
 
-    # initialising langfuse wrapped gemini client
     gemini_client = LangfuseGeminiWrapper(
         api_key=api_key,
         model="gemini-2.5-flash"
     )
     
-    # getting user and session ids for tracing
     user_id = get_user_id()
     session_id = get_session_id()
     
-    # initialising conversation counter
-    if "professional_conversation_turn" not in st.session_state:
-        st.session_state.professional_conversation_turn = 0
+    if "conversation_turn" not in st.session_state:
+        st.session_state.conversation_turn = 0
     
     if "professional_chat_history" not in st.session_state:
         st.session_state.professional_chat_history = []
@@ -77,19 +73,18 @@ def render_dashboard_chat():
     user_input = st.chat_input("Ask Career Corner Assistant anything about your career!", key="prof_chat_input")
     
     if user_input:
-        st.session_state.professional_conversation_turn += 1
+        st.session_state.conversation_turn += 1
         st.session_state.professional_chat_history.append({
             "role": "user", 
             "content": user_input
         })
 
-        # building conversation context for the AI
         conversation_context = "\n".join([
             f"{msg['role'].upper()}: {msg['content']}" 
-            for msg in st.session_state.professional_chat_history[-4:] #last 4 messages for context
+            for msg in st.session_state.professional_chat_history[-4:]
         ])
 
-        system_instruction = f"""You are Career Corner Assistant, a friendly career counselor for professionals.
+        system_instruction = f"""You are Career Corner Assistant, a friendly career counselor.
 
 **STRICT RULES:**
 1. Ask 5+ natural questions FIRST - NO tool names before turn 6
@@ -108,13 +103,12 @@ Have completely natural conversations like talking to a colleague about career.
 
 TOOLS (recommend ONLY after 5 questions): CV Analysis, Career Growth, Your Next Steps, Interview Prep, CV Builder, My Reports
 
-Current turn: {st.session_state.professional_conversation_turn}
+Current turn: {st.session_state.conversation_turn}
 Previous context:
 {conversation_context}
 """
 
         try:
-            # generating response with langfuse tracing
             ai_message = gemini_client.generate_content(
                 prompt=user_input,
                 system_instruction=system_instruction,
@@ -124,12 +118,11 @@ Previous context:
                 metadata={
                     "conversation_type": "professional_dashboard_assistant",
                     "user_type": "professional",
-                    "turn": st.session_state.professional_conversation_turn,
+                    "turn": st.session_state.conversation_turn,
                     "message_count": len(st.session_state.professional_chat_history)
                 }
             )
             
-            # storing the trace ID for potential feedback
             current_trace_id = gemini_client.last_trace_id
             if "professional_trace_ids" not in st.session_state:
                 st.session_state.professional_trace_ids = []
@@ -144,62 +137,39 @@ Previous context:
             "content": ai_message
         })
 
-        # checking if AI made a recommendation
         options = ["CV Analysis", "Career Growth", "Your Next Steps", "Interview Prep", "CV Builder", "My Reports"]
         matched = [opt for opt in options if opt in ai_message]
 
         if len(matched) == 1 and "would suit you best" in ai_message.lower():
-            st.session_state.professional_recommended_option = matched[0]
-            # logging successful recommendation to langfuse
+            st.session_state.recommended_option = matched[0]
             if current_trace_id:
                 log_user_feedback(
                     current_trace_id, 
                     score=1.0, 
-                    comment=f"Recommended: {matched[0]} after {st.session_state.professional_conversation_turn} turns"
+                    comment=f"Recommended: {matched[0]} after {st.session_state.conversation_turn} turns"
                 )
         else:
-            st.session_state.professional_recommended_option = None
+            st.session_state.recommended_option = None
         
-        # checking if AI suggested student dashboard
         if "student dashboard" in ai_message.lower():
             st.session_state.show_student_redirect = True
 
-    # dsiplaying the messages with feedback buttons
     for idx, msg in enumerate(st.session_state.professional_chat_history):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
-            '''
-            # Add feedback buttons for assistant messages
-            if msg["role"] == "assistant":
-                assistant_message_index = idx // 2
-                
-                if "professional_trace_ids" in st.session_state and assistant_message_index < len(st.session_state.professional_trace_ids):
-                    trace_id = st.session_state.professional_trace_ids[assistant_message_index]
-                    
-                    col1, col2, col3 = st.columns([1, 1, 10])
-                    with col1:
-                        if st.button("👍", key=f"prof_thumbs_up_{idx}"):
-                            log_user_feedback(trace_id, score=1.0, comment="Helpful response")
-                            st.success("Thanks!")
-                    with col2:
-                        if st.button("👎", key=f"prof_thumbs_down_{idx}"):
-                            log_user_feedback(trace_id, score=0.0, comment="Not helpful")
-                            st.warning("Thanks for your feedback!")'''
 
-    # showing redirect button if recommendation exists
-    if st.session_state.get("professional_recommended_option") and st.session_state.professional_choice != st.session_state.professional_recommended_option:
+    if st.session_state.get("recommended_option") and st.session_state.professional_choice != st.session_state.recommended_option:
         st.markdown("---")
-        st.success(f"⟡ Ready to get started with **{st.session_state.professional_recommended_option}**?")
+        st.success(f"⟡ Ready to get started with **{st.session_state.recommended_option}**?")
         
         def redirect_to_option():
-            st.session_state.redirect_to = st.session_state.professional_recommended_option
-            st.session_state.professional_recommended_option = None
-            st.session_state.professional_conversation_turn = 0
+            st.session_state.redirect_to = st.session_state.recommended_option
+            st.session_state.recommended_option = None
+            st.session_state.conversation_turn = 0
         
-        if st.button(f"Take me to {st.session_state.professional_recommended_option}", width='stretch', on_click=redirect_to_option, key="prof_redirect_btn"):
+        if st.button(f"Take me to {st.session_state.recommended_option}", width='stretch', on_click=redirect_to_option, key="prof_redirect_btn"):
             st.rerun()
     
-    # showing student dashboard redirect if suggested
     if st.session_state.get("show_student_redirect", False):
         st.markdown("---")
         st.info("★ Based on your situation, the Student Dashboard might be more helpful!")
@@ -208,7 +178,7 @@ Previous context:
         def go_to_student():
             st.session_state.user_type = "student"
             st.session_state.show_student_redirect = False
-            st.session_state.professional_conversation_turn = 0
+            st.session_state.conversation_turn = 0
         
         def stay_professional():
             st.session_state.show_student_redirect = False
@@ -219,3 +189,4 @@ Previous context:
         with col2:
             if st.button("Stay on Professional Dashboard", width='stretch', on_click=stay_professional, key="stay_prof_btn"):
                 st.rerun()
+
