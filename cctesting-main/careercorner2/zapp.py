@@ -238,16 +238,17 @@ if (
         "My Reports"
     ]
 
-    # handling redirects BEFORE initializing session state
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in STUDENT_OPTIONS:
         current = redirect_target
-        del st.session_state.redirect_to
+        if "redirect_to" in st.session_state:
+            del st.session_state.redirect_to
+            st.rerun()
     else:
         current = st.session_state.get("student_choice", "Dashboard")
         if current not in STUDENT_OPTIONS:
             current = "Dashboard"
-
+    
     choice = st.sidebar.radio(
         "Go to:",
         STUDENT_OPTIONS,
