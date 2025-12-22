@@ -18,8 +18,6 @@ from pages.student_dashboard import render_student_dashboard
 
 
 
-# page + global styling
-
 st.set_page_config(
     page_title="Career Corner",
     page_icon="✎ᝰ..",
@@ -39,10 +37,7 @@ if "reports" not in st.session_state:
     }
 
 
-# loading DGES data once
-
-BASE_DIR = Path(__file__).parent
-DATA_PATH = BASE_DIR / "data" / "universities_2025_1f.csv"
+DATA_PATH = Path("data/universities_2025_1f.csv")
 
 
 @st.cache_resource
@@ -59,8 +54,6 @@ if st.session_state["universities_df"].empty and not DATA_PATH.exists():
     st.error("DGES data not found")
 
 
-# DB + session init
-
 conn = init_db()
 
 if "user_type" not in st.session_state:
@@ -74,8 +67,6 @@ if "username" not in st.session_state:
 if "redirect_to" not in st.session_state:
     st.session_state.redirect_to = None
 
-
-# Google OAuth callback
 
 query_params = st.query_params
 
@@ -121,8 +112,6 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
         st.warning("Google login failed. Please try again.")
 
 
-# user-type choice
-
 if st.session_state.user_type is None:
     st.markdown('<div class="cc-slide-left-delay">', unsafe_allow_html=True)
     st.title("Welcome to Career Corner")
@@ -163,8 +152,6 @@ if st.session_state.user_type is None:
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-# authentication dialog
-
 @st.dialog("⟡ Welcome to Career Corner!")
 def login_modal():
     st.caption("Please log in or register to continue")
@@ -178,13 +165,9 @@ def login_modal():
     with tab2:
         register_ui()
 
-# if not logged in, show modal OVER the hero, but don't stop yet
 if not st.session_state.get("logged_in") or not st.session_state.user:
     login_modal()
-    # no st.stop(): hero remains visible underneath
 
-
-# after login load persisted data and sidebar
 
 if st.session_state.get("logged_in") and st.session_state.user:
     user_id = get_user_id()
@@ -195,7 +178,7 @@ if st.session_state.get("logged_in") and st.session_state.user:
         elif "cv_data" in stored_cv:
             st.session_state.cv_data = stored_cv["cv_data"]
         else:
-            st.session_state.cv_data = stored_cv #use the whole dict
+            st.session_state.cv_data = stored_cv
 
     quiz_row = load_user_quiz(user_id)
     if quiz_row:
@@ -214,12 +197,7 @@ if st.session_state.get("logged_in") and st.session_state.user:
 
         st.button("Logout", on_click=logout)
         st.markdown("---")
-        #st.markdown("### Analytics")
-        #if st.button("View Langfuse Dashboard"):
-            #st.markdown(f"[Open Langfuse]({os.getenv('LANGFUSE_HOST')})")
 
-
-# student dashboards
 
 if (
     st.session_state.get("logged_in")
@@ -248,7 +226,7 @@ if (
         current = st.session_state.get("student_choice", "Dashboard")
         if current not in STUDENT_OPTIONS:
             current = "Dashboard"
-    
+
     choice = st.sidebar.radio(
         "Go to:",
         STUDENT_OPTIONS,
@@ -260,8 +238,6 @@ if (
 
     render_student_dashboard(choice)
 
-
-# professional dashboard
 
 elif st.session_state.get("logged_in") and st.session_state.user and st.session_state.user_type == "professional":
     st.sidebar.title("Professional Menu")
@@ -276,11 +252,12 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
         "My Reports"
     ]
     
-    # handle redirects without modifying session_state before widget creation
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in PROF_OPTIONS:
         current_prof = redirect_target
-        del st.session_state.redirect_to
+        if "redirect_to" in st.session_state:
+            del st.session_state.redirect_to
+            st.rerun()
     else:
         current_prof = st.session_state.get("professional_choice", "Dashboard")
         if current_prof not in PROF_OPTIONS:
