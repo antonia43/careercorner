@@ -15,7 +15,7 @@ client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 # wrapper for chat mode (no function calling)
 GEMINI_CHAT = LangfuseGeminiWrapper(
     api_key=os.getenv("GOOGLE_API_KEY"),
-    model="gemini-2.5-flash-lite"
+    model="gemini-2.5-flash"
 )
 
 def get_study_resources(subject: str) -> dict:
