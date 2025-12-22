@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 import json
 import tempfile
@@ -235,14 +234,6 @@ def save_report(user_id: str, report_type: str, title: str, content: str, cv_dat
         return None
 
 def load_reports(user_id: str, report_type: str):
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
-
-    logger = logging.getLogger(__name__)
-
-    logger.info(f"load_reports calledwith type {report_type} and user id {user_id}!")
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
@@ -262,10 +253,8 @@ def load_reports(user_id: str, report_type: str):
                 "cv_data": cv_data
             })
         conn.close()
-        logger.info("NO EXCEPTIOM")
         return reports
     except Exception as e:
-        logger.info("EXCEPTION")
         print(f"Error loading reports: {e}")
         return []
 
