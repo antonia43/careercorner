@@ -18,7 +18,7 @@ from utils.database import (
 )
 from services.langfuse_helper import get_user_id
 from datetime import datetime
-print("DEBUG UF: imported load_reports from utils.database")  
+
 
 # Initialize database on module load
 init_database()
@@ -28,7 +28,7 @@ def get_student_admission_average():
     user_id = get_user_id()
     
     try:
-        from utils.database import load_reports
+
         import json
         grades_reports = load_reports(user_id, "grades")
         
@@ -146,7 +146,7 @@ def render_university_finder():
     # loading degree reports from our database
 
     degree_reports = load_reports(user_id, "degree")
-    print("DEBUG UF: calling load_reports for degree")
+
     has_degree_reports = bool(degree_reports)
 
     if not has_degree_reports:
