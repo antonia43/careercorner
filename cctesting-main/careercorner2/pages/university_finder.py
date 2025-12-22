@@ -141,7 +141,7 @@ def render_university_finder():
                     "For now, University Finder only supports Portuguese universities. "
                     "You can still use the Degree Picker and Grades Analysis."
                 )
-        return
+        # return
 
     # loading degree reports from our database
 
