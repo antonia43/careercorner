@@ -272,7 +272,6 @@ def render_student_main_resources():
     st.header("✄ Student Resources")
     st.info("ⓘ In this section you can quickly find study resources, scholarships, exam papers, and CIF tips based on what you type, then use the support chat if you want help planning your next steps or guidance!")
 
-    
     user_id = st.session_state.get("username", "demo_user")
     
     try:
@@ -287,9 +286,8 @@ def render_student_main_resources():
         if has_degree or has_grades or has_unis:
             st.success(f"Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
         else:
-            
-            st.info("ⓘ Try Degree Picker or Grades Analysis first!")
             if not st.session_state.get("redirect_to"):
+                st.info("ⓘ Try Degree Picker or Grades Analysis first!")        
                 col1, col2 = st.columns(2)                                      
                 with col1:                                                      
                     if st.button("← Degree Picker", width='stretch', key="degree_picker_btn"):           
@@ -299,20 +297,9 @@ def render_student_main_resources():
                     if st.button("← Grades Analysis", width='stretch', key="grades_analysis_btn"):     
                         st.session_state.redirect_to = "Grades Analysis"        
                         st.rerun()                                              
-
             return
     except:
-        st.info("ⓘ Try Degree Picker or Grades Analysis first!")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("← Degree Picker", width='stretch'):
-                st.session_state.redirect_to = "Degree Picker"
-                st.rerun()
-        with col2:
-            if st.button("← Grades Analysis", width='stretch'):
-                st.session_state.redirect_to = "Grades Analysis"
-                st.rerun()
-        return
+        pass
     
     st.divider()
     st.caption("ⓘ Try: 'biology resources', 'engineering scholarships', 'CIF 15.2 tips'")
