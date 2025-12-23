@@ -75,21 +75,52 @@ def render_degree_picker():
     # loading career quiz reports from database
 
     user_id = get_user_id()
-
+    
     quiz_result = (
         st.session_state.get("quiz_result")
         or st.session_state.get("career_quiz_final_report")
     )
     
     if not quiz_result:
-        quiz_result = load_user_quiz(user_id)  # returns dict if you used json.loads
-
+        quiz_result = load_user_quiz(user_id)
+    
+    # Safe parsing with error handling
     if quiz_result:
         if isinstance(quiz_result, str):
-            import json
-            quiz_result = json.loads(quiz_result)
+            try:
+                quiz_result = json.loads(quiz_result)
+            except (json.JSONDecodeError, TypeError) as e:
+                st.warning(f"⚠︎ Quiz data format error: {e}")
+                quiz_result = None
         
-        primary_sector = quiz_result.get("sector")
+        # Only proceed if we have valid dict
+        if quiz_result and isinstance(quiz_result, dict):
+            primary_sector = quiz_result.get("sector")
+            sectors_dict = quiz_result.get("sectors", {})
+            sectors_display = quiz_result.get("sectors_display")
+    
+            if sectors_dict:
+                display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
+                selected_display = st.selectbox(
+                    "Sectors from your Career Discovery Quiz:",
+                    display_options,
+                    key="quiz_sector_select",
+                )
+                sector = selected_display.split(" (")[0]
+                st.session_state.recommended_sector = sector
+                st.session_state.recommended_sectors = sectors_dict
+                st.session_state.sectors_display = sectors_display
+            else:
+                sector = primary_sector or "General"
+                st.info(f"Using Career Quiz sector: **{sector}**")
+                st.session_state.recommended_sector = sector
+        else:
+            # Force manual selection if parsing failed
+            quiz_result = None
+    
+    # Continue with manual selection logic if no valid quiz_result
+    if not quiz_result:
+        career_quiz_reports = []
         sectors_dict = quiz_result.get("sectors", {})
         sectors_display = quiz_result.get("sectors_display")
 
