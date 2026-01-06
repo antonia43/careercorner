@@ -79,6 +79,7 @@ def render_degree_picker():
     # 1) Check session_state first (same-session use)
     sectors_dict = st.session_state.get("recommended_sectors")
     primary_sector = st.session_state.get("recommended_sector")
+    sectors_display = st.session_state.get("sectors_display")  # ← Add this line
     
     # 2) If not in session, load from DB (after logout/login)
     if not sectors_dict and not primary_sector:
@@ -101,7 +102,7 @@ def render_degree_picker():
         sector = selected_display.split(" (")[0]
         st.session_state.recommended_sector = sector
         st.session_state.recommended_sectors = sectors_dict
-        st.session_state.sectors_display = sectors_display
+        st.session_state.sectors_display = sectors_display  # Now it's always defined
     elif primary_sector:
         sector = primary_sector
         st.info(f"Using Career Quiz sector: **{sector}**")
