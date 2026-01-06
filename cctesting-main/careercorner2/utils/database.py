@@ -233,6 +233,7 @@ def save_report(user_id: str, report_type: str, title: str, content: str, cv_dat
         print(f"Error saving report: {e}")
         return None
 
+'''
 def load_reports(user_id: str, report_type: str):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -256,6 +257,61 @@ def load_reports(user_id: str, report_type: str):
         return reports
     except Exception as e:
         print(f"Error loading reports: {e}")
+        return []
+'''
+
+def load_reports(user_id: str, report_type: str):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        # Check if cv_json column exists first (safe upgrade)
+        c.execute("PRAGMA table_info(professional_reports)")
+        columns = [col[1] for col in c.fetchall()]
+        has_cv_json = 'cv_json' in columns
+        
+        if has_cv_json:
+            c.execute("""
+                SELECT id, title, content, cv_json
+                FROM professional_reports
+                WHERE user_id = ? AND report_type = ?
+                ORDER BY id DESC
+            """, (user_id, report_type))
+        else:
+            # Fallback if column doesn't exist yet
+            c.execute("""
+                SELECT id, title, content
+                FROM professional_reports
+                WHERE user_id = ? AND report_type = ?
+                ORDER BY id DESC
+            """, (user_id, report_type))
+        
+        rows = c.fetchall()
+        conn.close()
+        
+        reports = []
+        for row in rows:
+            report = {
+                "id": row[0],
+                "title": row[1],
+                "content": row[2],
+            }
+            
+            # Only add cv_data if column exists and has value
+            if has_cv_json and len(row) > 3 and row[3]:
+                try:
+                    report["cv_data"] = json.loads(row[3])
+                except:
+                    report["cv_data"] = None
+            else:
+                report["cv_data"] = None
+            
+            reports.append(report)
+        
+        return reports
+        
+    except Exception as e:
+        print(f"✗ Error loading reports: {e}")
         return []
 
 def delete_report(report_id: int):
@@ -304,6 +360,34 @@ def load_user_quiz(user_id: str):
         return None
     except Exception as e:
         print(f"✗ Error loading quiz: {e}")
+        return None
+
+def load_career_quiz_metadata(user_id: str):
+    """Load latest career quiz cv_data (sectors) for Degree Picker"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("""
+            SELECT cv_data 
+            FROM reports 
+            WHERE user_id = ? AND report_type = 'career_quiz'
+            ORDER BY created_at DESC 
+            LIMIT 1
+        """, (user_id,))
+        
+        result = c.fetchone()
+        conn.close()
+        
+        if result and result[0]:
+            cv_data = result[0]
+            if isinstance(cv_data, str):
+                return json.loads(cv_data)
+            return cv_data
+        
+        return None
+        
+    except Exception as e:
+        print(f"✗ Error loading career quiz metadata: {e}")
         return None
 
 
