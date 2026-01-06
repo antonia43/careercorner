@@ -72,54 +72,42 @@ def render_degree_picker():
     if "use_manual_sector" not in st.session_state:
         st.session_state.use_manual_sector = False
 
-    # loading career quiz reports from database
 
+    # loading career quiz reports from database
     user_id = get_user_id()
     
-    quiz_result = (
-        st.session_state.get("quiz_result")
-        or st.session_state.get("career_quiz_final_report")
-    )
+    # 1) Check session_state first (same-session use)
+    sectors_dict = st.session_state.get("recommended_sectors")
+    primary_sector = st.session_state.get("recommended_sector")
     
-    if not quiz_result:
-        quiz_result = load_user_quiz(user_id)
-    
-    # Safe parsing with error handling
-    if quiz_result:
-        if isinstance(quiz_result, str):
-            try:
-                quiz_result = json.loads(quiz_result)
-            except (json.JSONDecodeError, TypeError) as e:
-                st.warning(f"⚠︎ Quiz data format error: {e}")
-                quiz_result = None
+    # 2) If not in session, load from DB (after logout/login)
+    if not sectors_dict and not primary_sector:
+        from utils.database import load_career_quiz_metadata
+        quiz_result = load_career_quiz_metadata(user_id)
         
-        # Only proceed if we have valid dict
         if quiz_result and isinstance(quiz_result, dict):
             primary_sector = quiz_result.get("sector")
             sectors_dict = quiz_result.get("sectors", {})
             sectors_display = quiz_result.get("sectors_display")
     
-            if sectors_dict:
-                display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
-                selected_display = st.selectbox(
-                    "Sectors from your Career Discovery Quiz:",
-                    display_options,
-                    key="quiz_sector_select",
-                )
-                sector = selected_display.split(" (")[0]
-                st.session_state.recommended_sector = sector
-                st.session_state.recommended_sectors = sectors_dict
-                st.session_state.sectors_display = sectors_display
-            else:
-                sector = primary_sector or "General"
-                st.info(f"Using Career Quiz sector: **{sector}**")
-                st.session_state.recommended_sector = sector
-        else:
-            # Force manual selection if parsing failed
-            quiz_result = None
-    
-    # Manual fallback if no quiz data
-    if not quiz_result:
+    # 3) Display sector selection if we have data
+    if sectors_dict:
+        display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
+        selected_display = st.selectbox(
+            "Sectors from your Career Discovery Quiz:",
+            display_options,
+            key="quiz_sector_select",
+        )
+        sector = selected_display.split(" (")[0]
+        st.session_state.recommended_sector = sector
+        st.session_state.recommended_sectors = sectors_dict
+        st.session_state.sectors_display = sectors_display
+    elif primary_sector:
+        sector = primary_sector
+        st.info(f"Using Career Quiz sector: **{sector}**")
+        st.session_state.recommended_sector = sector
+    else:
+        # Manual fallback if no quiz data
         st.info("Select your sector of interest")
         sector = _sector_with_other("Interested in:", "manual_noquiz")
         st.session_state.recommended_sector = sector
