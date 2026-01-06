@@ -329,7 +329,7 @@ OUTPUT FORMAT (strict markdown):
 
 def render_final_report():
     st.markdown("---")
-    st.header("Your Career Discovery Results")
+    # st.header("Your Career Discovery Results")
     
     report = st.session_state.career_quiz_final_report
     st.markdown(report)
