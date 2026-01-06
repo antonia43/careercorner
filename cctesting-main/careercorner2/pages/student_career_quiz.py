@@ -345,7 +345,11 @@ def render_final_report():
                     report_type="career_quiz",
                     title=f"Career Quiz - {sector} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
                     content=report,
-                    cv_data=None
+                    cv_data={
+                        "sector": st.session_state.get("recommended_sector"),
+                        "sectors": st.session_state.get("recommended_sectors"),
+                        "sectors_display": st.session_state.get("sectors_display"),
+                    },
                 )
                 
                 st.session_state.career_quiz_saved = True
