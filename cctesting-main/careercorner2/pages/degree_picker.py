@@ -118,87 +118,11 @@ def render_degree_picker():
             # Force manual selection if parsing failed
             quiz_result = None
     
-    # Continue with manual selection logic if no valid quiz_result
+    # Manual fallback if no quiz data
     if not quiz_result:
-        career_quiz_reports = []
-        sectors_dict = quiz_result.get("sectors", {})
-        sectors_display = quiz_result.get("sectors_display")
-
-
-        # if sectors_dict exists, let user pick between them
-        if sectors_dict:
-            display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
-            selected_display = st.selectbox(
-                "Sectors from your Career Discovery Quiz:",
-                display_options,
-                key="quiz_sector_select",
-            )
-            sector = selected_display.split(" (")[0]
-            st.session_state.recommended_sector = sector
-            st.session_state.recommended_sectors = sectors_dict
-            st.session_state.sectors_display = sectors_display
-        else:
-            # Fallback to primary sector only
-            sector = primary_sector or "General"
-            st.info(f"Using your Career Quiz primary sector: **{sector}**")
-            st.session_state.recommended_sector = sector
-
-    else:
-
-        career_quiz_reports = []
-        if "username" in st.session_state and st.session_state.username:
-            try:
-                from utils.database import load_reports
-                career_quiz_reports = load_reports(st.session_state.username, "career_quiz")
-            except:
-                pass
-
-        has_career_quiz_reports = bool(career_quiz_reports)
-
-        if not has_career_quiz_reports:
-            st.info("Select your sector of interest")
-            sector = _sector_with_other("Interested in:", "manual_noquiz")
-            st.session_state.recommended_sector = sector
-        else:
-            report_titles = [r["title"] for r in career_quiz_reports]
-            selected_report_title = st.selectbox(
-                "Pick a saved Career Quiz report:",
-                ["Use manual selection"] + report_titles,
-                key="career_quiz_report_select"
-            )
-            
-            if selected_report_title == "Use manual selection":
-                st.session_state.use_manual_sector = True
-                sector = _sector_with_other("Pick sector:", "manual_select")
-                st.session_state.recommended_sector = sector
-            else:
-                selected_report = next(r for r in career_quiz_reports if r["title"] == selected_report_title)
-                report_content = selected_report["content"]
-                
-                sector_pattern = r'\*\*([A-Za-z\s&]+)\*\*\s*-\s*(\d+)%'
-                sector_matches = re.findall(sector_pattern, report_content)
-                
-                if sector_matches:
-                    sectors_dict = {s.strip(): int(p) for s, p in sector_matches}
-                    sector_display = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
-                    
-                    selected_display = st.selectbox(
-                        f"Sectors in '{selected_report_title}':",
-                        sector_display,
-                        key="report_sector_select"
-                    )
-                    
-                    sector = selected_display.split(" (")[0]
-                    st.session_state.recommended_sector = sector
-                    st.session_state.recommended_sectors = sectors_dict
-                    st.session_state.sectors_display = ", ".join(sector_display)
-                    st.session_state.use_manual_sector = False
-                else:
-                    st.warning("⚠︎ Could not extract sectors from this report")
-                    st.session_state.use_manual_sector = True
-                    sector = _sector_with_other("Pick sector:", "manual_fallback")
-                    st.session_state.recommended_sector = sector
-
+        st.info("Select your sector of interest")
+        sector = _sector_with_other("Interested in:", "manual_noquiz")
+        st.session_state.recommended_sector = sector
 
     st.write("Answer 5–7 yes/no questions → get a personalized degree report!")
 
