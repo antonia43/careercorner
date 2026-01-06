@@ -368,10 +368,10 @@ def load_career_quiz_metadata(user_id: str):
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("""
-            SELECT cv_data 
-            FROM reports 
+            SELECT cv_json 
+            FROM professional_reports 
             WHERE user_id = ? AND report_type = 'career_quiz'
-            ORDER BY created_at DESC 
+            ORDER BY id DESC 
             LIMIT 1
         """, (user_id,))
         
@@ -379,10 +379,7 @@ def load_career_quiz_metadata(user_id: str):
         conn.close()
         
         if result and result[0]:
-            cv_data = result[0]
-            if isinstance(cv_data, str):
-                return json.loads(cv_data)
-            return cv_data
+            return json.loads(result[0])
         
         return None
         
