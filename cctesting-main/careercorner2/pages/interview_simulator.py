@@ -92,7 +92,7 @@ def render_interview_personalization():
     # only setting interview_cover, interview_cv already set above
     st.session_state.interview_cover = cover_text
 
-    st.markdown("---")
+    # st.markdown("---")
     nav1, nav2 = st.columns(2)
     with nav1:
         if st.button("✍︎ Build / Improve my CV", width='stretch'):
