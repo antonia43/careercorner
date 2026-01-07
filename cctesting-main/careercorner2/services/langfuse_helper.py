@@ -108,6 +108,92 @@ class LangfuseGeminiWrapper:
         )
         
         return response.text
+    
+    def generate_content_multimodal(
+        self, 
+        prompt: str, 
+        file_data: bytes, 
+        mime_type: str,
+        system_instruction: str = None,
+        temperature: float = 0.3,
+        user_id: str = None,
+        session_id: str = None,
+        metadata: dict = None
+    ):
+        """Generate content with multimodal input (file + text) with Langfuse tracing"""
+        
+        if LANGFUSE_ENABLED:
+            try:
+                print(f"🔵 Creating multimodal generation with v3 API")
+                
+                with langfuse.start_as_current_observation(
+                    as_type="generation",
+                    name="gemini_generate_content_multimodal",
+                    model=self.model,
+                    input={"prompt": prompt, "mime_type": mime_type},
+                    metadata={
+                        "temperature": temperature,
+                        "system_instruction": system_instruction,
+                        "mime_type": mime_type,
+                        **(metadata or {})
+                    }
+                ) as generation:
+                    
+                    config = types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=temperature,
+                    )
+                    
+                    contents = [
+                        types.Part.from_bytes(data=file_data, mime_type=mime_type),
+                        prompt
+                    ]
+                    
+                    response = self.client.models.generate_content(
+                        model=self.model,
+                        contents=contents,
+                        config=config,
+                    )
+                    
+                    output_text = response.text
+                    
+                    generation.update(output=output_text)
+                    
+                    langfuse.update_current_trace(
+                        user_id=user_id,
+                        session_id=session_id,
+                        input={"prompt": prompt, "mime_type": mime_type},
+                        output=output_text
+                    )
+                    
+                    self.last_trace_id = langfuse.get_current_trace_id()
+                    print(f"🟢 Multimodal generation logged with trace ID: {self.last_trace_id}")
+                    
+                    return output_text
+                    
+            except Exception as e:
+                print(f"🔴 Langfuse error: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Fallback if Langfuse disabled or error
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=temperature,
+        )
+        
+        contents = [
+            types.Part.from_bytes(data=file_data, mime_type=mime_type),
+            prompt
+        ]
+        
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=config,
+        )
+        
+        return response.text
 
 
 class LangfuseChatWrapper:
@@ -235,7 +321,6 @@ def get_user_id():
         st.session_state.user.get("display_name") or
         "anonymous"
     )
-
 
 
 def get_session_id():
