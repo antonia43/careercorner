@@ -2,12 +2,11 @@ import os
 import json
 import streamlit as st
 import io
-import PyPDF2
-import docx2txt
 from dotenv import load_dotenv
 from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
 from datetime import datetime
 from utils.database import save_report, save_user_cv, load_reports
+from google.genai import types
 
 load_dotenv()
 
@@ -22,114 +21,66 @@ CV_SCHEMA = {
     "summary": "Summarize this CV in 3 sentences."
 }
 
-def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract readable text from PDF bytes."""
-    pdf_reader = None
-    try:
-        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
-        text = ""
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text.strip()
-    except:
-        return ""
-
-def extract_text_from_docx(file_bytes: bytes) -> str:
-    """Extract text from DOCX bytes."""
-    try:
-        return docx2txt.process(io.BytesIO(file_bytes))
-    except:
-        return ""
-
-def safe_text_extract(file_bytes: bytes, file_name: str) -> str:
-    """Safely extract text from any document type."""
-    file_name = file_name.lower()
-    
-    if file_name.endswith('.pdf'):
-        return extract_text_from_pdf(file_bytes)
-    elif file_name.endswith(('.docx', '.doc')):
-        return extract_text_from_docx(file_bytes)
-    else:
-        try:
-            return str(file_bytes, 'utf-8', errors='ignore').strip()
-        except:
-            return ""
-
-def _process_any_document(cv_text: str, prompt: str) -> str:
-    """Process CV text with Langfuse Gemini."""
+def _extract_structured_multimodal(uploaded_file, schema: dict):
+    """Extract structured CV data using native multimodal processing."""
     GEMINI = LangfuseGeminiWrapper(
         api_key=os.getenv("GOOGLE_API_KEY"), 
         model="gemini-2.5-flash"
     )
     
-    full_prompt = f"{prompt}\n\nCV DATA:\n{cv_text[:8000]}"
-    
-    response = GEMINI.generate_content(
-        prompt=full_prompt,
-        temperature=0.3,
-        user_id=get_user_id(),
-        session_id=get_session_id(),
-        metadata={"type": "cv_feedback"}
-    )
-    
-    if response and hasattr(response, 'strip'):
-        return response.strip()
-    return "No response"
-
-def _extract_structured_from_document(uploaded_file, schema: dict):
-    """Extract structured CV data - NO TRY/EXCEPT."""
-    GEMINI = LangfuseGeminiWrapper(
-        api_key=os.getenv("GOOGLE_API_KEY"), 
-        model="gemini-2.5-flash"
-    )
-    
-    # Reset file pointer and read bytes
     if hasattr(uploaded_file, 'seek'):
         uploaded_file.seek(0)
     file_bytes = uploaded_file.read()
     
-    # Extract readable TEXT
-    cv_text = safe_text_extract(file_bytes, uploaded_file.name)
+    file_name = uploaded_file.name.lower()
+    if file_name.endswith('.pdf'):
+        mime_type = 'application/pdf'
+    elif file_name.endswith('.docx'):
+        mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    elif file_name.endswith('.doc'):
+        mime_type = 'application/msword'
+    elif file_name.endswith('.png'):
+        mime_type = 'image/png'
+    elif file_name.endswith(('.jpg', '.jpeg')):
+        mime_type = 'image/jpeg'
+    else:
+        mime_type = 'application/octet-stream'
     
-    if not cv_text or len(cv_text.strip()) < 50:
-        return {
-            "success": False, 
-            "error": "No readable text found. Try a text-based PDF (not scanned image)."
-        }
-    
-    st.info(f"Extracted {len(cv_text)} chars of text from {uploaded_file.name}")
+    st.info(f"Processing {uploaded_file.name} as {mime_type}")
     
     results = {}
     for key, question in schema.items():
         prompt = f"""
-Extract ONLY this information from the CV below:
+Analyze this CV document and extract ONLY this information:
 "{question}"
-
-CV CONTENT:
-{cv_text[:6000]}
 
 Return ONLY the extracted value. If not found, return "Not found".
 """
         
-        response = GEMINI.generate_content(
-            prompt=prompt,
-            temperature=0.1,
-            user_id=get_user_id(),
-            session_id=get_session_id(),
-            metadata={"type": "cv_extraction", "field": key}
-        )
-        
-        extracted = "Not found"
-        if response:
-            if hasattr(response, 'strip'):
-                cleaned = response.strip().replace("``````", "")
-                extracted = cleaned if cleaned else "Not found"
-            else:
-                extracted = str(response)[:500]
-        
-        results[key] = extracted
+        try:
+            response = GEMINI.generate_content_multimodal(
+                prompt=prompt,
+                file_data=file_bytes,
+                mime_type=mime_type,
+                temperature=0.1,
+                user_id=get_user_id(),
+                session_id=get_session_id(),
+                metadata={"type": "cv_extraction", "field": key}
+            )
+            
+            extracted = "Not found"
+            if response:
+                if hasattr(response, 'strip'):
+                    cleaned = response.strip().replace("```", "")
+                    extracted = cleaned if cleaned else "Not found"
+                else:
+                    extracted = str(response)[:500]
+            
+            results[key] = extracted
+            
+        except Exception as e:
+            st.warning(f"Error extracting {key}: {str(e)}")
+            results[key] = "Error"
     
     return {"success": True, "data": results}
 
@@ -161,40 +112,38 @@ def render_cv_analysis():
             for i, (key, value) in enumerate(st.session_state.cv_data.items()):
                 col = col1 if i % 2 == 0 else col2
                 with col:
-                    st.write(f"{key.replace('_', ' ').title()}: {value[:200]}{'...' if len(value) > 200 else ''}")
+                    st.write(f"**{key.replace('_', ' ').title()}:** {value[:200]}{'...' if len(value) > 200 else ''}")
         else:
             st.error("CV not found in reports!")
             return
     
     else:
         uploaded = st.file_uploader(
-            "Upload your CV (PDF, DOCX recommended)", 
-            type=["pdf", "docx", "txt"],
+            "Upload your CV (PDF, DOCX, images supported)", 
+            type=["pdf", "docx", "doc", "png", "jpg", "jpeg"],
             key="cv_upload_file"
         )
         
         if not uploaded:
-            st.info("Upload your CV to get instant structured analysis!")
+            st.info("Upload your CV to get instant analysis!")
             st.markdown("""
-            Tips for best results:
-            - Use text-based PDFs (not scanned images)
-            - DOCX files work perfectly
-            - Max 10MB file size
+            Supported formats:
+            - PDFs (scanned or text-based)
+            - DOCX/DOC files
+            - Images (PNG, JPG, JPEG)
+            - Analyzes text, images, tables, charts, and formatting
             """)
             return
         
-        with st.spinner("Analyzing your CV..."):
+        with st.spinner("Analyzing your CV multimodally..."):
             st.success(f"Uploaded: {uploaded.name} ({uploaded.size/1024:.1f} KB)")
             
-
-            results = _extract_structured_from_document(uploaded, CV_SCHEMA)
+            results = _extract_structured_multimodal(uploaded, CV_SCHEMA)
             
             if not results.get("success"):
                 st.error(f"{results.get('error', 'Could not process CV.')}")
-                st.info("Try: Convert to DOCX or use text-selectable PDF")
                 return
             
-
             cv_data = {
                 "full_name": results["data"].get("full_name", "Not found"),
                 "email": results["data"].get("email", ""),
@@ -207,19 +156,16 @@ def render_cv_analysis():
             }
             st.session_state.cv_data = cv_data
             
-
             save_user_cv(user_id, cv_data)
         
-
         st.subheader("Extracted Information")
         col1, col2 = st.columns(2)
         for i, (key, value) in enumerate(st.session_state.cv_data.items()):
             col = col1 if i % 2 == 0 else col2
             with col:
-                st.markdown(f"{key.replace('_', ' ').title()}:")
+                st.markdown(f"**{key.replace('_', ' ').title()}:**")
                 st.write(value[:300] + ("..." if len(value) > 300 else ""))
     
-
     st.subheader("Professional Feedback")
     
     if st.button("Generate Full Analysis", use_container_width=True, type="primary"):
@@ -229,28 +175,42 @@ def render_cv_analysis():
             
         with st.spinner("Generating professional analysis..."):
             cv_text = json.dumps(st.session_state.cv_data, indent=2, ensure_ascii=False)
-            feedback_prompt = """
+            feedback_prompt = f"""
 Analyze this CV data for job applications and provide:
+
 1. Strengths - What stands out positively
 2. Areas for Improvement - Actionable suggestions  
-3. Overall Score - 1-10 with justification
+3. Overall Score - Rate 1-10 with detailed justification
 4. Tailoring Tips - How to customize for target roles
 
 Be specific, constructive, and professional.
+
+CV DATA:
+{cv_text}
 """
             
-            feedback = _process_any_document(cv_text, feedback_prompt)
-            st.session_state.current_feedback = feedback
+            GEMINI = LangfuseGeminiWrapper(
+                api_key=os.getenv("GOOGLE_API_KEY"), 
+                model="gemini-2.5-flash"
+            )
+            
+            feedback = GEMINI.generate_content(
+                prompt=feedback_prompt,
+                temperature=0.3,
+                user_id=get_user_id(),
+                session_id=get_session_id(),
+                metadata={"type": "cv_feedback"}
+            )
+            
+            st.session_state.current_feedback = feedback if feedback else "No feedback generated"
         
         st.success("Analysis complete!")
     
-
     if hasattr(st.session_state, 'current_feedback') and st.session_state.current_feedback:
         st.markdown("---")
         st.success("Professional Analysis")
         st.markdown(st.session_state.current_feedback)
         
-
         if st.button("Save Analysis to Reports", use_container_width=True):
             report_id = save_report(
                 user_id=user_id,
@@ -262,7 +222,6 @@ Be specific, constructive, and professional.
             st.success("Saved to My Reports!")
             st.rerun()
     
-
     if st.session_state.reports["professional_cv"]:
         with st.expander(f"Previous CV Analyses ({len(st.session_state.reports['professional_cv'])})", expanded=False):
             for report in st.session_state.reports["professional_cv"][:3]:
@@ -271,4 +230,3 @@ Be specific, constructive, and professional.
                     if st.button(f"Load {report['title']}", key=f"load_{report['title']}"):
                         st.session_state.cv_data = report["cv_data"]
                         st.rerun()
-
