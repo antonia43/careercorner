@@ -205,10 +205,10 @@ CV DATA:
             st.session_state.current_feedback = feedback if feedback else "No feedback generated"
         
         st.success("Analysis complete!")
+        st.balloons()
     
     if hasattr(st.session_state, 'current_feedback') and st.session_state.current_feedback:
         st.markdown("---")
-        st.success("Professional Analysis")
         st.markdown(st.session_state.current_feedback)
         
         if st.button("Save Analysis to Reports", use_container_width=True):
