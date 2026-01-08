@@ -289,11 +289,11 @@ def render_student_main_resources():
             st.info("⚠︎ Try Degree Picker or Grades Analysis first!")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("← Degree Picker", key="degree_picker_btn", use_container_width=True):
+                if st.button("← Degree Picker", key="degree_picker_btn", width='stretch'):
                     st.session_state.redirect_to = "Degree Picker"
                     st.rerun()
             with col2:
-                if st.button("← Grades Analysis", key="grades_analysis_btn", use_container_width=True):
+                if st.button("← Grades Analysis", key="grades_analysis_btn", width='stretch'):
                     st.session_state.redirect_to = "Grades Analysis"
                     st.rerun()
             return
@@ -409,7 +409,6 @@ What's on your mind today?"""
         
         with st.chat_message("assistant"):
             with st.spinner("𖦹 Thinking..."):
-                # using wrapper
                 enriched_prompt = f"""{internal_context}
 
 User question: {prompt}
