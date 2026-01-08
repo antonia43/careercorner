@@ -142,7 +142,27 @@ def google_login_button():
     public_url = os.getenv("PUBLIC_URL", "http://localhost:8501")
     auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={public_url}&response_type=code&scope=openid%20email%20profile"
     
-    st.markdown(f'''
-    <style>.gbtn{{background:linear-gradient(135deg,#4285F4 0%,#34A853 50%,#FBBC05 100%);color:white!important;border:none!important;padding:12px;border-radius:8px;font-weight:600;width:100%;box-shadow:0 4px 14px rgba(66,133,244,.4)}}.gbtn:hover{{transform:translateY(-2px);box-shadow:0 6px 20px rgba(66,133,244,.6)}}</style>
-    <a href="{auth_url}" target="_self" style="text-decoration:none;display:block;"><button class="gbtn">👤 Google Login</button></a>
-    ''', unsafe_allow_html=True)
+st.markdown(f'''
+    <style>
+    .gbtn{{
+        background: linear-gradient(135deg, #FFD54F 0%, #FFC107 50%, #FF9800 100%);
+        color: #5D4037 !important;
+        border: none !important;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        box-shadow: 0 4px 14px rgba(255, 193, 7, 0.4);
+        transition: all 0.3s ease;
+    }}
+    .gbtn:hover{{
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6);
+        background: linear-gradient(135deg, #FFEB3B 0%, #FFD54F 50%, #FFC107 100%);
+    }}
+    </style>
+    <a href="{auth_url}" target="_self" style="text-decoration:none;display:block;">
+        <button class="gbtn">Google Login</button>
+    </a>
+''', unsafe_allow_html=True)
+
