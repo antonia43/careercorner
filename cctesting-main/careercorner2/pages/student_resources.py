@@ -293,12 +293,14 @@ def render_student_main_resources():
             st.info("💡 Tip: For better personalized advice, try Degree Picker or Grades Analysis first!")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("← Degree Picker", width='stretch'):
-                    st.session_state.redirect_to = "Degree Picker"
+                if st.button("← Degree Picker", width='stretch', key="std_res_to_degree"):
+                    # Don't use redirect_to - directly set student_choice
+                    st.session_state.student_choice = "Degree Picker"
                     st.rerun()
             with col2:
-                if st.button("← Grades Analysis", width='stretch'):
-                    st.session_state.redirect_to = "Grades Analysis"
+                if st.button("← Grades Analysis", width='stretch', key="std_res_to_grades"):
+                    # Don't use redirect_to - directly set student_choice
+                    st.session_state.student_choice = "Grades Analysis"
                     st.rerun()
     except:
         pass
@@ -307,9 +309,9 @@ def render_student_main_resources():
     st.divider()
     st.caption("ⓘ Try: 'biology resources', 'engineering scholarships', 'CIF 15.2 tips'")
     
-    user_query = st.text_input("Quick search:", placeholder="e.g., math study resources")
+    user_query = st.text_input("Quick search:", placeholder="e.g., math study resources", key="std_res_query_input")
     
-    if st.button("⟡ Search", width='stretch'):
+    if st.button("⟡ Search", width='stretch', key="std_res_search_btn"):
         if user_query:
             with st.spinner("Searching..."):
                 enhanced_query = f"""User request: {user_query}
@@ -325,10 +327,10 @@ INSTRUCTIONS:
                 st.markdown(response_text)
     
     st.markdown("---")
-    if st.button("Need more personalized support?", width='stretch', type="secondary"):
+    if st.button("Need more personalized support?", width='stretch', type="secondary", key="std_res_to_chat"):
         st.session_state.resources_mode = "chat"
         st.rerun()
-
+        
 
 def render_student_resources_chat():
     """Supportive student advisor with no function calling, just a chat"""
