@@ -274,6 +274,8 @@ def render_student_main_resources():
 
     user_id = st.session_state.get("username", "demo_user")
     
+    # Check if user has any data (optional recommendation)
+    has_data = False
     try:
         degree_reports = load_reports(user_id, "degree")
         grades_reports = load_reports(user_id, "grades")
@@ -283,20 +285,21 @@ def render_student_main_resources():
         has_grades = len(grades_reports) > 0
         has_unis = len(saved_unis) > 0
         
-        if has_degree or has_grades or has_unis:
+        has_data = has_degree or has_grades or has_unis
+        
+        if has_data:
             st.success(f"✓ Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
         else:
             st.info("💡 Tip: For better personalized advice, try Degree Picker or Grades Analysis first!")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("← Degree Picker", key="degree_picker_btn", width='stretch'):
+                if st.button("← Degree Picker", width='stretch'):
                     st.session_state.redirect_to = "Degree Picker"
                     st.rerun()
             with col2:
-                if st.button("← Grades Analysis", key="grades_analysis_btn", width='stretch'):
+                if st.button("← Grades Analysis", width='stretch'):
                     st.session_state.redirect_to = "Grades Analysis"
                     st.rerun()
-            # Removed return - let them continue even without data
     except:
         pass
     
@@ -304,9 +307,9 @@ def render_student_main_resources():
     st.divider()
     st.caption("ⓘ Try: 'biology resources', 'engineering scholarships', 'CIF 15.2 tips'")
     
-    user_query = st.text_input("Quick search:", placeholder="e.g., math study resources", key="student_quick_search")
+    user_query = st.text_input("Quick search:", placeholder="e.g., math study resources")
     
-    if st.button("⟡ Search", key="student_search_btn", width='stretch'):
+    if st.button("⟡ Search", width='stretch'):
         if user_query:
             with st.spinner("Searching..."):
                 enhanced_query = f"""User request: {user_query}
@@ -322,7 +325,7 @@ INSTRUCTIONS:
                 st.markdown(response_text)
     
     st.markdown("---")
-    if st.button("Need more personalized support?", key="student_chat_mode_btn", width='stretch', type="secondary"):
+    if st.button("Need more personalized support?", width='stretch', type="secondary"):
         st.session_state.resources_mode = "chat"
         st.rerun()
 
@@ -409,6 +412,7 @@ What's on your mind today?"""
         
         with st.chat_message("assistant"):
             with st.spinner("𖦹 Thinking..."):
+                # using wrapper
                 enriched_prompt = f"""{internal_context}
 
 User question: {prompt}
@@ -436,14 +440,14 @@ INSTRUCTIONS:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("⟲ Restart Chat", key="restart_chat_btn", width='stretch'):
+        if st.button("⟲ Restart Chat", width='stretch'):
             st.session_state.student_resources_chat_history = [
                 {"role": "assistant", "content": welcome_message}
             ]
             st.rerun()
     
     with col2:
-        if st.button("← Back to Quick Search", key="back_to_search_btn", width='stretch'):
+        if st.button("← Back to Quick Search", width='stretch'):
             if "resources_mode" in st.session_state:
                 del st.session_state.resources_mode
             st.rerun()
