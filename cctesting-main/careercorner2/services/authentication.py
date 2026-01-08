@@ -144,9 +144,9 @@ def google_login_button():
     st.markdown(f'''
         <style>
         .gbtn{{
-            background: linear-gradient(135deg, #FFD54F 0%, #FFC107 50%, #FF9800 100%);
+            background: #FFD54F;
             color: #5D4037 !important;
-            border: none !important;
+            border: 2px solid #F57C00 !important;
             padding: 12px;
             border-radius: 8px;
             font-weight: 600;
@@ -157,11 +157,13 @@ def google_login_button():
         .gbtn:hover{{
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6);
-            background: linear-gradient(135deg, #FFEB3B 0%, #FFD54F 50%, #FFC107 100%);
+            background: #FFC107;
+            border-color: #E65100;
         }}
         </style>
         <a href="{auth_url}" target="_self" style="text-decoration:none;display:block;">
             <button class="gbtn">👤 Google Login</button>
         </a>
     ''', unsafe_allow_html=True)
+
 
