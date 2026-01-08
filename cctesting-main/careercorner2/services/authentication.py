@@ -140,7 +140,11 @@ def google_login_button():
         return
     
     public_url = os.getenv("PUBLIC_URL", "http://localhost:8501")
-    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={public_url}&response_type=code&scope=openid%20email%20profile"
+    # FIX: Add /callback or /?auth=google to your redirect URI
+    redirect_uri = f"{public_url}/?auth=google"
+    
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={redirect_uri}&response_type=code&scope=openid%20email%20profile"
+    
     st.markdown(f'''
         <style>
         .gbtn{{
@@ -165,5 +169,3 @@ def google_login_button():
             <button class="gbtn">👤 Google Login</button>
         </a>
     ''', unsafe_allow_html=True)
-
-
