@@ -84,7 +84,12 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
     
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-    REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:8501")
+    
+    # Auto-detect environment (same logic)
+    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
+        REDIRECT_URI = os.getenv("REDIRECT_URI")
+    else:
+        REDIRECT_URI = "http://localhost:8501"
     
     token_url = "https://oauth2.googleapis.com/token"
     token_data = {
