@@ -291,17 +291,7 @@ def render_student_main_resources():
             st.success(f"✓ Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
         else:
             st.info("💡 Tip: For better personalized advice, try Degree Picker or Grades Analysis first!")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("← Degree Picker", width='stretch', key="std_res_to_degree"):
-                    # Don't use redirect_to - directly set student_choice
-                    st.session_state.student_choice = "Degree Picker"
-                    st.rerun()
-            with col2:
-                if st.button("← Grades Analysis", width='stretch', key="std_res_to_grades"):
-                    # Don't use redirect_to - directly set student_choice
-                    st.session_state.student_choice = "Grades Analysis"
-                    st.rerun()
+
     except:
         pass
     
