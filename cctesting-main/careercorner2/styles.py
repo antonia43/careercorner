@@ -181,7 +181,6 @@ def apply_custom_css(
         color: #689F38 !important;
         font-weight: 700 !important;
         font-family: 'DM Sans', sans-serif !important;
-        animation: slideUpFadeIn 0.8s ease-out !important;
     }}
 
     h1 {{
