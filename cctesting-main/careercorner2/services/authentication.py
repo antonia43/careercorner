@@ -104,35 +104,7 @@ def require_login():
 def current_user():
     return st.session_state.get("user", None)
 
-'''
-def profile_page(conn=None):
-    require_login()
-    user = current_user()
-    st.header(f"Profile: {user['display_name']}")
-    st.write(f"**Username:** {user['username']}")
-    st.write(f"**Email:** {user['email']}")
 
-    with st.expander("Change Password"):
-        old_pw = st.text_input("Old password", type="password")
-        new_pw = st.text_input("New password", type="password")
-        confirm_pw = st.text_input("Confirm", type="password")
-        if st.button("Update"):
-            if conn is None:
-                conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-            db_user = get_user_by_username(conn, user["username"])
-            if not check_password_hash(db_user["password_hash"], old_pw):
-                st.error("Wrong old password")
-            elif new_pw != confirm_pw:
-                st.error("Passwords don't match")
-            else:
-                new_hash = generate_password_hash(new_pw)
-                c = conn.cursor()
-                c.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, user["id"]))
-                conn.commit()
-                st.success("Password updated!")
-            if conn and not hasattr(conn, '_autocommit'):
-                conn.close()
-'''
 def google_login_button():
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     if not GOOGLE_CLIENT_ID:
