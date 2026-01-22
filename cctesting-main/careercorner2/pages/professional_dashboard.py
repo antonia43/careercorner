@@ -6,7 +6,6 @@ from pages.interview_simulator import render_interview_simulator
 from pages.cv_builder import render_cv_builder
 from pages.professional_chat import render_dashboard_chat
 from utils.reports import render_reports_center_professional
-from services.authentication import profile_page
 
 load_dotenv()
 
@@ -35,6 +34,3 @@ def render_professional_dashboard(choice: str):
     
     elif choice == "My Reports":
         render_reports_center_professional()
-        
-    elif choice == "Profile":
-        profile_page()
