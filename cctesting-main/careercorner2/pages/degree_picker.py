@@ -85,20 +85,6 @@ def render_degree_picker():
     if not sectors_dict and not primary_sector:
         from utils.database import load_career_quiz_metadata
         quiz_result = load_career_quiz_metadata(user_id)
-        
-        # DEBUG: See what we got
-        st.write("🔍 DEBUG user_id:", user_id)
-        st.write("🔍 DEBUG quiz_result:", quiz_result)
-        st.write("🔍 DEBUG type:", type(quiz_result))
-        
-        if quiz_result and isinstance(quiz_result, dict):
-            primary_sector = quiz_result.get("sector")
-            sectors_dict = quiz_result.get("sectors", {})
-            sectors_display = quiz_result.get("sectors_display")
-            
-            st.write("🔍 DEBUG extracted sectors_dict:", sectors_dict)
-            st.write("🔍 DEBUG extracted primary_sector:", primary_sector)
-
 
     
     # 3) Display sector selection if we have data
