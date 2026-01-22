@@ -89,6 +89,10 @@ def render_cv_analysis():
     
     user_id = st.session_state.get("username", "guest")
     
+    # Initialize feedback_saved flag
+    if "feedback_saved" not in st.session_state:
+        st.session_state.feedback_saved = False
+    
     if "reports" not in st.session_state:
         st.session_state.reports = {}
     st.session_state.reports["professional_cv"] = load_reports(user_id, "professional_cv")
@@ -156,6 +160,7 @@ def render_cv_analysis():
             }
             st.session_state.cv_data = cv_data
             
+            # Save CV data to user profile
             save_user_cv(user_id, cv_data)
         
         st.subheader("Extracted Information")
@@ -166,12 +171,16 @@ def render_cv_analysis():
                 st.markdown(f"**{key.replace('_', ' ').title()}:**")
                 st.write(value[:300] + ("..." if len(value) > 300 else ""))
     
+    st.markdown("---")
     st.subheader("Professional Feedback")
     
     if st.button("Generate Full Analysis", use_container_width=True, type="primary"):
         if not hasattr(st.session_state, 'cv_data'):
             st.error("No CV data available!")
             return
+        
+        # Reset saved flag when generating new analysis
+        st.session_state.feedback_saved = False
             
         with st.spinner("Generating professional analysis..."):
             cv_text = json.dumps(st.session_state.cv_data, indent=2, ensure_ascii=False)
@@ -203,30 +212,70 @@ CV DATA:
             )
             
             st.session_state.current_feedback = feedback if feedback else "No feedback generated"
+            
+            # AUTO-SAVE: Save immediately after generation
+            if st.session_state.current_feedback and not st.session_state.feedback_saved:
+                try:
+                    report_id = save_report(
+                        user_id=user_id,
+                        report_type="professional_cv",
+                        title=f"CV Analysis - {st.session_state.cv_data.get('full_name', 'CV')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                        content=st.session_state.current_feedback,
+                        cv_data=st.session_state.cv_data
+                    )
+                    st.session_state.feedback_saved = True
+                    st.success("✓ Analysis complete and saved to My Reports!")
+                    st.balloons()
+                except Exception as e:
+                    st.warning(f"Analysis complete but couldn't auto-save: {e}")
+            else:
+                st.success("Analysis complete!")
+                st.balloons()
         
-        st.success("Analysis complete!")
-        st.balloons()
-    
+        st.rerun()
+
     if hasattr(st.session_state, 'current_feedback') and st.session_state.current_feedback:
         st.markdown("---")
         st.markdown(st.session_state.current_feedback)
         
-        if st.button("Save Analysis to Reports", use_container_width=True):
-            report_id = save_report(
-                user_id=user_id,
-                report_type="professional_cv",
-                title=f"CV Analysis - {st.session_state.cv_data.get('full_name', 'CV')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-                content=st.session_state.current_feedback,
-                cv_data=st.session_state.cv_data
-            )
-            st.success("Saved to My Reports!")
-            st.rerun()
+        if st.session_state.feedback_saved:
+            st.info("🗂️ This analysis has been saved to My Reports")
+        else:
+            # manual save button as fallback (in case auto-save failed)
+            if st.button("🗂️ Save to My Reports", use_container_width=True):
+                try:
+                    report_id = save_report(
+                        user_id=user_id,
+                        report_type="professional_cv",
+                        title=f"CV Analysis - {st.session_state.cv_data.get('full_name', 'CV')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                        content=st.session_state.current_feedback,
+                        cv_data=st.session_state.cv_data
+                    )
+                    st.session_state.feedback_saved = True
+                    st.success("✓ Saved to My Reports!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Could not save: {e}")
     
+    # previous analyses section
+    st.markdown("---")
     if st.session_state.reports["professional_cv"]:
         with st.expander(f"Previous CV Analyses ({len(st.session_state.reports['professional_cv'])})", expanded=False):
             for report in st.session_state.reports["professional_cv"][:3]:
-                with st.expander(report["title"]):
-                    st.write(report.get("summary", "No summary")[:500] + "...")
-                    if st.button(f"Load {report['title']}", key=f"load_{report['title']}"):
-                        st.session_state.cv_data = report["cv_data"]
-                        st.rerun()
+                with st.container():
+                    st.markdown(f"**{report['title']}**")
+                    st.caption(f"Created: {report.get('timestamp', 'N/A')}")
+                    
+                    col1, col2 = st.columns()[7][8]
+                    with col1:
+                        content_preview = report.get("content", "No content")[:200]
+                        st.write(content_preview + ("..." if len(report.get("content", "")) > 200 else ""))
+                    with col2:
+                        if st.button("Load", key=f"load_{report.get('id', report['title'])}", use_container_width=True):
+                            if report.get("cv_data"):
+                                st.session_state.cv_data = report["cv_data"]
+                                st.session_state.current_feedback = report.get("content", "")
+                                st.session_state.feedback_saved = True
+                                st.rerun()
+                    
+                    st.divider()
