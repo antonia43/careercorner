@@ -53,7 +53,7 @@ def login_ui(conn=None):
         user = get_user_by_username(conn, username)
         if user and check_password_hash(user["password_hash"], password):
             st.session_state.logged_in = True
-            st.session_state.username = user["email"]  # For Langfuse
+            st.session_state.username = user["email"]
             st.session_state.user_display_name = user["display_name"]
             st.session_state.user = user
             st.success(f"Welcome back, {user['display_name']}!")
