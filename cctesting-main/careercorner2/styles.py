@@ -202,16 +202,7 @@ def apply_custom_css(
         font-size: 1rem;
     }}
 
-    /* Animations */
-    @keyframes fadeIn {{
-        from {{ opacity: 0; transform: translateY(20px); }}
-        to   {{ opacity: 1; transform: translateY(0); }}
-    }}
 
-    @keyframes slideUpFadeIn {{
-        from {{ opacity: 0; transform: translateY(30px); }}
-        to   {{ opacity: 1; transform: translateY(0); }}
-    }}
 
     /* Hide only menu + footer, not header (keep sidebar toggle) */
     #MainMenu {{visibility: hidden;}}
