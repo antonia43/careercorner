@@ -73,22 +73,26 @@ def render_degree_picker():
     # loading career quiz reports from database
     user_id = get_user_id()
     
-    # 1) Check session_state first (same-session use)
-    sectors_dict = st.session_state.get("recommended_sectors")
-    primary_sector = st.session_state.get("recommended_sector")
+    # 1) Load quiz data from session or database
+    quiz_sectors_dict = st.session_state.get("quiz_recommended_sectors")  # Changed key
+    quiz_primary_sector = st.session_state.get("quiz_recommended_sector")  # Changed key
     sectors_display = st.session_state.get("sectors_display")
 
     # 2) If not in session, load from DB (after logout/login)
-    if not sectors_dict and not primary_sector:
+    if not quiz_sectors_dict and not quiz_primary_sector:
         from utils.database import load_career_quiz_metadata
         quiz_result = load_career_quiz_metadata(user_id)
         if quiz_result:
-            sectors_dict = quiz_result.get("recommended_sectors")
-            primary_sector = quiz_result.get("recommended_sector")
+            quiz_sectors_dict = quiz_result.get("recommended_sectors")
+            quiz_primary_sector = quiz_result.get("recommended_sector")
             sectors_display = quiz_result.get("sectors_display")
+            # Store with quiz_ prefix
+            st.session_state.quiz_recommended_sectors = quiz_sectors_dict
+            st.session_state.quiz_recommended_sector = quiz_primary_sector
+            st.session_state.sectors_display = sectors_display
     
     # Check if we have real quiz data
-    has_quiz_data = bool(sectors_dict or (primary_sector and primary_sector != "Technology"))
+    has_quiz_data = bool(quiz_sectors_dict or quiz_primary_sector)
     
     # Show manual toggle if quiz data exists
     if has_quiz_data and not st.session_state.force_manual_sector:
@@ -99,7 +103,7 @@ def render_degree_picker():
             if st.button("✎ Pick Manually", key="toggle_manual_sector"):
                 st.session_state.force_manual_sector = True
                 st.rerun()
-    elif st.session_state.force_manual_sector:
+    elif st.session_state.force_manual_sector and has_quiz_data:
         col1, col2 = st.columns([3, 1])
         with col1:
             st.info("✎ Manual Selection Mode")
@@ -109,36 +113,34 @@ def render_degree_picker():
                 st.rerun()
     
     # 3) Sector selection logic
-    if st.session_state.force_manual_sector:
-        # User forced manual selection
-        sector = _sector_with_other("Select your sector:", "forced_manual")
-        st.session_state.recommended_sector = sector
+    if st.session_state.force_manual_sector or not has_quiz_data:
+        # Manual selection
+        if not has_quiz_data:
+            st.info("💡 **No Career Quiz data found.** Select your area of interest:")
         
-    elif sectors_dict:
+        sector = _sector_with_other(
+            "Select your sector:" if has_quiz_data else "I'm interested in:", 
+            "manual_sector_picker"
+        )
+        
+    elif quiz_sectors_dict:
         # Multiple sectors from quiz
-        display_options = [f"{s} ({p}%)" for s, p in sectors_dict.items()]
+        display_options = [f"{s} ({p}%)" for s, p in quiz_sectors_dict.items()]
         selected_display = st.selectbox(
             "Sectors from your Career Discovery Quiz:",
             display_options,
             key="quiz_sector_select",
         )
         sector = selected_display.split(" (")[0]
-        st.session_state.recommended_sector = sector
-        st.session_state.recommended_sectors = sectors_dict
-        if sectors_display:
-            st.session_state.sectors_display = sectors_display
             
-    elif primary_sector and primary_sector != "Technology":
-        # Single sector from quiz (not default)
-        sector = primary_sector
+    elif quiz_primary_sector:
+        # Single sector from quiz
+        sector = quiz_primary_sector
         st.info(f"Using Career Quiz sector: **{sector}**")
-        st.session_state.recommended_sector = sector
-        
+    
     else:
-        # No quiz data - always show manual selection
-        st.info("💡 **No Career Quiz data found.** Select your area of interest:")
-        sector = _sector_with_other("I'm interested in:", "manual_noquiz")
-        st.session_state.recommended_sector = sector
+        # Fallback (should never reach here)
+        sector = "Technology"
 
     st.write("Answer 5–7 yes/no questions → get a personalized degree report!")
 
@@ -180,7 +182,6 @@ def render_degree_picker():
             st.rerun()
     else:
         render_interactive_questions(sector)
-
 
 def render_interactive_questions(sector):
     load_dotenv()
