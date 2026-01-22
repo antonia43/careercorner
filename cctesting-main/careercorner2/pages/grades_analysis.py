@@ -77,7 +77,7 @@ def render_student_type_selection():
         - DGES-compatible calculation
         - Course comparison with universities
         """)
-        if st.button("🇵🇹 I'm a Portuguese Student", width='stretch', type="primary", key="btn_portuguese"):
+        if st.button("I'm a Portuguese Student", width='stretch', type="primary", key="btn_portuguese"):
             st.session_state.student_type = "portuguese"
             st.rerun()
     
@@ -88,7 +88,7 @@ def render_student_type_selection():
         - Grade storage for university search
         - No DGES calculation needed
         """)
-        if st.button("🌍 I'm an International Student", width='stretch', type="primary", key="btn_international"):
+        if st.button("I'm an International Student", width='stretch', type="primary", key="btn_international"):
             st.session_state.student_type = "international"
             st.rerun()
 
