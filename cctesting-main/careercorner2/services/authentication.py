@@ -156,26 +156,8 @@ def google_login_button():
     )
     
     st.markdown(f'''
-        <style>
-        .gbtn{{
-            background: #FFD54F;
-            color: #5D4037 !important;
-            border: 2px solid #F57C00 !important;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            width: 100%;
-            box-shadow: 0 4px 14px rgba(255, 193, 7, 0.4);
-            transition: all 0.3s ease;
-        }}
-        .gbtn:hover{{
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6);
-            background: #FFC107;
-            border-color: #E65100;
-        }}
-        </style>
+
         <a href="{auth_url}" target="_self" style="text-decoration:none;display:block;">
-            <button class="gbtn">👤 Google Login</button>
+            <button class="gbtn"> Google Login</button>
         </a>
     ''', unsafe_allow_html=True)
