@@ -139,11 +139,21 @@ def google_login_button():
         st.info("Google login: Add GOOGLE_CLIENT_ID to .env")
         return
     
-    public_url = os.getenv("PUBLIC_URL", "http://localhost:8501")
-    # FIX: Add /callback or /?auth=google to your redirect URI
-    redirect_uri = f"{public_url}/?auth=google"
+    # Auto-detect environment
+    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
+        # Production: Use environment variable
+        redirect_uri = os.getenv("REDIRECT_URI")
+    else:
+        # Local development
+        redirect_uri = "http://localhost:8501"
     
-    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={redirect_uri}&response_type=code&scope=openid%20email%20profile"
+    auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile"
+    )
     
     st.markdown(f'''
         <style>
