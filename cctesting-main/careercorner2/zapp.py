@@ -213,9 +213,9 @@ if (
 
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in STUDENT_OPTIONS:
-        del st.session_state.redirect_to
         st.session_state.student_choice = redirect_target
-        st.rerun()
+        del st.session_state.redirect_to  # Clear it immediately
+        st.rerun(
 
     current = st.session_state.get("student_choice", "Dashboard")
     if current not in STUDENT_OPTIONS:
@@ -246,8 +246,8 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
 
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in PROF_OPTIONS:
-        del st.session_state.redirect_to
         st.session_state.professional_choice = redirect_target
+        del st.session_state.redirect_to
         st.rerun()
 
     current_prof = st.session_state.get("professional_choice", "Dashboard")
