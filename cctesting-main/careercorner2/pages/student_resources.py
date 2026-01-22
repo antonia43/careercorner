@@ -270,7 +270,8 @@ When users ask about study resources, scholarships, exams or CIF tips:
 def render_student_main_resources():
     """Quick student tools with function calling"""
     st.header("✄ Student Resources")
-    st.info("ⓘ Quick search or personalized support chat")
+    st.markdown("""
+    ### Explore some popular searches or start a personalized support chat!)
 
     user_id = st.session_state.get("username", "demo_user")
     
