@@ -7,7 +7,6 @@ from pages.degree_picker import render_degree_picker
 from utils.reports import render_reports_center_student
 from pages.student_resources import render_student_resources
 from pages.university_finder import render_university_finder
-from services.authentication import profile_page
 
 load_dotenv()
 
@@ -81,6 +80,3 @@ def render_student_dashboard(choice: str):
         
     elif choice == "My Reports":
         render_reports_center_student()
-        
-    elif choice == "Profile":
-        profile_page()
