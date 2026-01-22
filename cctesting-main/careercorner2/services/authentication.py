@@ -104,6 +104,7 @@ def require_login():
 def current_user():
     return st.session_state.get("user", None)
 
+'''
 def profile_page(conn=None):
     require_login()
     user = current_user()
@@ -131,7 +132,7 @@ def profile_page(conn=None):
                 st.success("Password updated!")
             if conn and not hasattr(conn, '_autocommit'):
                 conn.close()
-
+'''
 def google_login_button():
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     if not GOOGLE_CLIENT_ID:
