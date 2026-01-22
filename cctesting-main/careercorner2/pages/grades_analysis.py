@@ -67,13 +67,12 @@ def render_grades_analysis():
 def render_student_type_selection():
     """Choose between Portuguese or International student"""
     st.markdown("---")
-    st.subheader("🌍 What type of student are you?")
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
-        ### 🇵🇹 Portuguese Student
+        ### Portuguese Student
         - Portuguese secondary education
         - DGES-compatible calculation
         - Course comparison with universities
@@ -84,7 +83,7 @@ def render_student_type_selection():
     
     with col2:
         st.markdown("""
-        ### 🌍 International Student
+        ### International Student
         - Any international curriculum
         - Grade storage for university search
         - No DGES calculation needed
@@ -101,9 +100,9 @@ def render_input_method_selection():
     student_type = st.session_state.student_type
     
     if student_type == "portuguese":
-        st.info("📋 **Portuguese Student**: Choose how to enter your grades")
+        st.info("**Portuguese Student**: Choose how to enter your grades")
     else:
-        st.info("📋 **International Student**: Choose how to enter your grades")
+        st.info("**International Student**: Choose how to enter your grades")
     
     st.markdown("---")
     
@@ -123,13 +122,13 @@ def render_input_method_selection():
     
     with col2:
         st.markdown("""
-        #### 📤 Upload Document
+        #### ➜] Upload Document
         - Upload transcript/report card
         - AI extracts grades automatically
         - Supports PDF, JPG, PNG
         - ~2 minutes
         """)
-        if st.button("📤 Upload Document", width='stretch', type="primary", key="btn_upload_entry"):
+        if st.button("➜] Upload Document", width='stretch', type="primary", key="btn_upload_entry"):
             st.session_state.grades_input_method = "upload"
             st.rerun()
     
@@ -145,9 +144,9 @@ def save_international_grades():
     
     grades_data = st.session_state.student_grades_data
     
-    st.success("✓ International grades collected!")
+    st.success("✓ Grades collected!")
     
-    st.subheader("📊 Your Grades Summary")
+    st.subheader("☰ Your Grades Summary")
     
     subjects = grades_data.get("subjects", [])
     
@@ -162,7 +161,7 @@ def save_international_grades():
     
     st.markdown("---")
     
-    # Auto-save to database
+    # Auto saving to database
     if "username" in st.session_state and st.session_state.username:
         try:
             report_content = json.dumps({
@@ -184,12 +183,12 @@ def save_international_grades():
             
             st.markdown("---")
             
-            st.info("💡 **Next Steps**: Use your saved grades in University Finder to find matching programs!")
+            st.info("ⓘ **Next Steps**: Use your saved grades in University Finder to find matching programs!")
             
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("🔍 Find Universities", width='stretch', type="primary"):
+                if st.button(" Find Universities", width='stretch', type="primary"):
                     st.session_state.redirect_to = "University Finder"
                     st.rerun()
             
@@ -205,7 +204,7 @@ def save_international_grades():
 def render_file_upload_grades():
     """Upload and extract grades from file - supports both Portuguese and International"""
     
-    st.subheader("📤 Upload Your Grades Document")
+    st.subheader("➜] Upload Your Grades Document")
     
     if st.button("← Back", key="btn_back_from_file_upload", width='stretch'):
         st.session_state.grades_input_method = None
@@ -216,9 +215,9 @@ def render_file_upload_grades():
     student_type = st.session_state.student_type
     
     if student_type == "portuguese":
-        st.info("📋 **Portuguese Student**: Upload your transcript, report card, or grades sheet.")
+        st.info("ⓘ **Portuguese Student**: Upload your transcript, report card, or grades sheet.")
     else:
-        st.info("🌍 **International Student**: Upload any transcript or report card in any language!")
+        st.info("ⓘ **International Student**: Upload any transcript or report card in any language!")
     
     st.write("**Supported formats:** PDF, JPG, PNG, JPEG")
     
@@ -243,13 +242,13 @@ def render_file_upload_grades():
         st.markdown("---")
         
         if st.button("⟡ Extract Grades", width='stretch', type="primary", key="btn_extract_grades"):
-            with st.spinner("🔍 Analyzing document and extracting grades... This may take a moment!"):
+            with st.spinner("Analyzing document and extracting grades... This may take a moment!"):
                 extracted_data = extract_grades_from_file(temp_filename, student_type)
             
             if extracted_data:
                 st.success("✓ Grades extracted successfully!")
                 
-                st.subheader("📊 Extracted Information")
+                st.subheader("☰ Extracted Information")
                 
                 # Show preview based on type
                 if extracted_data.get("student_type") == "portuguese":
@@ -425,7 +424,7 @@ def render_international_grades_input():
     
     st.markdown("---")
     
-    st.info("🌍 Enter all your subjects and grades. They'll be saved for university matching later!")
+    st.info("Enter all your subjects and grades. They'll be saved for university matching later!")
     
     # Initialize
     if "temp_intl_grades" not in st.session_state:
@@ -466,7 +465,7 @@ def render_international_grades_input():
     # Display current subjects
     if st.session_state.temp_intl_grades:
         st.markdown("---")
-        st.subheader(f"📋 {len(st.session_state.temp_intl_grades)} Subjects Added")
+        st.subheader(f"{len(st.session_state.temp_intl_grades)} Subjects Added")
         
         for i, subj in enumerate(st.session_state.temp_intl_grades):
             col1, col2, col3, col4 = st.columns([3, 2, 2, 1])  # FIX: This line was broken
