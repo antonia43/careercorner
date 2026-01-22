@@ -215,7 +215,7 @@ if (
     if redirect_target and redirect_target in STUDENT_OPTIONS:
         st.session_state.student_choice = redirect_target
         del st.session_state.redirect_to  # Clear it immediately
-        st.rerun(
+        st.rerun()
 
     current = st.session_state.get("student_choice", "Dashboard")
     if current not in STUDENT_OPTIONS:
