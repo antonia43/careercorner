@@ -23,7 +23,7 @@ def get_user_by_username(conn, username):
     if row:
         return {
             "id": row[0], "username": row[1], "display_name": row[2],
-            "email": row[3], "password_hash": row[4], "remember_token": row[5]
+            "email": row[3], "password_hash": row[4]
         }
     return None
 
@@ -48,7 +48,6 @@ def login_ui(conn=None):
     st.subheader("Login")
     username = st.text_input("Username/Email", key="login_username").strip().lower()
     password = st.text_input("Password", type="password", key="login_password")
-    remember = st.checkbox("Remember me")
 
     if st.button("Login"):
         user = get_user_by_username(conn, username)
