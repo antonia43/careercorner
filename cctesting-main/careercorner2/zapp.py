@@ -224,8 +224,7 @@ if (
         "Grades Analysis",
         "University Finder",
         "Resources",
-        "My Reports",
-        "Profile"
+        "My Reports"
     ]
 
     redirect_target = st.session_state.get("redirect_to")
@@ -258,8 +257,7 @@ elif st.session_state.get("logged_in") and st.session_state.user and st.session_
         "Interview Prep",
         "CV Builder",
         "Your Next Steps",
-        "My Reports",
-        "Profile"
+        "My Reports"
     ]
 
     redirect_target = st.session_state.get("redirect_to")
