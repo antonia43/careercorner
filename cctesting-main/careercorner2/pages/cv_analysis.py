@@ -135,7 +135,7 @@ def render_cv_analysis():
             """)
             return
         
-        with st.spinner("Analyzing your CV multimodally..."):
+        with st.spinner("𖦹 Analyzing your CV..."):
             st.success(f"Uploaded: {uploaded.name} ({uploaded.size/1024:.1f} KB)")
             
             results = _extract_structured_multimodal(uploaded, CV_SCHEMA)
