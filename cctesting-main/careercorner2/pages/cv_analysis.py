@@ -271,7 +271,7 @@ CV DATA:
                         content_preview = report.get("content", "No content")[:200]
                         st.write(content_preview + ("..." if len(report.get("content", "")) > 200 else ""))
                     with col2:
-                        if st.button("Load", key=f"load_{report.get('id', report['title'])}", use_container_width=True):
+                        if st.button("Load", key=f"load_{report.get('id', report['title'])}", width="stretch"):
                             if report.get("cv_data"):
                                 st.session_state.cv_data = report["cv_data"]
                                 st.session_state.current_feedback = report.get("content", "")
