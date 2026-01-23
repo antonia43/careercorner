@@ -67,7 +67,7 @@ def render_student_main_resources():
             st.session_state.active_tool = "scholarships"
             st.rerun()
         
-        if st.button("Career Options", width="stretch"):
+        if st.button("Career Options", width="stretch", type="primary"):
             st.session_state.active_tool = "careers"
             st.rerun()
     
@@ -76,7 +76,7 @@ def render_student_main_resources():
             st.session_state.active_tool = "wages"
             st.rerun()
         
-        if st.button("❤︎ Support Chat", width="stretch"):
+        if st.button("❤︎ Support Chat", width="stretch", type="primary"):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
