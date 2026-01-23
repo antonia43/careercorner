@@ -46,7 +46,7 @@ def render_main_resources():
             st.session_state.active_pro_tool = "jobs"
             st.rerun()
         
-        if st.button("Networking Guide", width="stretch"):
+        if st.button("Networking Guide", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "networking"
             st.rerun()
     
@@ -55,7 +55,7 @@ def render_main_resources():
             st.session_state.active_pro_tool = "courses"
             st.rerun()
         
-        if st.button("Interview Prep", width="stretch"):
+        if st.button("Interview Prep", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "interview"
             st.rerun()
     
@@ -64,13 +64,13 @@ def render_main_resources():
             st.session_state.active_pro_tool = "wages"
             st.rerun()
         
-        if st.button("Career Chat", width="stretch"):
+        if st.button("Career Chat", width="stretch", type="primary"):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
     st.divider()
     
-    # Display selected tool
+    # display selected tool
     if "active_pro_tool" in st.session_state:
         if st.button("Back to Tools", key="back_to_pro_tools"):
             del st.session_state.active_pro_tool
