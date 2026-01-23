@@ -116,7 +116,7 @@ def render_degree_picker():
     if st.session_state.force_manual_sector or not has_quiz_data:
         # Manual selection
         if not has_quiz_data:
-            st.info("💡 **No Career Quiz data found.** Select your area of interest:")
+            st.info("ⓘ**No Career Quiz data found.** Select your area of interest:")
 
         # Store manual selection separately
         sector = _sector_with_other(
