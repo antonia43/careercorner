@@ -21,7 +21,7 @@ GEMINI_CHAT = LangfuseGeminiWrapper(
 def render_student_main_resources():
     """Main resource hub with tool buttons"""
     st.header("✄ Student Resources")
-    st.markdown("Explore tools and resources to help with your academic journey")
+    st.markdown("Explore tools and resources to help with your academic journey!")
     
     user_id = st.session_state.get("username", "demo_user")
     
