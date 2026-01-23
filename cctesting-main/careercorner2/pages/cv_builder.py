@@ -65,7 +65,7 @@ def render_cv_quiz_builder():
         location = st.text_input("Location (City, Country)", key="cv_location")
 
 
-        if st.button("Next: Education", use_container_width=True, key="next_edu"):
+        if st.button("Next: Education", width="stretch", key="next_edu"):
             st.session_state.cv_quiz_data.update(
                 {"name": name, "email": email, "phone": phone, "location": location}
             )
@@ -83,7 +83,7 @@ def render_cv_quiz_builder():
         years = st.text_input("Years (e.g., 2020–2024):", key="cv_edu_years")
 
 
-        if st.button("Next: Experience", use_container_width=True, key="next_exp"):
+        if st.button("Next: Experience", width="stretch", key="next_exp"):
             st.session_state.cv_quiz_data.setdefault("education", []).append(
                 {"degree": degree, "field": field, "school": school, "years": years}
             )
@@ -106,7 +106,7 @@ def render_cv_quiz_builder():
         )
 
 
-        if st.button("Next: Skills", use_container_width=True, key="next_skills"):
+        if st.button("Next: Skills", width="stretch", key="next_skills"):
             st.session_state.cv_quiz_data.setdefault("work_experience", []).append(
                 {
                     "title": job_title,
@@ -128,7 +128,7 @@ def render_cv_quiz_builder():
         )
 
 
-        if st.button("Next: Achievements", use_container_width=True, key="next_achieve"):
+        if st.button("Next: Achievements", width="stretch", key="next_achieve"):
             skills = [s.strip() for s in skills_input.split(",") if s.strip()]
             st.session_state.cv_quiz_data["skills"] = skills
             st.session_state.cv_quiz_step += 1
@@ -150,7 +150,7 @@ def render_cv_quiz_builder():
                 "Industry:", ["Tech", "Finance", "Marketing", "Healthcare", "Other"], key="cv_industry"
             )
             
-        if st.button("Generate My CV", use_container_width=True, type="primary", key="gen_cv"):
+        if st.button("Generate My CV", width="stretch", type="primary", key="gen_cv"):
             st.session_state.cv_quiz_data.update(
                 {
                     "achievements": [
