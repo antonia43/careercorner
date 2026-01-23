@@ -84,9 +84,6 @@ def render_student_main_resources():
     
     # Display selected tool
     if "active_tool" in st.session_state:
-        if st.button("← Back to Tools", key="back_to_tools"):
-            del st.session_state.active_tool
-            st.rerun()
         
         st.markdown("---")
         
