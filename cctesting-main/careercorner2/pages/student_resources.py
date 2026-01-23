@@ -58,7 +58,7 @@ def render_student_main_resources():
             st.session_state.active_tool = "exams"
             st.rerun()
         
-        if st.button("Study Resources", width="stretch"):
+        if st.button("Study Resources", width="stretch", type="primary"):
             st.session_state.active_tool = "study"
             st.rerun()
     
