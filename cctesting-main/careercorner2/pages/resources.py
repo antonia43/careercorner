@@ -33,15 +33,6 @@ def render_main_resources():
         st.success("Loaded your CV and career data for personalized support")
     else:
         st.info("Complete CV Analysis or Career Quiz for more personalized guidance")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Go to Career Quiz", width='stretch'):
-                st.session_state.redirect_to = "Career Growth"
-                st.rerun()
-        with col2:
-            if st.button("Go to CV Analysis", width='stretch'):
-                st.session_state.redirect_to = "CV Analysis"
-                st.rerun()
     
     st.divider()
     
