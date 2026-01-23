@@ -237,7 +237,7 @@ def render_file_upload_grades():
             f.write(uploaded_file.read())
         
         if file_extension in ['jpg', 'jpeg', 'png']:
-            st.image(temp_filename, caption="Uploaded Document", use_container_width=True)
+            st.image(temp_filename, caption="Uploaded Document", width="stretch")
         
         st.markdown("---")
         
