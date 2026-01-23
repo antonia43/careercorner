@@ -200,7 +200,7 @@ def render_cv_quiz_builder():
                     data=pdf_bytes,
                     file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.pdf",
                     mime="application/pdf",
-                    use_container_width=True
+                    width="stretch"
                 )
             
             with col2:
@@ -210,7 +210,7 @@ def render_cv_quiz_builder():
                     data=cv_json,
                     file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.json",
                     mime="application/json",
-                    use_container_width=True
+                    width="stretch"
                 )
             
             with st.expander("Preview CV Data"):
