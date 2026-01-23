@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 import pandas as pd
 import requests
 import streamlit as st
@@ -74,7 +75,7 @@ if "username" not in st.session_state:
 if "redirect_to" not in st.session_state:
     st.session_state.redirect_to = None
 
-# print("hello world!")
+print("hello world!")
 
 query_params = st.query_params
 
@@ -179,75 +180,84 @@ if st.session_state.get("logged_in") and st.session_state.user:
 
 # ONLY SHOW WELCOME SCREEN IF NO USER TYPE SELECTED
 if st.session_state.user_type is None:
-    # Trigger animations on first render after login
+    # INJECT CSS FIRST (before any content to prevent FOUC)
+    animation_css = """
+    <style>
+    /* Prevent flash of unstyled content */
+    .welcome-fade-up {
+        animation: fadeUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .typewriter-delayed {
+        font-family: DMSans;
+        overflow: hidden;
+        border-right: .15em solid orange;
+        white-space: nowrap;
+        opacity: 0;
+        width: 0;
+        display: inline-block;
+        animation: 
+            fadeIn 0.1s ease-in 0.8s forwards,
+            typing 2s steps(40, end) 1s forwards, 
+            blink-caret .75s step-end infinite 1s;
+    }
+
+    .buttons-fade-up {
+        animation: fadeUp 1s ease-out 2.5s forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+    }
+
+    @keyframes blink-caret {
+        from, to { border-color: transparent }
+        50% { border-color: orange; }
+    }
+    </style>
+    """
+    st.markdown(animation_css, unsafe_allow_html=True)
+
+    # Mark as animated
     if not st.session_state.welcome_animated:
         st.session_state.welcome_animated = True
 
-        # CSS for animations
-        animation_css = """
-        <style>
-        .welcome-fade-up {
-            animation: fadeUp 1s ease-out forwards;
-            opacity: 0;
-        }
-
-        .typewriter-delayed {
-            font-family: DMSans;
-            overflow: hidden;
-            border-right: .15em solid orange;
-            white-space: nowrap;
-            opacity: 0;
-            animation: 
-                fadeIn 0.1s ease-in 0.8s forwards,
-                typing 2s steps(40, end) 1s forwards, 
-                blink-caret .75s step-end infinite 1s;
-        }
-
-        .buttons-fade-up {
-            animation: fadeUp 1s ease-out 2.5s forwards;
-            opacity: 0;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
-        }
-
-        @keyframes blink-caret {
-            from, to { border-color: transparent }
-            50% { border-color: orange; }
-        }
-        </style>
-        """
-        st.markdown(animation_css, unsafe_allow_html=True)
-
-    # Welcome title with fade up
-    st.markdown('<div class="welcome-fade-up">', unsafe_allow_html=True)
-    st.title("Welcome to Career Corner!")
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Welcome title with fade up (using HTML to avoid Streamlit's default rendering)
+    st.markdown("""
+    <div class="welcome-fade-up">
+        <h1>Welcome to Career Corner!</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Typewriter with delay
-    typewriter_html = """
+    st.markdown("""
     <p class="typewriter-delayed">Hi there! Please pick the option that best describes you to begin your career counseling journey!</p>
-    """
-    st.markdown(typewriter_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-    # Buttons with fade up delay
+    # Add spacing
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Buttons with fade up delay - wrap in div BEFORE creating buttons
     st.markdown('<div class="buttons-fade-up">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
