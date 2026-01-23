@@ -174,7 +174,7 @@ def render_cv_analysis():
     st.markdown("---")
     st.subheader("Professional Feedback")
     
-    if st.button("Generate Full Analysis", use_container_width=True, type="primary"):
+    if st.button("Generate Full Analysis", width="stretch", type="primary"):
         if not hasattr(st.session_state, 'cv_data'):
             st.error("No CV data available!")
             return
@@ -242,7 +242,7 @@ CV DATA:
             st.info("🗂️ This analysis has been saved to My Reports")
         else:
             # manual save button as fallback (in case auto-save failed)
-            if st.button("🗂️ Save to My Reports", use_container_width=True):
+            if st.button("🗂️ Save to My Reports", width="stretch"):
                 try:
                     report_id = save_report(
                         user_id=user_id,
