@@ -444,3 +444,27 @@ def render_interview_prep_tool():
                     st.error(f"Error: {results.get('error', 'Unknown error')}")
         else:
             st.warning("Please enter a job role")
+
+def fetch_job_description_from_url(url: str) -> dict:
+    """Fetch and extract job description from a URL using Gemini's URL context tool"""
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"""Extract the complete job description from this URL. 
+            Include: job title, company, responsibilities, requirements, and any other relevant details.
+            Format as clean text.""",
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(url_context=types.UrlContext(url=url))]
+            )
+        )
+        
+        return {
+            "success": True, 
+            "job_description": response.text,
+            "source_url": url
+        }
+    except Exception as e:
+        return {
+            "success": False, 
+            "error": str(e)
+        }
