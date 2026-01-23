@@ -171,7 +171,7 @@ def render_exam_papers_tool():
     st.link_button(
         "Open IAVE Current Exams",
         "https://iave.pt/provas-e-exames/provas-e-exames/provas-e-exames-finais-nacionais-es/",
-        use_container_width=True,
+        width="stretch",
         type="primary"
     )
     
@@ -182,7 +182,7 @@ def render_exam_papers_tool():
     st.link_button(
         "Open IAVE Archive",
         "https://iave.pt/provas-e-exames/arquivo/arquivo-provas-e-exames-finais-nacionais-es/",
-        use_container_width=True,
+        width="stretch",
         type="primary"
     )
     
@@ -220,7 +220,7 @@ def render_scholarships_tool():
             st.link_button(
                 f"Visit {scholarship['name']}",
                 scholarship['url'],
-                use_container_width=True
+                width="stretch"
             )
             st.divider()
 
@@ -236,7 +236,7 @@ def render_study_resources_tool():
         key="study_resources_subject"
     )
     
-    if st.button("Search Study Resources", use_container_width=True, type="primary"):
+    if st.button("Search Study Resources", width="stretch", type="primary"):
         if subject.strip():
             with st.spinner(f"Finding resources for {subject}..."):
                 results = get_study_resources_web(subject.strip())
@@ -265,7 +265,7 @@ def render_career_options_tool():
         key="career_options_course"
     )
     
-    if st.button("Explore Career Options", use_container_width=True, type="primary"):
+    if st.button("Explore Career Options", width="stretch", type="primary"):
         if course.strip():
             with st.spinner(f"Finding careers for {course}..."):
                 results = get_career_options(course.strip())
@@ -304,7 +304,7 @@ def render_wage_finder_tool():
             key="wage_finder_country"
         )
     
-    if st.button("Search Salaries", use_container_width=True, type="primary"):
+    if st.button("Search Salaries", width="stretch", type="primary"):
         if job_title.strip():
             with st.spinner(f"Finding salary data for {job_title}..."):
                 results = get_wage_info(job_title.strip(), country)
@@ -343,7 +343,7 @@ def render_job_search_tool():
             key="job_search_location"
         )
     
-    if st.button("Search Jobs", use_container_width=True, type="primary"):
+    if st.button("Search Jobs", width="stretch", type="primary"):
         if role.strip():
             with st.spinner(f"Searching for {role} jobs in {location}..."):
                 results = get_job_search_results(role.strip(), location)
@@ -372,7 +372,7 @@ def render_course_finder_tool():
         key="course_finder_skill"
     )
     
-    if st.button("Find Courses", use_container_width=True, type="primary"):
+    if st.button("Find Courses", width="stretch", type="primary"):
         if skill.strip():
             with st.spinner(f"Finding courses for {skill}..."):
                 results = get_course_recommendations(skill.strip())
@@ -401,7 +401,7 @@ def render_networking_tool():
         key="networking_industry"
     )
     
-    if st.button("Get Networking Tips", use_container_width=True, type="primary"):
+    if st.button("Get Networking Tips", width="stretch", type="primary"):
         industry_value = industry.strip() if industry.strip() else "general"
         with st.spinner("Generating networking strategies..."):
             results = get_networking_tips(industry_value)
@@ -428,7 +428,7 @@ def render_interview_prep_tool():
         key="interview_prep_role"
     )
     
-    if st.button("Generate Interview Prep", use_container_width=True, type="primary"):
+    if st.button("Generate Interview Prep", width="stretch", type="primary"):
         if role.strip():
             with st.spinner(f"Creating interview guide for {role}..."):
                 results = get_interview_prep(role.strip())
