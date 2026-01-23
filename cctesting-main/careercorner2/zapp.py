@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 import pandas as pd
 import requests
 import streamlit as st
@@ -75,7 +74,7 @@ if "username" not in st.session_state:
 if "redirect_to" not in st.session_state:
     st.session_state.redirect_to = None
 
-print("hello world!")
+# print("hello world!")
 
 query_params = st.query_params
 
@@ -129,15 +128,62 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
 if "welcome_animated" not in st.session_state:
     st.session_state.welcome_animated = False
 
-if st.session_state.user_type is None:
-    # Check if user is logged in to trigger animations
-    is_logged_in = st.session_state.get("logged_in", False) and st.session_state.user
+@st.dialog("⟡ Welcome to Career Corner!")
+def login_modal():
+    st.caption("Please log in or register to continue")
 
-    # Only show animations AFTER login
-    if is_logged_in and not st.session_state.welcome_animated:
+    tab1, tab2 = st.tabs(["Login", "Register"])
+    with tab1:
+        st.write("Sign in with Google:")
+        google_login_button()
+        st.write("Or use local login:")
+        login_ui()
+    with tab2:
+        register_ui()
+
+# SHOW LOGIN MODAL FIRST - Don't render anything else until logged in
+if not st.session_state.get("logged_in") or not st.session_state.user:
+    login_modal()
+    st.stop()  # STOP HERE - Don't render anything below
+
+# NOW USER IS LOGGED IN - Load their data
+if st.session_state.get("logged_in") and st.session_state.user:
+    user_id = get_user_id()
+    stored_cv = load_user_cv(user_id)
+    if stored_cv:
+        if "parsed_data" in stored_cv:
+            st.session_state.cv_data = stored_cv["parsed_data"]
+        elif "cv_data" in stored_cv:
+            st.session_state.cv_data = stored_cv["cv_data"]
+        else:
+            st.session_state.cv_data = stored_cv
+
+    quiz_row = load_user_quiz(user_id)
+    if quiz_row:
+        st.session_state.quiz_result = quiz_row
+
+    with st.sidebar:
+        BASE_DIR = Path(__file__).parent
+        st.image(BASE_DIR / "data" / "careercornermini.png", width='stretch')
+        st.success(f"Logged in as {st.session_state.user['display_name']}")
+
+        def logout():
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.session_state.user_type = None
+            st.session_state.user = None
+            st.session_state.welcome_animated = False  # Reset animation flag
+
+        st.button("Logout", on_click=logout)
+        st.markdown("---")
+
+# ONLY SHOW WELCOME SCREEN IF NO USER TYPE SELECTED
+if st.session_state.user_type is None:
+    # Trigger animations on first render after login
+    if not st.session_state.welcome_animated:
         st.session_state.welcome_animated = True
 
-        # CSS for delayed animations (only when logged in)
+        # CSS for animations
         animation_css = """
         <style>
         .welcome-fade-up {
@@ -190,91 +236,31 @@ if st.session_state.user_type is None:
         """
         st.markdown(animation_css, unsafe_allow_html=True)
 
-        # Welcome title with fade up
-        st.markdown('<div class="welcome-fade-up">', unsafe_allow_html=True)
-        st.title("Welcome to Career Corner!")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Welcome title with fade up
+    st.markdown('<div class="welcome-fade-up">', unsafe_allow_html=True)
+    st.title("Welcome to Career Corner!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-        # Typewriter with delay
-        typewriter_html = """
-        <p class="typewriter-delayed">Hi there! Please pick the option that best describes you to begin your career counseling journey!</p>
-        """
-        st.markdown(typewriter_html, unsafe_allow_html=True)
+    # Typewriter with delay
+    typewriter_html = """
+    <p class="typewriter-delayed">Hi there! Please pick the option that best describes you to begin your career counseling journey!</p>
+    """
+    st.markdown(typewriter_html, unsafe_allow_html=True)
 
-        # Buttons with fade up delay
-        st.markdown('<div class="buttons-fade-up">', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Student", width='stretch', key="btn_student", type="primary"):
-                st.session_state.user_type = "student"
-                st.rerun()
-        with col2:
-            if st.button("Professional", width='stretch', key="btn_professional", type="primary"):
-                st.session_state.user_type = "professional"
-                st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Buttons with fade up delay
+    st.markdown('<div class="buttons-fade-up">', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Student", width='stretch', key="btn_student", type="primary"):
+            st.session_state.user_type = "student"
+            st.rerun()
+    with col2:
+        if st.button("Professional", width='stretch', key="btn_professional", type="primary"):
+            st.session_state.user_type = "professional"
+            st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    else:
-        # Before login: no animations, simple display
-        st.title("Welcome to Career Corner!")
-        st.write("Hi there! Please pick the option that best describes you to begin your career counseling journey!")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Student", width='stretch', key="btn_student", type="primary"):
-                st.session_state.user_type = "student"
-                st.rerun()
-        with col2:
-            if st.button("Professional", width='stretch', key="btn_professional", type="primary"):
-                st.session_state.user_type = "professional"
-                st.rerun()
-
-@st.dialog("⟡ Welcome to Career Corner!")
-def login_modal():
-    st.caption("Please log in or register to continue")
-
-    tab1, tab2 = st.tabs(["Login", "Register"])
-    with tab1:
-        st.write("Sign in with Google:")
-        google_login_button()
-        st.write("Or use local login:")
-        login_ui()
-    with tab2:
-        register_ui()
-
-if not st.session_state.get("logged_in") or not st.session_state.user:
-    login_modal()
-
-if st.session_state.get("logged_in") and st.session_state.user:
-    user_id = get_user_id()
-    stored_cv = load_user_cv(user_id)
-    if stored_cv:
-        if "parsed_data" in stored_cv:
-            st.session_state.cv_data = stored_cv["parsed_data"]
-        elif "cv_data" in stored_cv:
-            st.session_state.cv_data = stored_cv["cv_data"]
-        else:
-            st.session_state.cv_data = stored_cv
-
-    quiz_row = load_user_quiz(user_id)
-    if quiz_row:
-        st.session_state.quiz_result = quiz_row
-
-    with st.sidebar:
-        BASE_DIR = Path(__file__).parent
-        st.image(BASE_DIR / "data" / "careercornermini.png", width='stretch')
-        st.success(f"Logged in as {st.session_state.user['display_name']}")
-
-        def logout():
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.session_state.user_type = None
-            st.session_state.user = None
-            st.session_state.welcome_animated = False  # Reset animation flag
-
-        st.button("Logout", on_click=logout)
-        st.markdown("---")
-
+# STUDENT DASHBOARD
 if (
     st.session_state.get("logged_in")
     and st.session_state.user
@@ -312,6 +298,7 @@ if (
     st.sidebar.button("← Back", on_click=reset)
     render_student_dashboard(choice)
 
+# PROFESSIONAL DASHBOARD
 elif st.session_state.get("logged_in") and st.session_state.user and st.session_state.user_type == "professional":
     st.sidebar.title("Professional Menu")
 
