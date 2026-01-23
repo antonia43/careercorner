@@ -127,7 +127,7 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
 
 if st.session_state.user_type is None:
     st.markdown('<div class="cc-slide-left-delay">', unsafe_allow_html=True)
-    st.title("Welcome to Career Corner")
+    st.title("Welcome to Career Corner!")
     st.markdown("</div>", unsafe_allow_html=True)
     
     typewriter_html = """
