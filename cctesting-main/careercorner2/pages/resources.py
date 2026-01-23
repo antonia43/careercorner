@@ -51,7 +51,7 @@ def render_main_resources():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Job Search", width="stretch"e, type="primary"):
+        if st.button("Job Search", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "jobs"
             st.rerun()
         
