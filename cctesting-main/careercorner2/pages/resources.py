@@ -32,7 +32,7 @@ def render_main_resources():
     if has_cv or has_quiz:
         st.success("Loaded your CV and career data for personalized support")
     else:
-        st.info("Complete CV Analysis or Career Quiz for more personalized guidance")
+        st.info("ⓘ Complete CV Analysis or Career Quiz for more personalized guidance")
     
     st.divider()
     
