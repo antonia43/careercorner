@@ -195,14 +195,14 @@ INSTRUCTIONS:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("Restart Chat", width='stretch'):
+        if st.button("↺ Restart Chat", width='stretch'):
             st.session_state.resources_chat_history = [
                 {"role": "assistant", "content": welcome_message}
             ]
             st.rerun()
     
     with col2:
-        if st.button("Back to Tools", width='stretch'):
+        if st.button("← Back to Tools", width='stretch'):
             if "resources_mode" in st.session_state:
                 del st.session_state.resources_mode
             st.rerun()
