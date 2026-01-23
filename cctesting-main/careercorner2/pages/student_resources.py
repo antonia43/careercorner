@@ -75,7 +75,7 @@ def render_student_main_resources():
             st.session_state.active_tool = "wages"
             st.rerun()
         
-        if st.button("❤︎ Support Chat", width="stretch", type="primary"):
+        if st.button("❤︎ Support Chat", width="stretch"):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
