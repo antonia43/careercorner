@@ -30,7 +30,7 @@ def render_main_resources():
     has_quiz = bool(st.session_state.get("quiz_result"))
     
     if has_cv or has_quiz:
-        st.success("Loaded your CV and career data for personalized support")
+        st.success("Loaded your CV and career data for personalized support!")
     else:
         st.info("ⓘ Complete CV Analysis or Career Quiz for more personalized guidance!")
     
