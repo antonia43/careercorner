@@ -51,29 +51,29 @@ def render_main_resources():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Job Search", use_container_width=True, type="primary"):
+        if st.button("Job Search", width="stretch"e, type="primary"):
             st.session_state.active_pro_tool = "jobs"
             st.rerun()
         
-        if st.button("Networking Guide", use_container_width=True):
+        if st.button("Networking Guide", width="stretch"):
             st.session_state.active_pro_tool = "networking"
             st.rerun()
     
     with col2:
-        if st.button("Course Finder", use_container_width=True, type="primary"):
+        if st.button("Course Finder", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "courses"
             st.rerun()
         
-        if st.button("Interview Prep", use_container_width=True):
+        if st.button("Interview Prep", width="stretch"):
             st.session_state.active_pro_tool = "interview"
             st.rerun()
     
     with col3:
-        if st.button("Wage Finder", use_container_width=True, type="primary"):
+        if st.button("Wage Finder", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "wages"
             st.rerun()
         
-        if st.button("Career Chat", use_container_width=True):
+        if st.button("Career Chat", width="stretch"):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
