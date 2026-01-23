@@ -442,7 +442,7 @@ def render_international_grades_input():
     # Add subjects
     with st.form("intl_grades_form", clear_on_submit=True):
         st.write("**Add Subject:**")
-        col1, col2, col3 = st.columns([3, 2, 1])  # FIX: This line was broken
+        col1, col2, col3 = st.columns([3, 2, 1])
         
         with col1:
             subject_name = st.text_input("Subject Name", placeholder="e.g., Mathematics, Physics", label_visibility="collapsed")
@@ -451,7 +451,7 @@ def render_international_grades_input():
         with col3:
             year = st.selectbox("Year", ["9th", "10th", "11th", "12th", "N/A"], key="intl_year", label_visibility="collapsed")
         
-        submitted = st.form_submit_button("+ Add Subject", use_container_width=True)
+        submitted = st.form_submit_button("+ Add Subject", width="stretch")
         
         if submitted and subject_name.strip() and grade_input.strip():
             new_subject = {
@@ -468,7 +468,7 @@ def render_international_grades_input():
         st.subheader(f"{len(st.session_state.temp_intl_grades)} Subjects Added")
         
         for i, subj in enumerate(st.session_state.temp_intl_grades):
-            col1, col2, col3, col4 = st.columns([3, 2, 2, 1])  # FIX: This line was broken
+            col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
             with col1:
                 st.write(f"**{subj['name']}**")
             with col2:
@@ -476,7 +476,7 @@ def render_international_grades_input():
             with col3:
                 st.write(f"({subj['year']})")
             with col4:
-                if st.button("🗑", key=f"del_intl_{i}", use_container_width=True):
+                if st.button("🗑", key=f"del_intl_{i}", width="stretch"):
                     st.session_state.temp_intl_grades.pop(i)
                     st.rerun()
         
