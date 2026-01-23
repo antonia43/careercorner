@@ -54,29 +54,29 @@ def render_student_main_resources():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Past Exam Papers", use_container_width=True, type="primary"):
+        if st.button("Past Exam Papers", width="stretch", type="primary"):
             st.session_state.active_tool = "exams"
             st.rerun()
         
-        if st.button("Study Resources", use_container_width=True):
+        if st.button("Study Resources", width="stretch"):
             st.session_state.active_tool = "study"
             st.rerun()
     
     with col2:
-        if st.button("Scholarships", use_container_width=True, type="primary"):
+        if st.button("Scholarships",width="stretch", type="primary"):
             st.session_state.active_tool = "scholarships"
             st.rerun()
         
-        if st.button("Career Options", use_container_width=True):
+        if st.button("Career Options", width="stretch"):
             st.session_state.active_tool = "careers"
             st.rerun()
     
     with col3:
-        if st.button("Wage Finder", use_container_width=True, type="primary"):
+        if st.button("Wage Finder", width="stretch", type="primary"):
             st.session_state.active_tool = "wages"
             st.rerun()
         
-        if st.button("❤︎ Support Chat", use_container_width=True):
+        if st.button("❤︎ Support Chat", width="stretch"):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
