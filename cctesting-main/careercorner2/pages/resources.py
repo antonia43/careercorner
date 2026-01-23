@@ -72,9 +72,6 @@ def render_main_resources():
     
     # display selected tool
     if "active_pro_tool" in st.session_state:
-        if st.button("Back to Tools", key="back_to_pro_tools"):
-            del st.session_state.active_pro_tool
-            st.rerun()
         
         st.markdown("---")
         
