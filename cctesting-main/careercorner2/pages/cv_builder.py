@@ -11,7 +11,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib import colors
-
+from utils.tools import fetch_job_description_from_url
 
 load_dotenv()
 GEMINI = LangfuseGeminiWrapper(
@@ -221,7 +221,6 @@ def render_cv_quiz_builder():
 def render_cover_letter():
     st.subheader("Cover Letter Builder")
 
-
     base_cv = st.session_state.get("cv_data") or {}
     has_cv = bool(base_cv)
     use_cv = False
@@ -230,11 +229,51 @@ def render_cover_letter():
     else:
         st.caption("No CV on file yet – you can still generate a letter from the job ad.")
 
-
     profile = base_cv if use_cv else {}
 
+    # ADD THIS: Input method selection
+    input_method = st.radio(
+        "How would you like to provide the job description?",
+        ["Paste text", "Provide URL"],
+        horizontal=True,
+        key="job_desc_method"
+    )
+    
+    job_desc = ""
+    
+    if input_method == "Paste text":
+        job_desc = st.text_area("Paste job description:", height=150, key="cover_job_desc")
+    else:
+        job_url = st.text_input(
+            "Job posting URL:",
+            placeholder="https://example.com/jobs/software-engineer",
+            key="cover_job_url"
+        )
+        
+        if st.button("Fetch Job Description", key="fetch_job_btn"):
+            if job_url.strip():
+                with st.spinner("Reading job posting from URL..."):
+                    # Import the function at the top of the file
+                    from tools import fetch_job_description_from_url
+                    
+                    result = fetch_job_description_from_url(job_url.strip())
+                    
+                    if result["success"]:
+                        job_desc = result["job_description"]
+                        st.session_state.fetched_job_desc = job_desc
+                        st.success("✅ Job description fetched successfully!")
+                        with st.expander("Preview fetched description"):
+                            st.markdown(job_desc)
+                    else:
+                        st.error(f"Failed to fetch: {result.get('error', 'Unknown error')}")
+            else:
+                st.warning("Please enter a valid URL")
+        
+        # Show fetched description if available
+        if "fetched_job_desc" in st.session_state:
+            job_desc = st.session_state.fetched_job_desc
+            st.info(f"Using fetched description ({len(job_desc)} characters)")
 
-    job_desc = st.text_area("Paste job description:", height=150, key="cover_job_desc")
     col1, col2 = st.columns(2)
     with col1:
         tone = st.selectbox("Tone:", ["Professional", "Enthusiastic"], key="cover_tone")
@@ -243,12 +282,10 @@ def render_cover_letter():
             "Length:", ["Short (200 words)", "Standard (350 words)"], key="cover_length"
         )
 
-
     if st.button("Generate Cover Letter", width="stretch", type="primary", key="gen_cover") and job_desc.strip():
         with st.spinner("Writing your letter..."):
             cover_letter = generate_cover_letter(profile, job_desc, tone, length)
             st.session_state.cover_letter = cover_letter
-
 
         content = cover_letter["content"]
         job_title = cover_letter.get("job_title", "role")
@@ -266,8 +303,6 @@ def render_cover_letter():
             mime="text/plain",
             width="stretch"
         )
-        
-
 
 def polish_quiz_cv(quiz_data: dict) -> dict:
     prompt = f"""You are a professional CV writer. Convert this quiz data into a structured JSON CV.
