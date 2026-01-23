@@ -244,7 +244,7 @@ def render_cover_letter():
         )
 
 
-    if st.button("Generate Cover Letter", use_container_width=True, type="primary", key="gen_cover") and job_desc.strip():
+    if st.button("Generate Cover Letter", width="stretch", type="primary", key="gen_cover") and job_desc.strip():
         with st.spinner("Writing your letter..."):
             cover_letter = generate_cover_letter(profile, job_desc, tone, length)
             st.session_state.cover_letter = cover_letter
@@ -264,7 +264,7 @@ def render_cover_letter():
             data=content,
             file_name=f"{job_title.replace(' ', '_').lower()}_cover_letter.txt",
             mime="text/plain",
-            use_container_width=True
+            width="stretch"
         )
         
 
