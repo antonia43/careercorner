@@ -72,10 +72,10 @@ def render_student_type_selection():
     
     with col1:
         st.markdown("""
-        ### Portuguese Student 
-        ✦ Portuguese secondary education 
-        ✦ DGES-compatible calculation 
-        ✦ Course comparison with universities 
+        ### Portuguese Student  
+        ✦ Portuguese secondary education  
+        ✦ DGES-compatible calculation  
+        ✦ Course comparison with universities  
         """)
         if st.button("I'm a Portuguese Student", width='stretch', type="primary", key="btn_portuguese"):
             st.session_state.student_type = "portuguese"
@@ -83,10 +83,10 @@ def render_student_type_selection():
     
     with col2:
         st.markdown("""
-        ### International Student 
-        ✦ Any international curriculum 
-        ✦ Grade storage for university search 
-        ✦ No DGES calculation needed 
+        ### International Student  
+        ✦ Any international curriculum  
+        ✦ Grade storage for university search  
+        ✦ No DGES calculation needed  
         """)
         if st.button("I'm an International Student", width='stretch', type="primary", key="btn_international"):
             st.session_state.student_type = "international"
