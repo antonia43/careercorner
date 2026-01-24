@@ -29,7 +29,7 @@ def _sector_with_other(label: str, key_prefix: str, default: str | None = None):
 
 
 def render_degree_picker():
-    st.header("Interactive Degree Picker")
+    st.header("✐ Interactive Degree Picker")
 
     # step 1 is picking portuguese or international
     if "degree_region" not in st.session_state:
