@@ -86,10 +86,10 @@ def render_degree_picker():
             quiz_sectors_dict = quiz_result.get("recommended_sectors")
             quiz_primary_sector = quiz_result.get("recommended_sector")
             sectors_display = quiz_result.get("sectors_display")
-            # Store with quiz_ prefix
-            st.session_state.quiz_recommended_sectors = quiz_sectors_dict
-            st.session_state.quiz_recommended_sector = quiz_primary_sector
+            st.session_state.recommended_sectors = quiz_sectors_dict
+            st.session_state.recommended_sector = quiz_primary_sector
             st.session_state.sectors_display = sectors_display
+
 
     # Check if we have REAL quiz data (not just manual selection)
     has_quiz_data = bool(quiz_sectors_dict or quiz_primary_sector)
