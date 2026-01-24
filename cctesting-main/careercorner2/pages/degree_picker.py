@@ -77,19 +77,7 @@ def render_degree_picker():
     quiz_sectors_dict = st.session_state.get("recommended_sectors")
     quiz_primary_sector = st.session_state.get("recommended_sector")
     sectors_display = st.session_state.get("sectors_display")
-'''
-    # 2) If not in session, load from DB (after logout/login)
-    if not quiz_sectors_dict and not quiz_primary_sector:
-        from utils.database import load_career_quiz_metadata
-        quiz_result = load_career_quiz_metadata(user_id)
-        if quiz_result:
-            quiz_sectors_dict = quiz_result.get("recommended_sectors")
-            quiz_primary_sector = quiz_result.get("recommended_sector")
-            sectors_display = quiz_result.get("sectors_display")
-            st.session_state.recommended_sectors = quiz_sectors_dict
-            st.session_state.recommended_sector = quiz_primary_sector
-            st.session_state.sectors_display = sectors_display
-            '''
+
 
         # 2) If not in session, load from DB (after logout/login)
     if not quiz_sectors_dict and not quiz_primary_sector:
