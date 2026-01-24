@@ -8,7 +8,7 @@ from utils.tools import (
     render_course_finder_tool,
     render_wage_finder_tool,
     render_networking_tool,
-    render_interview_prep_tool
+    render_company_research_tool
 )
 
 load_dotenv()
@@ -55,8 +55,8 @@ def render_main_resources():
             st.session_state.active_pro_tool = "courses"
             st.rerun()
         
-        if st.button("Interview Prep", width="stretch", type="primary"):
-            st.session_state.active_pro_tool = "interview"
+        if st.button("Company Research", width="stretch", type="primary"):  # Changed
+            st.session_state.active_pro_tool = "company"  # Changed
             st.rerun()
     
     with col3:
@@ -83,8 +83,8 @@ def render_main_resources():
             render_wage_finder_tool()
         elif st.session_state.active_pro_tool == "networking":
             render_networking_tool()
-        elif st.session_state.active_pro_tool == "interview":
-            render_interview_prep_tool()
+        elif st.session_state.active_pro_tool == "company":
+            render_company_research_tool()
 
 
 def render_resources_chat():
