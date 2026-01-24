@@ -145,7 +145,7 @@ def login_modal():
 # SHOW LOGIN MODAL FIRST - Don't render anything else until logged in
 if not st.session_state.get("logged_in") or not st.session_state.user:
     login_modal()
-    st.stop()  # STOP HERE - Don't render anything below
+    st.stop()
 
 # NOW USER IS LOGGED IN - Load their data
 if st.session_state.get("logged_in") and st.session_state.user:
@@ -291,7 +291,7 @@ if (
     redirect_target = st.session_state.get("redirect_to")
     if redirect_target and redirect_target in STUDENT_OPTIONS:
         st.session_state.student_choice = redirect_target
-        del st.session_state.redirect_to  # Clear it immediately
+        del st.session_state.redirect_to
         st.rerun()
 
     current = st.session_state.get("student_choice", "Dashboard")
