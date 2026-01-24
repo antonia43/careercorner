@@ -112,7 +112,7 @@ def render_degree_picker():
                 st.session_state.force_manual_sector = False
                 st.rerun()
 
-    # 3) Sector selection logic - FIXED VERSION
+    # 3) Sector selection logic
     if st.session_state.force_manual_sector or not has_quiz_data:
         # Manual selection
         if not has_quiz_data:
