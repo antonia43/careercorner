@@ -320,7 +320,7 @@ Return ONLY valid JSON with this structure:
 
 def render_university_finder():
     """Main university finder with Portugal and International buttons"""
-    st.header("University Finder")
+    st.header("𖤣 University Finder")
 
     user_id = get_user_id()
 
