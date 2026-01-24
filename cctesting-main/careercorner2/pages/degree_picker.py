@@ -6,6 +6,7 @@ import os
 import re
 from dotenv import load_dotenv
 import json
+import warnings
 warnings.filterwarnings("ignore", message=".*Session State.*|.*widget with key.*")
 
 def _sector_with_other(label: str, key_prefix: str, default: str | None = None):
@@ -80,9 +81,16 @@ def render_degree_picker():
     sectors_display = st.session_state.get("sectors_display")
 
 
-        # 2) If not in session, load from DB (after logout/login)
+    # 2) If not in session, load from DB (after logout/login)
     if not quiz_sectors_dict and not quiz_primary_sector:
-        print(f"🔍 DEBUG: Attempting to load career quiz data for user: {user_id}")
+        print(f"\n{'='*60}")
+        print(f"🔍 DEBUG: Loading career quiz data")
+        print(f"  user_id type: {type(user_id)}")
+        print(f"  user_id value: '{user_id}'")
+        print(f"  st.session_state.username: {st.session_state.get('username')}")
+        print(f"  st.session_state.user: {st.session_state.get('user')}")
+        print(f"{'='*60}\n")
+        
         quiz_result = load_career_quiz_metadata(user_id)
         print(f"🔍 DEBUG: load_career_quiz_metadata returned: {quiz_result}")
         
@@ -100,7 +108,23 @@ def render_degree_picker():
             st.session_state.recommended_sector = quiz_primary_sector
             st.session_state.sectors_display = sectors_display
         else:
-            print(f"⚠ DEBUG: No quiz data found in database")
+            print(f"⚠ DEBUG: No quiz data found in database for user_id='{user_id}'")
+            
+            # EXTRA DEBUG: Check what's actually in the database
+            import sqlite3
+            from pathlib import Path
+            import tempfile
+            DB_PATH = Path(tempfile.gettempdir()) / "career_corner.db"
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT DISTINCT user_id FROM professional_reports WHERE report_type='career_quiz'")
+            all_user_ids = [row[0] for row in c.fetchall()]
+            conn.close()
+            print(f"📋 All user_ids with career_quiz reports: {all_user_ids}")
+            print(f"🔍 Does '{user_id}' match any of these? Check for:")
+            print(f"  - Extra spaces")
+            print(f"  - Different capitalization")
+            print(f"  - Username vs email")
 
 
     # Check if we have REAL quiz data (not just manual selection)
