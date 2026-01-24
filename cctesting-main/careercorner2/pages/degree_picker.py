@@ -1,6 +1,6 @@
 import streamlit as st
 from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
-from utils.database import save_report, load_user_quiz
+from utils.database import save_report, load_user_quiz, load_career_quiz_metadata
 from datetime import datetime
 import os
 import re
@@ -77,7 +77,7 @@ def render_degree_picker():
     quiz_sectors_dict = st.session_state.get("recommended_sectors")
     quiz_primary_sector = st.session_state.get("recommended_sector")
     sectors_display = st.session_state.get("sectors_display")
-
+'''
     # 2) If not in session, load from DB (after logout/login)
     if not quiz_sectors_dict and not quiz_primary_sector:
         from utils.database import load_career_quiz_metadata
@@ -89,6 +89,29 @@ def render_degree_picker():
             st.session_state.recommended_sectors = quiz_sectors_dict
             st.session_state.recommended_sector = quiz_primary_sector
             st.session_state.sectors_display = sectors_display
+            '''
+
+        # 2) If not in session, load from DB (after logout/login)
+    if not quiz_sectors_dict and not quiz_primary_sector:
+        print(f"🔍 DEBUG: Attempting to load career quiz data for user: {user_id}")
+        quiz_result = load_career_quiz_metadata(user_id)
+        print(f"🔍 DEBUG: load_career_quiz_metadata returned: {quiz_result}")
+        
+        if quiz_result:
+            quiz_sectors_dict = quiz_result.get("recommended_sectors")
+            quiz_primary_sector = quiz_result.get("recommended_sector")
+            sectors_display = quiz_result.get("sectors_display")
+            
+            print(f"🔍 DEBUG: Extracted from quiz_result:")
+            print(f"  - recommended_sectors: {quiz_sectors_dict}")
+            print(f"  - recommended_sector: {quiz_primary_sector}")
+            print(f"  - sectors_display: {sectors_display}")
+            
+            st.session_state.recommended_sectors = quiz_sectors_dict
+            st.session_state.recommended_sector = quiz_primary_sector
+            st.session_state.sectors_display = sectors_display
+        else:
+            print(f"⚠ DEBUG: No quiz data found in database")
 
 
     # Check if we have REAL quiz data (not just manual selection)
