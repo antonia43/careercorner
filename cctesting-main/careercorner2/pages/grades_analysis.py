@@ -66,7 +66,7 @@ def render_grades_analysis():
 
 def render_student_type_selection():
     """Choose between Portuguese or International student"""
-    st.markdown("---")
+    st.info("First: Choose your profile)
     
     col1, col2 = st.columns(2)
     
