@@ -216,7 +216,7 @@ def select_degree_section():
 def search_universities_gemini(degree, country, city, preferences):
     """Search international universities using Gemini 2.0 Flash with Google Search grounding"""
 
-    api_key = os.environ.get("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+    api_key=os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment or secrets")
 
@@ -826,7 +826,7 @@ def render_international_finder():
 
             except Exception as e:
                 st.error(f"Search failed: {str(e)}")
-                st.info("Try broadening your search or check your API configuration.")
+                st.info("We are sorry for the inconvenience. Try broadening your search!")
 
     if "intl_university_results" in st.session_state and st.session_state.intl_university_results:
         render_international_results()
