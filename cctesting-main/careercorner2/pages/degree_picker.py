@@ -74,8 +74,8 @@ def render_degree_picker():
     user_id = get_user_id()
 
     # 1) Load quiz data from session or database
-    quiz_sectors_dict = st.session_state.get("quiz_recommended_sectors")
-    quiz_primary_sector = st.session_state.get("quiz_recommended_sector")
+    quiz_sectors_dict = st.session_state.get("recommended_sectors")
+    quiz_primary_sector = st.session_state.get("recommended_sector")
     sectors_display = st.session_state.get("sectors_display")
 
     # 2) If not in session, load from DB (after logout/login)
