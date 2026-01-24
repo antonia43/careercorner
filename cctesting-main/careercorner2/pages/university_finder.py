@@ -6,8 +6,6 @@ from streamlit_folium import st_folium
 import unicodedata
 import json
 import os
-from google import genai
-from google.genai import types
 from utils.database import (
     init_database,
     save_university,
@@ -20,11 +18,16 @@ from utils.database import (
     delete_report,
     save_report
 )
-from services.langfuse_helper import get_user_id
+from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
 from datetime import datetime
 
 
 init_database()
+
+GEMINI = LangfuseGeminiWrapper(
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    model="gemini-2.5-flash",
+)
 
 
 def get_student_admission_average():
@@ -214,47 +217,33 @@ def select_degree_section():
 
 
 def search_universities_gemini(degree, country, city, preferences):
-    """Search international universities using Gemini 2.0 Flash with Google Search grounding"""
-
-    api_key=os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in environment or secrets")
-
-    genai.configure(api_key=api_key)
+    """Search international universities using Gemini 2.5 Flash with Google Search grounding"""
 
     university_schema = {
-        "type": "object",
+        "type": "OBJECT",
         "properties": {
             "universities": {
-                "type": "array",
+                "type": "ARRAY",
                 "items": {
-                    "type": "object",
+                    "type": "OBJECT",
                     "properties": {
-                        "name": {"type": "string"},
-                        "program_name": {"type": "string"},
-                        "country": {"type": "string"},
-                        "city": {"type": "string"},
-                        "website": {"type": "string"},
-                        "admission_requirements": {"type": "string"},
-                        "tuition_annual": {"type": "string"},
-                        "application_deadline": {"type": "string"},
-                        "ranking": {"type": "string"},
-                        "program_duration": {"type": "string"},
-                        "language_of_instruction": {"type": "string"},
+                        "name": {"type": "STRING"},
+                        "program_name": {"type": "STRING"},
+                        "country": {"type": "STRING"},
+                        "city": {"type": "STRING"},
+                        "website": {"type": "STRING"},
+                        "admission_requirements": {"type": "STRING"},
+                        "tuition_annual": {"type": "STRING"},
+                        "application_deadline": {"type": "STRING"},
+                        "ranking": {"type": "STRING"},
+                        "program_duration": {"type": "STRING"},
+                        "language_of_instruction": {"type": "STRING"},
                     },
                     "required": ["name", "country", "website"]
                 }
             }
         }
     }
-
-    model = genai.GenerativeModel(
-        'gemini-2.0-flash-exp',
-        generation_config={
-            "response_mime_type": "application/json",
-            "response_schema": university_schema
-        }
-    )
 
     location_str = ""
     if city and country and country != "Any Country":
@@ -283,30 +272,55 @@ Return a JSON array with up to 20 universities that match the criteria. For each
 Focus on accredited universities with programs taught in English or the local language.{pref_str}
 
 If specific information is not available, use "N/A" for that field.
+
+Return ONLY valid JSON with this structure:
+{{
+  "universities": [
+    {{
+      "name": "University Name",
+      "program_name": "Program Name",
+      "country": "Country",
+      "city": "City",
+      "website": "https://...",
+      "admission_requirements": "Requirements text",
+      "tuition_annual": "Amount",
+      "application_deadline": "Date",
+      "ranking": "QS/THE ranking or N/A",
+      "program_duration": "Years",
+      "language_of_instruction": "Language"
+    }}
+  ]
+}}
 """
 
-    response = model.generate_content(
-        contents=prompt,
-        tools='google_search_retrieval'
-    )
+    try:
+        response = GEMINI.generate_content(
+            prompt=prompt,
+            temperature=0.4,
+            user_id=get_user_id(),
+            session_id=get_session_id(),
+            tools='google_search_retrieval'
+        )
 
-    results = json.loads(response.text)
+        cleaned = response.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("```")[1]
+            if cleaned.startswith("json"):
+                cleaned = cleaned[4:]
+        cleaned = cleaned.strip()
 
-    metadata = {}
-    if hasattr(response.candidates[0], 'grounding_metadata'):
-        gm = response.candidates[0].grounding_metadata
-        metadata = {
-            'grounding_metadata': str(gm)
-        }
+        results = json.loads(cleaned)
 
-    results['_metadata'] = metadata
+        return results
 
-    return results
+    except Exception as e:
+        print(f"Gemini search error: {e}")
+        return {"universities": []}
 
 
 def render_university_finder():
     """Main university finder with Portugal and International buttons"""
-    st.header("𖤣 University Finder")
+    st.header("University Finder")
 
     user_id = get_user_id()
 
@@ -818,15 +832,14 @@ def render_international_finder():
                     preferences=preferences if preferences else None
                 )
 
-                st.session_state.intl_university_results = results['universities']
-                st.session_state.intl_search_metadata = results.get('_metadata', {})
+                st.session_state.intl_university_results = results.get('universities', [])
 
-                st.success(f"Found {len(results['universities'])} universities")
+                st.success(f"Found {len(st.session_state.intl_university_results)} universities")
                 st.rerun()
 
             except Exception as e:
                 st.error(f"Search failed: {str(e)}")
-                st.info("We are sorry for the inconvenience. Try broadening your search!")
+                st.info("Try broadening your search or check your API configuration.")
 
     if "intl_university_results" in st.session_state and st.session_state.intl_university_results:
         render_international_results()
