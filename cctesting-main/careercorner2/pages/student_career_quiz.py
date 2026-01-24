@@ -301,7 +301,7 @@ OUTPUT FORMAT (strict markdown):
             st.session_state.career_quiz_final_report = report
             
             # pattern is **Technology** - 60% or **Technology** - 100%
-            sector_pattern = r'\*\*([A-Za-z\s&]+)\*\*\s*-\s*(\d+)%'
+            sector_pattern = r'###\s*\d+\.\s*([A-Za-z\s&]+)\s*\((\d+)%\)'
             sector_matches = re.findall(sector_pattern, report)
             
             if sector_matches:
