@@ -490,18 +490,17 @@ def get_company_research(company_name: str) -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def render_company_research_tool():
     """Company research using Google Search"""
     st.subheader("Company Research")
     st.info("Research companies before you apply - culture, reviews, salary, and more")
-    
+
     company_name = st.text_input(
         "Company name:",
         placeholder="e.g., Google, Microsoft, Deloitte, Zara...",
         key="company_research_name"
     )
-    
+
     if st.button("Research Company", width="stretch", type="primary"):
         if company_name.strip():
             with st.spinner(f"Researching {company_name}..."):
@@ -509,7 +508,7 @@ def render_company_research_tool():
                 if results["success"]:
                     st.success("Company research complete")
                     st.markdown(results["answer"])
-                    
+
                     if results["sources"]:
                         with st.expander("View Sources"):
                             for source in results["sources"]:
@@ -517,4 +516,4 @@ def render_company_research_tool():
                 else:
                     st.error(f"Error: {results.get('error', 'Unknown error')}")
         else:
-            st.warning("Please enter a company name") 
+            st.warning("Please enter a company name")
