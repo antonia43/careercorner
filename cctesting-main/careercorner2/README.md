@@ -6,14 +6,17 @@ Helping you build your career, every step of the way.
 
 ## Overview
 
-Career Corner is an AI-powered application designed to help high-school students and professionals make informed career decisions. Whether you're a student preparing for exams or struggling to pick a degree, or a professional seeking a career change or job opportunities based on your skills, Career Corner provides comprehensive support through two dedicated interfaces—one for high-school students and another for university students and professionals. As former high-school students and aspiring data scientists ourselves, we've experienced firsthand the lack of clear guidance during critical career processes: vague psychotechnical tests at school that fail to reveal true interests, scattered information making degree selection overwhelming, and professionals who feel helpless when identifying transferable skills or navigating daily job struggles.
+Career Corner is an AI-powered application designed to help high-school students and professionals make informed career decisions. Whether you're a high-school student preparing for exams and struggling to pick a degree, or a professional seeking a career change or job opportunities based on your skills, Career Corner provides comprehensive support through two dedicated interfaces: one for high-school students and another for university students and professionals.
+As former high-school students and aspiring data scientists themselves, the creators of Career Corner have experienced firsthand the lack of clear guidance during critical career processes: vague psychotechnical tests at school that fail to reveal true interests, scattered information making degree selection overwhelming, and lack of helpful information for professionals who are trying to identify transferable skills or navigating daily job struggles.
 
-Career Corner solves these challenges by combining conversational AI, real Portuguese educational data, and practical career tools to deliver personalized guidance far superior to traditional generic advice. Portuguese high school students benefit from adaptive career quizzes, CIF grade calculators, degree/university matchers with interactive maps, and study resources including IAVE exam archives and DGES degree data. Professionals access CV parsing, CV-aware career growth quizzes, mock interview simulators with STAR feedback, and tailored job applications. Both user types enjoy smart chat interfaces that ask 5 natural questions before routing to optimal tools, with all results auto-saving to "My Reports" for persistent access across sessions—connecting school performance, personal interests, and concrete career pathways in one cohesive platform.
+Career Corner aims to solve these challenges by combining conversational AI, real Portuguese educational data, and practical career tools to deliver personalized guidance far superior to traditional generic advice. Portuguese high school students benefit from adaptive career quizzes, CIF grade calculators, degree/university matchers with interactive maps, and study resources including IAVE exam archives and DGES degree data. Professionals access CV parsing, CV-aware career growth quizzes and tailored mock interview simulators with STAR feedback. 
+Both user types can enjoy smart chat interfaces that route them to optimal tools and have the ability to save all results to "My Reports" for usage in other tools and persistent access across sessions, connecting school performance and career pathways in one cohesive platform.
+
 
 **Target Audience:**
-- **High school students** (Career and degree discovery, grade caculation/preparing for university admission)
+- **High school students** (Career and degree discovery, Grade caculation/preparing for university admission)
 - **University students & professionals** (CV analysis, Career Recommendations, Interview preparation)
-- **Focus:** Portuguese education system (DGES degrees, national exams)
+- **Focus (student section):** Portuguese education system (DGES degrees, National exams); Although tools are also available for international students.
 
 ---
 
@@ -21,15 +24,17 @@ Career Corner solves these challenges by combining conversational AI, real Portu
 
 ### For Students:
 
-Students face vague psycotechnical tests at school that don't connect interests to real university options. Grades exist in isolation requiring manual calculation of the final highschool grade and university degree search.
-Professionals send CVs everyday but get no structured skill analysis or interview practice catered to their needs. Information scatters across DGES sites, LinkedIn and generic, easily bypassable career quizzes.
+Students face psycotechnical tests at school that don't connect interests to real university options, yielding vague results that don't help in decision making. Grades exist in isolation requiring manual calculation of the final highschool grade in order to find suitable degrees.
 
 - Vague school career tests lacking personalization
 - Confusion about degree choices and university options
-- No connection between grades, interests, and real admission data
+- No real time connection between grades, interests, and real admission data
 - Information scattered across multiple platforms (DGES, university sites)
 
+
 ### For Professionals:
+
+Professionals send CVs everyday but get no structured skill analysis or interview practice catered to their needs, which might be beneficial if they want to succeed. Additionally, some professionals might want a career change but don't know what skills they can explore.
 
 - Difficulty identifying transferable skills for career changes
 - Generic job search tools without personalized insights
@@ -39,91 +44,100 @@ Professionals send CVs everyday but get no structured skill analysis or intervie
 
 ## Our Solution
 
-Career Corner delivers personalized guidance through conversational AI that adapts to user responses. Students answer 10 creative questions to get sector matches (Healthcare 60%), upload grade reports for CIF scores (+2 point plans), and match to real DGES degrees/universities. Professionals parse CVs into structured JSON, get CV-aware career quizzes, practice mock interviews with feedback, and generate tailored cover letters. All results persist in SQLite with tabbed My Reports access.
+Career Corner delivers personalized guidance through conversational AI that adapts to user responses. 
+Students can answer 10 creative questions to get sector matches (i.e. Healthcare 60%, Technology 40%), use the sector match results to explore suitable degrees, upload grade reports (or manually input grades) for final score calculation and get matched to real DGES degrees/universities based on school performance, quiz results and location. 
+Professionals can upload their CVs (that get parsed into structured JSON) to get feedback, play CV-aware career quizzes, practice mock interviews tailored by job offer (with feedback) and generate tailored cover letters. 
+All results persist in a SQLite database, being easily accessible through a "My Reports" tab and reusable throughout all of Career Corner's features.
 
 1. **Conversational AI:** Interactive quizzes that adapt to user responses (not static multiple-choice)
 2. **Real Data Integration:** Uses DGES university data, admission grades, and Portuguese scholarship info
 3. **Personalization:** Connects quiz results -> grades -> degree recommendations -> university matches
-4. **Actionable Tools:** for example, CV analysis, grades analysis, university search, career path recommendations
-5. **Observability:** Langfuse tracks all AI interactions for quality assurance
+4. **Actionable and Interactive Tools:** for example, CV analysis, grades analysis, university search, career path recommendations
+5. **Observability:** Langfuse tracking of AI interactions for quality assurance during app testing
 
 
 ## Features
 Shared for all users:
-- **Data Persistence:** SQLite database stores reports, saved universities, user preferences.
+- **Data Persistence:** SQLite database stores quiz reports, grades, saved universities, CVs.
 - **Google OAuth Login:** Secure login with Google accounts.
 - **Local Login:** Secure login with accounts created directly on the platform and stored in the database.
-- **Dashboard:** Dashboard: a dashboard with an AI career assistant chatbot that starts with natural conversation, asks 5+ genuine questions about your situation before recommending tools, and routes you to the perfect feature after understanding your needs. The chatbot never mentions tool names during the first 5 turns, building context through casual dialogue like "What challenges are you facing with your studies?" or "What's frustrating about your job search?" On turn 6+, it confidently recommends "Career Quiz would suit you best because..." with clear reasoning. Both student and professional dashboards use separate chat histories with dedicated trace IDs in Langfuse for observability.
-- **Reports Section** a section where all results from quizzes and analyses can be accessed and deleted by the user.
-- **Custom CSS styling** custom green and yellow UI with animations.
+- **Dashboard:** A dashboard with an AI career assistant chatbot that interacts with users that aren't sure about how to nagivate the app, asking ~5 genuine questions about their situation and redirecting them to the most suitable starting tool after understanding their needs. The chatbot never mentions tool names during the first 5 turns, building context through casual dialogue like "What challenges are you facing with your studies?" or "What's frustrating about your job search?" On turn 6+, it confidently recommends a feature (i.e. "Career Quiz would suit you best because...") with clear reasoning. Both student and professional dashboards use separate chat histories with dedicated trace IDs in Langfuse for observability.
+- **Reports Section** A section where all results from quizzes and analyses can be accessed and deleted by the user.
+- **Custom CSS styling** Custom green and yellow UI with animations.
 
 
 ### For students:
 
 #### **Career Discovery Quiz**
-- Career and skillset quiz - an interactive quiz operated through a conversational AI interface, to help students figure out their most valuable skills and biggest interests. At the end, a sector, or a mix of sectors (such as technology, health, business) is attributed to the student. Aditionally, a report is delivered, highlighting possible career paths based on the student's answers.
+- Career Discovery Quiz - an interactive quiz operated through AI, to help students figure out their most valuable skills and biggest interests. The quiz asks the students creative/philosophical questions that aren't related to school or studies (i.e. "If you found a hidden path, would you explore it, observe, or do nothing?"), in order to understand the students real personality. At the end, a sector, or a mix of sectors (such as Technology, Health, Business) is attributed to the student based on their answers. Aditionally, a report is delivered, highlighting possible career paths based on the student's answers.
 
-- **What it does:** Interactive conversational quiz (10-15 questions) to identify interests and strengths
+- **What it does:** Interactive conversational quiz (10 questions) to understand user's personality
 - **Output:** 
   - Career sector match (Technology, Health, Business, Arts, etc.)
   - Top 3-5 degree recommendations with fit scores
   - Detailed report with reasoning
-- **Tech:** Multi-turn chat with Gemini 2.5-flash-lite, response validation
+- **Tech:** Multi-turn chat with Gemini 2.5-flash, response validation
 
+#### **Grades Analysis**
 - Grades Analysis - A guided tool that collects school grades (through manual input or file ingestion) and calculates Portuguese final grades, helping students understand their academic profile, how far they are from getting into a certain university, and use this grade to find a university that they can get in.
 
-- **What it does:** Calculates CIF using the official Portuguese formula: school average (65% weight) plus two national exam scores (35% weight). Upload a grade report image and the AI extracts your subjects and grades automatically. Enter your planned or completed exam scores to see your final CIF on the 0-20 scale.
+- **What it does:** Calculates CIF using the official Portuguese formula or other formulas the student may want to use. The user can either manually input their grades or upload a grade report image for the AI to extract subjects and grades automatically, and enter their planned or completed exam scores to see their final score. Four options are available: Portuguese (Manual Input/Uplaod) and International (Manual Input/Upload).
 - **Output:** 
   - Final CIF score (e.g., 15.8/20)
-  - Comparison to saved university thresholds from University Finder
+  - Comparison to saved university thresholds from University Finder (Portuguese Students)
   - +2 points improvement plan personalized to your CIF tier (strategies differ for 12-14 vs 16-18)
-  - Breakdown showing which subjects/exams impact your score most
-- **Tech:** Gemini multimodal vision for PDF/image parsing, formula `(school_avg × 0.65) + ((exam1 + exam2)/2 × 0.35)`
-
+  - Breakdown showing which subjects/exams impact your score most (?????????????????????????????????????????????????????????????????)
+- **Tech:** Gemini multimodal vision for PDF/image parsing if upload option is selected
 
 #### **Degree Picker**
-An interactive assistant that uses the students interests (results from career quiz if applicable, grades analysis results if applicable) to suggest concrete degree programs, compare options, and narrow it down to a shortlist of degrees that best fit the student.
-- **What it does:** AI assistant that narrows down degree choices through conversation
-- **Input:** Career quiz results (if available), student preferences
-- **Output:** 
-  - 2-stage dropdown selection (Career Area -> Specific Sector)
-  - Top 3 DGES-accredited degrees with:
+An interactive assistant that uses the students sector of interest (results from career quiz if applicable) to suggest concrete degree programs, narrowing the search down to a shortlist of degrees that best fit the student. A portuguese (DGES only degrees) and international options are available.
+- **What it does:** AI assistant that asks 5-7 yes or no questions based on the sector of interest and narrows down degree choices through conversation
+- **Input:** Career quiz results (if available), student preference (manually picked from a dropdown list)
+- **Output:**
+- Portuguese Students:
+  - Top 3 DGES degrees with:
     - Fit percentage
     - Curriculum overview
     - Career paths in Portugal
     - Entry requirements
+- Internatinal Students:
+  - Top 3 degrees with:
+    - Fit percentage
+    - Curriculum overview
+    - Career paths
 - **Tech:** RAG-style retrieval from DGES data, Gemini reasoning
 
 #### **University Finder**
-A search tool that uses real Portuguese higher-education data to show universities offering the chosen degree, including entry grades, location and an interactive map so students can explore and save their options.
+A university search tool by degree name and location. Two options are available:
 
-Search Portuguese universities offering your chosen degree with real DGES admission data from 2024-2025. Filter by your CIF score range, location preferences, and institution type (public/private). An interactive Folium map shows all matching universities with clickable markers displaying admission grades, campus locations, and official website links. Save your favorite universities to compare later or match against your Grades Analysis CIF score to see which are realistic targets.
+- **Portuguese**: university search uses real Portuguese eal DGES admission data from 2024-2025 to show universities offering the chosen degree (can be chosen from the results of **Degree Picker**), including entry grades, location and an interactive map so students can explore their options. Favorite universities can be saved to compare later or match against **Grades Analysis** score to see which are realistic targets.
+- **International**: more "search" based interface, where students can input degree names and search for universities offering that degree in the country of their choice.
 
 - **What it does:** Search and filter Portuguese universities by degree program using live DGES data
 - **Features:**
-  - **CIF Range Filter:** Only show universities you can realistically get into (e.g., 14.0-16.0)
   - **Location Filter:** Lisbon, Porto, Coimbra, or nationwide search
   - **Public/Private Toggle:** Filter tuition types
-  - **Interactive Map:** Folium map with university markers, click to see admission grades
+  - **Interactive Map:** Folium map with university markers, click to see admission grades and additional info
   - **Save System:** Store favorite universities with timestamps, access in My Reports
   - **Individual Delete:** Remove saved universities one-by-one
-- **Output:** University cards showing institution name, program name, location, admission grade, duration, acceptance rate, website link
-- **Tech:** DGES dataset (20+ universities), Folium maps, SQLite saved_universities table with user_id tracking
+  - **Transferable result** Saved universities can be used in Grades Analysis
+- **Output:** University cards showing institution name, program name, location, admission grade, duration
+- **Tech:** DGES dataset (20+ universities), Folium map, SQLite saved_universities table with user_id tracking
 
 #### **Student Resources**
-Dual-mode tool combining quick search and support chat. Quick search mode uses 6 Portuguese-specific tools with function calling: get study resources for any subject (returns Khan Academy, Coursera, YouTube, Quizlet, Reddit links), get Portugal scholarships (DGES, FCT, Erasmus+ opportunities), get IAVE exam past papers (latest + archive), and get CIF improvement tips (personalized +2 point plans by score tier). Support chat mode switches off function calling for natural guidance conversations where you can select degree/grades reports from dropdowns and ask for advice without getting bombarded with links.
+Dual-mode feature combining five quick search options and support chat. Quick search mode uses 5 tools with function calling: get study resources for any subject (returns Khan Academy, Coursera, YouTube, Quizlet, Reddit links), get Portugal scholarships (Portuguese Only - DGES, FCT, Erasmus+ opportunities), get IAVE exam past papers (Portuguese Only - latest + archive), ............................................................................ Support chat mode allows natural guidance conversations where you can select degree/grades reports from dropdowns and ask for more personal and catered advice.
 
 - **Quick Search Features:**
-  - Study resources: Khan Academy, Coursera, YouTube tutorials, Quizlet flashcards for any subject
+  - Study resources: Khan Academy, Coursera, YouTube tutorials, Quizlet flashcards for any subject (mudarrrrrrrrrr)
   - Scholarships: DGES bolsas, FCT grants, Erasmus+ programs
   - Exam papers: IAVE nacional exam archives (all subjects, past years)
-  - CIF tips: +2 point improvement strategies by score tier (12-14: focus exams 35%, 16-18: perfect execution)
+  - sdfghjk
+  - sdfghjkl
 - **Support Chat Mode:**
-  - Select saved degree/grades reports from dropdowns
+  - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
   - Ask: "Help me understand my CIF" or "Should I apply to Nova with 15.2?"
-  - No tool spam, just guidance
-- **Tech:** Gemini 2.0 Flash 001 function calling (6 tools) for quick search, Gemini 2.5 Flash (temp 0.7) for support chat
+- **Tech:** Gemini 2.5 Flash function calling (5 tools) for quick search purposes, Gemini 2.5 Flash (temp 0.7) for support chat
 
 
 ### For Professionals:
@@ -420,29 +434,30 @@ sqlite3
 ```
 1. Dashboard Chat (2 mins)
 ├─ AI: "What challenges are you facing with your studies?"
-├─ You: "I'm confused about degrees and my grades"
+├─ You: "I'm confused about what degree to pick"
 └─ AI: "Career Quiz would suit you best because you're exploring options"
 ```
 
 ```
 2. Career Discovery Quiz (10 mins)
 ├─ Answer 10 adaptive questions ("Perfect day starts with what sound?")
-├─ Results: "Healthcare 60%, Education 40%" + Nursing/Teaching paths
+├─ Results: "Healthcare 60%, Education 40%"
 └─ Auto-saves to My Reports
 ```
 
 ```
-3. Grades Analysis (10 mins)
-├─ Enter your grades
-├─ CIF calculation: School 65% + Exams 35% = 15.8/20
-└─ Search for Course grades and compare them to yours, get your chances of getting in
-
-```
-```
-4. Degree Picker (5 mins)
+3. Degree Picker (5 mins)
 ├─ Select sector from quiz (Healthcare -> Nursing/Physiotherapy)
 ├─ Top 3 DGES degrees with entry requirements/CIF needed
 └─ Auto-saves recommendations
+```
+
+```
+4. Grades Analysis (10 mins)
+├─ Enter your portuguese grades manually
+├─ CIF calculation: School 65% + Exams 35% = 15.8/20
+└─ Search for Course grades and compare them to yours, get your chances of getting in
+
 ```
 
 ```
@@ -452,6 +467,7 @@ sqlite3
 ├─ Interactive map -> click Nova marker -> "CIF required: 15.2"
 └─ Save favorite universities (accessible at the top of the page)
 ```
+
 ```
 6. Student Resources (Chat Mode)
 ├─ Click "Need personalized help?"
@@ -464,7 +480,7 @@ sqlite3
 1. Dashboard Chat (2 mins)
 ├─ AI: "What's frustrating about your job search?"
 ├─ You: "My CV isn't getting responses"
-└─ AI: "CV Analysis would suit you best because..."
+└─ AI: "CV Analysis would suit you best"
 ```
 
 ```
@@ -510,7 +526,7 @@ sqlite3
 #### **Auto-saving results**
 - Avoids data loss
 
-#### **Interactive Maps**
+#### **Interactive Map (University Finder for Portuguese Students)**
 - Click university markers on Folium map
 - See admission grades, location, website
 - Filter by CIF range
