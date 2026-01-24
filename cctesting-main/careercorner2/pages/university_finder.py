@@ -4,9 +4,10 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import unicodedata
-import google.generativeai as genai
 import json
 import os
+from google import genai
+from google.genai import types
 from utils.database import (
     init_database,
     save_university,
