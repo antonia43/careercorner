@@ -468,3 +468,53 @@ def fetch_job_description_from_url(url: str) -> dict:
             "success": False, 
             "error": str(e)
         }
+
+
+def get_company_research(company_name: str) -> dict:
+    """Company research using Google Search"""
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"Provide comprehensive research on {company_name} including: company culture and values, recent news and developments, employee reviews and ratings, work environment, career growth opportunities, and salary information. Include both positive and negative aspects.",
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            )
+        )
+        
+        sources = []
+        metadata = response.candidates[0].grounding_metadata
+        if metadata and metadata.grounding_chunks:
+            sources = [{"title": c.web.title, "url": c.web.uri} for c in metadata.grounding_chunks[:8]]
+        
+        return {"success": True, "answer": response.text, "sources": sources}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def render_company_research_tool():
+    """Company research using Google Search"""
+    st.subheader("Company Research")
+    st.info("Research companies before you apply - culture, reviews, salary, and more")
+    
+    company_name = st.text_input(
+        "Company name:",
+        placeholder="e.g., Google, Microsoft, Deloitte, Zara...",
+        key="company_research_name"
+    )
+    
+    if st.button("Research Company", width="stretch", type="primary"):
+        if company_name.strip():
+            with st.spinner(f"Researching {company_name}..."):
+                results = get_company_research(company_name.strip())
+                if results["success"]:
+                    st.success("Company research complete")
+                    st.markdown(results["answer"])
+                    
+                    if results["sources"]:
+                        with st.expander("View Sources"):
+                            for source in results["sources"]:
+                                st.markdown(f"[{source['title']}]({source['url']})")
+                else:
+                    st.error(f"Error: {results.get('error', 'Unknown error')}")
+        else:
+            st.warning("Please enter a company name") 
