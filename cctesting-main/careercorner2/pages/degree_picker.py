@@ -6,6 +6,7 @@ import os
 import re
 from dotenv import load_dotenv
 import json
+warnings.filterwarnings("ignore", message=".*Session State.*|.*widget with key.*")
 
 def _sector_with_other(label: str, key_prefix: str, default: str | None = None):
     options = ["Technology", "Healthcare", "Business", "Engineering", "Creative", "Other"]
