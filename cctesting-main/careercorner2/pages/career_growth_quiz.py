@@ -11,7 +11,7 @@ load_dotenv()
 
 QUIZ_GEMINI = LangfuseGeminiWrapper(
     api_key=os.getenv("GOOGLE_API_KEY"),
-    model="gemini-2.5-flash-lite",
+    model="gemini-2.5-flash",
 )
 
 
