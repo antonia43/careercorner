@@ -235,7 +235,6 @@ Find up to 20 universities that match the criteria. For each university provide:
 - University official name
 - Full program name for {degree}
 - Country and city location
-- Official website URL
 - Admission requirements (GPA, test scores, prerequisites if available)
 - Annual tuition fees in local currency or EUR
 - Application deadlines for 2026/2027 academic year
@@ -255,7 +254,6 @@ Return your response as valid JSON with this exact structure:
       "program_name": "Program Name",
       "country": "Country",
       "city": "City",
-      "website": "https://...",
       "admission_requirements": "Requirements text",
       "tuition_annual": "Amount",
       "application_deadline": "Date",
