@@ -98,9 +98,10 @@ def render_degree_picker():
         print(f"🔍 DEBUG: load_career_quiz_metadata returned: {quiz_result}")
         
         if quiz_result:
-            quiz_sectors_dict = quiz_result.get("recommended_sectors")
-            quiz_primary_sector = quiz_result.get("recommended_sector")
+            quiz_sectors_dict = quiz_result.get("sectors") or quiz_result.get("recommended_sectors")
+            quiz_primary_sector = quiz_result.get("sector") or quiz_result.get("recommended_sector")
             sectors_display = quiz_result.get("sectors_display")
+
             
             print(f"🔍 DEBUG: Extracted from quiz_result:")
             print(f"  - recommended_sectors: {quiz_sectors_dict}")
