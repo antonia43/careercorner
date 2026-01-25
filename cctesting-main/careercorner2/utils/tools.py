@@ -388,7 +388,6 @@ def render_study_resources_tool():
             with st.spinner(f"Finding resources for {subject}..."):
                 results = get_study_resources_web(subject.strip())
                 if results["success"]:
-                    st.success("Found resources")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -417,7 +416,6 @@ def render_career_options_tool():
             with st.spinner(f"Finding careers for {course}..."):
                 results = get_career_options(course.strip())
                 if results["success"]:
-                    st.success("Career paths found")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -452,7 +450,6 @@ def render_wage_finder_tool():
             with st.spinner(f"Finding salary data for {job_title}..."):
                 results = get_wage_info(job_title.strip(), country)
                 if results["success"]:
-                    st.success("Salary information found")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -510,7 +507,6 @@ def render_job_search_tool():
             with st.spinner(f"Searching for {role} jobs in {location}..."):
                 results = get_job_search_results(role.strip(), location)
                 if results["success"]:
-                    st.success("Found job opportunities")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -539,7 +535,6 @@ def render_course_finder_tool():
             with st.spinner(f"Finding courses for {skill}..."):
                 results = get_course_recommendations(skill.strip())
                 if results["success"]:
-                    st.success("Found learning resources")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -568,7 +563,6 @@ def render_networking_tool():
         with st.spinner("Generating networking strategies..."):
             results = get_networking_tips(industry_value)
             if results["success"]:
-                st.success("Networking strategies ready")
                 st.markdown(results["answer"])
 
                 if results["sources"]:
@@ -582,7 +576,7 @@ def render_networking_tool():
 def render_interview_prep_tool():
     """Interview prep using Google Search"""
     st.subheader("Interview Preparation")
-    st.info("Prepare for interviews with role-specific guidance")
+    st.info("Prepare for interviews with role-specific guidance!")
 
     role = st.text_input(
         "Job role you're interviewing for:",
@@ -595,7 +589,6 @@ def render_interview_prep_tool():
             with st.spinner(f"Creating interview guide for {role}..."):
                 results = get_interview_prep(role.strip())
                 if results["success"]:
-                    st.success("Interview preparation ready")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
@@ -611,7 +604,7 @@ def render_interview_prep_tool():
 def render_company_research_tool():
     """Company research using Google Search"""
     st.subheader("Company Research")
-    st.info("Research companies before you apply - culture, reviews, salary, and more")
+    st.info("Research companies before you apply - learn about culture, reviews, salary and more!")
 
     company_name = st.text_input(
         "Company name:",
@@ -624,7 +617,6 @@ def render_company_research_tool():
             with st.spinner(f"Researching {company_name}..."):
                 results = get_company_research(company_name.strip())
                 if results["success"]:
-                    st.success("Company research complete")
                     st.markdown(results["answer"])
 
                     if results["sources"]:
