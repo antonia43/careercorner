@@ -7,6 +7,9 @@ import re
 from dotenv import load_dotenv
 import json
 import warnings
+import sqlite3
+from pathlib import Path
+import tempfile
 warnings.filterwarnings("ignore", message=".*Session State.*|.*widget with key.*")
 
 def _sector_with_other(label: str, key_prefix: str, default: str | None = None):
@@ -73,7 +76,7 @@ def render_degree_picker():
         st.session_state.force_manual_sector = False
 
     # loading career quiz reports from database
-    user_id = get_user_id()
+    user_id = st.session_state.get("username", "demo_user")
 
     # 1) Load quiz data from session or database
     quiz_sectors_dict = st.session_state.get("recommended_sectors")
@@ -111,9 +114,6 @@ def render_degree_picker():
             print(f"⚠ DEBUG: No quiz data found in database for user_id='{user_id}'")
             
             # EXTRA DEBUG: Check what's actually in the database
-            import sqlite3
-            from pathlib import Path
-            import tempfile
             DB_PATH = Path(tempfile.gettempdir()) / "career_corner.db"
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
