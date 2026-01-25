@@ -7,7 +7,7 @@ from utils.tools import (
     render_job_search_tool,
     render_course_finder_tool,
     render_wage_finder_tool,
-    render_networking_tool,
+    render_linkedin_optimizer_tool,
     render_company_research_tool
 )
 
@@ -46,10 +46,10 @@ def render_main_resources():
             st.session_state.active_pro_tool = "jobs"
             st.rerun()
         
-        if st.button("Networking Guide", width="stretch", type="primary"):
-            st.session_state.active_pro_tool = "networking"
+        if st.button("LinkedIn Optimizer", width="stretch", type="primary"):  # Changed
+            st.session_state.active_pro_tool = "linkedin"  # Changed
             st.rerun()
-    
+            
     with col2:
         if st.button("Course Finder", width="stretch", type="primary"):
             st.session_state.active_pro_tool = "courses"
@@ -81,8 +81,8 @@ def render_main_resources():
             render_course_finder_tool()
         elif st.session_state.active_pro_tool == "wages":
             render_wage_finder_tool()
-        elif st.session_state.active_pro_tool == "networking":
-            render_networking_tool()
+        elif st.session_state.active_pro_tool == "linkedin":  # Changed
+            render_linkedin_optimizer_tool()  # Changed
         elif st.session_state.active_pro_tool == "company":
             render_company_research_tool()
 
