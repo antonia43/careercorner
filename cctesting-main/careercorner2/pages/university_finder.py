@@ -810,7 +810,7 @@ def render_international_finder():
     )
 
     if st.button("Search International Universities", type="primary", width='stretch'):
-        with st.spinner("Searching universities with AI..."):
+        with st.spinner("Searching for universities..."):
             try:
                 results = search_universities_gemini(
                     degree=degree,
