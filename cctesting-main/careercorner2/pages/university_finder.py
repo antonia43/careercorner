@@ -321,17 +321,15 @@ def render_university_finder():
             st.rerun()
     with col2:
         if st.button("International", width='stretch', type="primary" if st.session_state.university_finder_mode == "International" else "secondary"):
-            st.session_state.university_finder_mode = "International"
+            st.session_state.university_finder_mode = "Somewhere else"
             st.rerun()
-
-    st.markdown("---")
 
     if st.session_state.university_finder_mode == "Portugal":
         render_portuguese_finder()
     elif st.session_state.university_finder_mode == "International":
         render_international_finder()
     else:
-        st.info("Please select Portugal or International to continue")
+        st.info("ⓘ Please select an option to continue")
 
 
 def render_portuguese_finder():
