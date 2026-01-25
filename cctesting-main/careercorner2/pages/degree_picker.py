@@ -42,12 +42,12 @@ def render_degree_picker():
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("🇵🇹 Portuguese Student", width='stretch', type="primary"):
+            if st.button("I'm a Portuguese Student", width='stretch', type="primary"):
                 st.session_state.degree_region = "Portugal"
                 st.rerun()
             st.caption("Portuguese: Only DGES degrees in Portugal")
         with col2:
-            if st.button("🌎 International Student", width='stretch'):
+            if st.button("I'm an International Student", width='stretch'):
                 st.session_state.degree_region = "International"
                 st.rerun()
             st.caption("International: Global universities and programs")
