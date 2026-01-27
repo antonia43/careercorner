@@ -364,7 +364,7 @@ Rules:
 """
         
         raw = GRADES_MODEL.generate_content(
-            text=prompt,
+            prompt=prompt,
             images=[base64_image],
             user_id=get_user_id(),
             session_id=get_session_id(),
