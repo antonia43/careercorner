@@ -159,34 +159,6 @@ Include both free and paid options. Format as markdown with clickable course lin
         return {"success": False, "error": str(e)}
 
 
-def get_networking_tips(industry: str = "general") -> dict:
-    """Networking strategies using Google Search"""
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=f"""What are effective networking strategies for professionals in {industry}? 
-
-Include:
-- Online platforms (LinkedIn, professional communities)
-- Industry events and conferences
-- Best practices for cold outreach
-- Community building tips
-
-Use clean markdown formatting. Do NOT use code blocks.""",
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())]
-            )
-        )
-
-        sources = []
-        metadata = response.candidates[0].grounding_metadata
-        if metadata and metadata.grounding_chunks:
-            sources = [{"title": c.web.title, "url": c.web.uri} for c in metadata.grounding_chunks[:5]]
-
-        return {"success": True, "answer": response.text, "sources": sources}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
 
 def get_linkedin_profile_optimization(current_headline: str, current_about: str, 
                                       target_role: str, industry: str, skills: str) -> dict:
@@ -582,33 +554,7 @@ def render_course_finder_tool():
                     st.error(f"Error: {results.get('error', 'Unknown error')}")
         else:
             st.warning("Please enter a skill to learn")
-
-
-def render_networking_tool():
-    """Networking tips using Google Search"""
-    st.subheader("Networking Guide")
-    st.info("Build professional connections in your industry")
-
-    industry = st.text_input(
-        "Your industry (optional):",
-        placeholder="e.g., Tech, Healthcare, Finance...",
-        key="networking_industry"
-    )
-
-    if st.button("Get Networking Tips", width="stretch", type="primary"):
-        industry_value = industry.strip() if industry.strip() else "general"
-        with st.spinner("Generating networking strategies..."):
-            results = get_networking_tips(industry_value)
-            if results["success"]:
-                st.markdown(results["answer"])
-
-                if results["sources"]:
-                    with st.expander("View Sources"):
-                        for source in results["sources"]:
-                            st.markdown(f"[{source['title']}]({source['url']})")
-            else:
-                st.error(f"Error: {results.get('error', 'Unknown error')}")
-
+            
 
 def render_linkedin_optimizer_tool():
     """LinkedIn profile optimization using Google Search"""
