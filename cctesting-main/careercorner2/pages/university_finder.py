@@ -37,40 +37,21 @@ def get_student_admission_average():
     try:
         grades_reports = load_reports(user_id, "grades")
 
-        if grades_reports:
-            latest_report = grades_reports[0]
-            report_data = json.loads(latest_report['content'])
+        if not grades_reports:
+            return None
+            
+        latest_report = grades_reports[0]
+        report_data = json.loads(latest_report['content'])
 
-            if "final_cif" in report_data:
-                return report_data["final_cif"]
+        if "final_cif" in report_data:
+            return report_data["final_cif"]
 
-            elif "student_grades_data" in report_data:
-                gradesdata = report_data["student_grades_data"]
-                if gradesdata.get("inputmethod") == "manual":
-                    grades = gradesdata.get("grades", {})
-                    all_grades = []
-                    for year in ["10th", "11th", "12th"]:
-                        year_grades = grades.get(year, {})
-                        all_grades.extend([g for g in year_grades.values() if g > 0])
-                    if all_grades:
-                        secondary_avg = sum(all_grades) / len(all_grades)
-                        exams = grades.get("exams", {})
-                        exam_avg = sum(exams.values()) / len(exams) if exams else 0
-                        if exam_avg > 0:
-                            secondary_200 = secondary_avg * 10
-                            cif = (secondary_200 * 0.65) + (exam_avg * 0.35)
-                            return cif / 10
-                        else:
-                            return secondary_avg
-                elif gradesdata.get("inputmethod") in ["manualinternational", "fileinternational"]:
-                    subjects = gradesdata.get("subjects", [])
-                    if subjects:
-                        grades_list = [float(s.get("grade", 0)) for s in subjects if s.get("grade")]
-                        if grades_list:
-                            return min(sum(grades_list) / len(grades_list), 20)
-
-        if "student_grades_data" in st.session_state:
-            gradesdata = st.session_state["student_grades_data"]
+        elif "student_grades_data" in report_data:
+            gradesdata = report_data["student_grades_data"]
+            
+            if not gradesdata:  # ← Added this check
+                return None
+                
             if gradesdata.get("inputmethod") == "manual":
                 grades = gradesdata.get("grades", {})
                 all_grades = []
@@ -96,7 +77,7 @@ def get_student_admission_average():
 
         return None
 
-    except (json.JSONDecodeError, KeyError, IndexError) as e:
+    except Exception as e:
         print(f"Grade parse error: {e}")
         return None
 
@@ -321,7 +302,7 @@ def render_university_finder():
             st.rerun()
     with col2:
         if st.button("International", width='stretch', type="primary" if st.session_state.university_finder_mode == "International" else "secondary"):
-            st.session_state.university_finder_mode = "Somewhere else"
+            st.session_state.university_finder_mode = "International"
             st.rerun()
 
     if st.session_state.university_finder_mode == "Portugal":
