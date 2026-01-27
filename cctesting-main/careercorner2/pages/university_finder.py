@@ -297,11 +297,11 @@ def render_university_finder():
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Portugal", use_container_width=True, type="primary" if st.session_state.university_finder_mode == "Portugal" else "secondary"):
+        if st.button("Portugal", width="stretch", type="primary" if st.session_state.university_finder_mode == "Portugal" else "secondary"):
             st.session_state.university_finder_mode = "Portugal"
             st.rerun()
     with col2:
-        if st.button("International", use_container_width=True, type="primary" if st.session_state.university_finder_mode == "International" else "secondary"):
+        if st.button("International", width="stretch", type="primary" if st.session_state.university_finder_mode == "International" else "secondary"):
             st.session_state.university_finder_mode = "International"
             st.rerun()
 
@@ -325,7 +325,7 @@ def render_portuguese_finder():
             "Complete the Degree Picker first to get personalized degree ideas, "
             "or search universities directly below."
         )
-        if st.button("Go to Degree Picker", use_container_width=True):
+        if st.button("Go to Degree Picker", width="stretch"):
             st.session_state.redirect_to = "Degree Picker"
             st.rerun()
         st.markdown("---")
@@ -515,7 +515,7 @@ def render_portuguese_finder():
     if use_report:
         search_universities(degree, location, uni_type, ranking, show_grade_filter, grade_margin)
     else:
-        if st.button("Search Universities", use_container_width=True, type="primary"):
+        if st.button("Search Universities", width="stretch", type="primary"):
             search_universities(degree, location, uni_type, ranking, show_grade_filter, grade_margin)
             st.rerun()
 
@@ -715,11 +715,11 @@ def render_university_results():
                         "Saved",
                         key=f"saved_{idx}_{uni['name']}",
                         disabled=True,
-                        use_container_width=True,
+                        width="stretch",
                     )
                 else:
                     if st.button(
-                        "Save", key=f"save_{idx}_{uni['name']}", use_container_width=True
+                        "Save", key=f"save_{idx}_{uni['name']}", width="stretch"
                     ):
                         if save_university(user_id, uni):
                             save_single_university_to_reports(user_id, uni)
@@ -852,7 +852,7 @@ def render_international_finder():
         key="intl_preferences_input"
     )
 
-    if st.button("Search International Universities", type="primary", use_container_width=True):
+    if st.button("Search International Universities", type="primary", width="stretch"):
         with st.spinner("Searching for universities..."):
             try:
                 results = search_universities_gemini(
@@ -959,7 +959,7 @@ def render_international_results():
                         st.rerun()
 
                 if uni.get('website') and uni['website'] not in ['#', 'N/A']:
-                    st.link_button("Visit Website", uni['website'], use_container_width=True)
+                    st.link_button("Visit Website", uni['website'], width="stretch")
 
 
 def save_single_university_to_reports(user_id, uni):
