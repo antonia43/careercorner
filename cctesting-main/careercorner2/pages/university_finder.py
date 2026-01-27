@@ -746,7 +746,7 @@ def render_international_finder():
 
     col1, col2 = st.columns(2)
     with col1:
-        country = st.selectbox(
+        country_select = st.selectbox(
             "Country:",
             [
                 "Any Country",
@@ -769,15 +769,57 @@ def render_international_finder():
                 "Ireland",
                 "Norway",
                 "Finland",
+                "Other"  # ← ADDED
             ],
             key="intl_country_select"
         )
+        
+        # Handle "Other" country
+        if country_select == "Other":
+            country = st.text_input(
+                "Enter country name:",
+                placeholder="e.g., Japan, South Korea, Singapore",
+                key="intl_custom_country"
+            )
+            if not country.strip():
+                country = "Any Country"  # Fallback if they don't type anything
+        else:
+            country = country_select
+            
     with col2:
-        city = st.text_input(
-            "City (optional):",
-            placeholder="e.g., Berlin, Prague, Amsterdam",
-            key="intl_city_input"
+        city_select = st.selectbox(
+            "City:",
+            [
+                "Any City",
+                "London",
+                "Berlin",
+                "Amsterdam",
+                "Paris",
+                "Barcelona",
+                "Munich",
+                "Copenhagen",
+                "Stockholm",
+                "Vienna",
+                "Prague",
+                "Dublin",
+                "Oslo",
+                "Helsinki",
+                "Other"  # ← ADDED
+            ],
+            key="intl_city_select"
         )
+        
+        # Handle "Other" city
+        if city_select == "Other":
+            city = st.text_input(
+                "Enter city name:",
+                placeholder="e.g., Tokyo, Singapore, Dubai",
+                key="intl_custom_city"
+            )
+        elif city_select == "Any City":
+            city = ""
+        else:
+            city = city_select
 
     preferences = st.text_area(
         "Additional preferences (optional):",
