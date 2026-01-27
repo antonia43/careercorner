@@ -229,18 +229,51 @@ def get_company_research(company_name: str) -> dict:
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"""Provide comprehensive research on {company_name} including:
+            contents=f"""Research {company_name} and provide a comprehensive company profile.
 
-- Company culture and values
-- Recent news and developments
-- Employee reviews and ratings (Glassdoor, Indeed)
-- Work environment and benefits
-- Career growth opportunities
-- Salary information
+Structure your response exactly like this:
 
-Include both positive and negative aspects. Use clean markdown formatting.""",
+# {company_name}
+
+## Company Overview
+[Brief description of company, industry, and size]
+
+## Salary Information
+• Average salaries by role level
+• Benefits and compensation packages
+• Salary comparison to industry average
+
+## Positive Aspects
+• Key advantages of working there
+• Employee benefits
+• Career growth opportunities
+
+## Company Culture
+• Work environment and values
+• Work-life balance reputation
+• Employee sentiment from reviews
+
+## Challenges
+• Common concerns from employee reviews
+• Potential drawbacks to consider
+
+## Application Tips
+• Hiring process overview
+• What they look for in candidates
+• Interview preparation advice
+
+---
+
+FORMATTING RULES:
+- Use standard markdown headers (##)
+- Use bullet points (•) for lists
+- Write numbers and currency as plain text (not in code blocks)
+- NO code formatting or syntax highlighting
+- NO escaped characters like \\n
+- Be concise and factual""",
             config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())]
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.3  # Lower temperature for more consistent formatting
             )
         )
 
