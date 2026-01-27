@@ -73,7 +73,7 @@ def render_main_resources():
     # display selected tool
     if "active_pro_tool" in st.session_state:
         
-        st.markdown("---")
+
         
         if st.session_state.active_pro_tool == "jobs":
             render_job_search_tool()
