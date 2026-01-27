@@ -416,17 +416,17 @@ Rules:
 
 def render_international_grades_input():
     """International student manual grade entry"""
-    st.subheader("✍ International Grades Entry")
+    st.subheader("✍︎ International Grades Entry")
     
-    if st.button("← Back", key="btn_back_from_intl_entry", width='stretch'):
+    if st.button("← Back to Input Method Selection", key="btn_back_from_intl_entry", width="stretch"):
         st.session_state.grades_input_method = None
         st.rerun()
     
     st.markdown("---")
     
-    st.info("Enter all your subjects and grades. They'll be saved for university matching later!")
+    st.info("ⓘ Enter all your subjects and grades. We'll analyze them and provide guidance.")
     
-    # Initialize
+    # initializing temporary data
     if "temp_intl_grades" not in st.session_state:
         st.session_state.temp_intl_grades = []
     
@@ -439,7 +439,7 @@ def render_international_grades_input():
     
     st.markdown("---")
     
-    # Add subjects
+    # subject input form
     with st.form("intl_grades_form", clear_on_submit=True):
         st.write("**Add Subject:**")
         col1, col2, col3 = st.columns([3, 2, 1])
@@ -462,7 +462,7 @@ def render_international_grades_input():
             st.session_state.temp_intl_grades.append(new_subject)
             st.success(f"✓ Added: {subject_name}")
     
-    # Display current subjects
+    # displaying current subjects
     if st.session_state.temp_intl_grades:
         st.markdown("---")
         st.subheader(f"{len(st.session_state.temp_intl_grades)} Subjects Added")
@@ -482,10 +482,10 @@ def render_international_grades_input():
         
         st.markdown("---")
         
-        # Save
+        # saving
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("✓ Save & Continue", width='stretch', type="primary", key="btn_save_intl"):
+            if st.button("✓ Save & Continue", width="stretch", type="primary", key="btn_save_intl"):
                 st.session_state.student_grades_data = {
                     "student_type": "international",
                     "input_method": "manual",
@@ -496,12 +496,13 @@ def render_international_grades_input():
                 st.rerun()
         
         with col2:
-            if st.button("🗑 Clear All", width='stretch', key="btn_clear_intl"):
+            if st.button("🗑 Clear All", width="stretch", key="btn_clear_intl"):
                 st.session_state.temp_intl_grades = []
                 st.rerun()
     
     else:
         st.info("↑ Add your first subject above to get started!")
+
 
 
 def reset_grades_analysis():
