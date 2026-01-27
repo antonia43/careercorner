@@ -84,7 +84,7 @@ def render_student_main_resources():
     # Display selected tool
     if "active_tool" in st.session_state:
         
-        st.markdown("---")
+
         
         if st.session_state.active_tool == "exams":
             render_exam_papers_tool()
