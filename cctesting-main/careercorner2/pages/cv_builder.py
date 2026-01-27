@@ -20,6 +20,13 @@ GEMINI = LangfuseGeminiWrapper(
 )
 
 
+def go_back_cv_quiz():
+    """Navigate back in CV quiz"""
+    if st.session_state.cv_quiz_step > 0:
+        st.session_state.cv_quiz_step -= 1
+        st.rerun()
+
+
 
 def render_cv_builder():
     st.markdown('<div class="cc-fade-in">', unsafe_allow_html=True)
@@ -44,15 +51,12 @@ def render_cv_builder():
 def render_cv_quiz_builder():
     st.subheader("Build Your CV Through a Quick Quiz")
 
-
     if "cv_quiz_step" not in st.session_state:
         st.session_state.cv_quiz_step = 0
         st.session_state.cv_quiz_data = {}
 
-
     steps = ["personal_info", "education", "experience", "skills", "achievements"]
     step = steps[st.session_state.cv_quiz_step]
-
 
     if step == "personal_info":
         st.markdown("### Step 1/5: Personal Info")
@@ -64,14 +68,12 @@ def render_cv_quiz_builder():
         phone = st.text_input("Phone (optional)", key="cv_phone")
         location = st.text_input("Location (City, Country)", key="cv_location")
 
-
-        if st.button("Next: Education", width="stretch", key="next_edu"):
+        if st.button("Next: Education", width="stretch", type="primary", key="next_edu"):
             st.session_state.cv_quiz_data.update(
                 {"name": name, "email": email, "phone": phone, "location": location}
             )
             st.session_state.cv_quiz_step += 1
             st.rerun()
-
 
     elif step == "education":
         st.markdown("### Step 2/5: Education")
@@ -82,14 +84,17 @@ def render_cv_quiz_builder():
         school = st.text_input("University/School:", key="cv_school")
         years = st.text_input("Years (e.g., 2020–2024):", key="cv_edu_years")
 
-
-        if st.button("Next: Experience", width="stretch", key="next_exp"):
-            st.session_state.cv_quiz_data.setdefault("education", []).append(
-                {"degree": degree, "field": field, "school": school, "years": years}
-            )
-            st.session_state.cv_quiz_step += 1
-            st.rerun()
-
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back", width="stretch", key="back_edu"):
+                go_back_cv_quiz()
+        with col2:
+            if st.button("Next: Experience", width="stretch", type="primary", key="next_exp"):
+                st.session_state.cv_quiz_data.setdefault("education", []).append(
+                    {"degree": degree, "field": field, "school": school, "years": years}
+                )
+                st.session_state.cv_quiz_step += 1
+                st.rerun()
 
     elif step == "experience":
         st.markdown("### Step 3/5: Work Experience")
@@ -100,24 +105,26 @@ def render_cv_quiz_builder():
         with col2:
             years = st.text_input("Years (e.g., 2022–Present):", key="cv_exp_years")
 
-
         description = st.text_area(
             "Key responsibilities (3 bullet points):", height=120, key="cv_desc"
         )
 
-
-        if st.button("Next: Skills", width="stretch", key="next_skills"):
-            st.session_state.cv_quiz_data.setdefault("work_experience", []).append(
-                {
-                    "title": job_title,
-                    "company": company,
-                    "years": years,
-                    "description": description,
-                }
-            )
-            st.session_state.cv_quiz_step += 1
-            st.rerun()
-
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back", width="stretch", key="back_exp"):
+                go_back_cv_quiz()
+        with col2:
+            if st.button("Next: Skills", width="stretch", type="primary", key="next_skills"):
+                st.session_state.cv_quiz_data.setdefault("work_experience", []).append(
+                    {
+                        "title": job_title,
+                        "company": company,
+                        "years": years,
+                        "description": description,
+                    }
+                )
+                st.session_state.cv_quiz_step += 1
+                st.rerun()
 
     elif step == "skills":
         st.markdown("### Step 4/5: Top Skills")
@@ -127,20 +134,22 @@ def render_cv_quiz_builder():
             key="cv_skills"
         )
 
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back", width="stretch", key="back_skills"):
+                go_back_cv_quiz()
+        with col2:
+            if st.button("Next: Achievements", width="stretch", type="primary", key="next_achieve"):
+                skills = [s.strip() for s in skills_input.split(",") if s.strip()]
+                st.session_state.cv_quiz_data["skills"] = skills
+                st.session_state.cv_quiz_step += 1
+                st.rerun()
 
-        if st.button("Next: Achievements", width="stretch", key="next_achieve"):
-            skills = [s.strip() for s in skills_input.split(",") if s.strip()]
-            st.session_state.cv_quiz_data["skills"] = skills
-            st.session_state.cv_quiz_step += 1
-            st.rerun()
-
-
-    elif step == "achievements":
+    elif step == "achievements":  # ← FIXED: This needs to align with other elif statements
         st.markdown("### Step 5/5: Key Achievements")
         achievements = st.text_area(
             "3 biggest wins (one per line, with numbers):", height=150, key="cv_achievements"
         )
-
 
         col1, col2 = st.columns(2)
         with col1:
@@ -149,73 +158,78 @@ def render_cv_quiz_builder():
             industry = st.selectbox(
                 "Industry:", ["Tech", "Finance", "Marketing", "Healthcare", "Other"], key="cv_industry"
             )
-            
-        if st.button("Generate My CV", width="stretch", type="primary", key="gen_cv"):
-            st.session_state.cv_quiz_data.update(
-                {
-                    "achievements": [
-                        a.strip()
-                        for a in achievements.split("\n")
-                        if a.strip()
-                    ],
-                    "target_job": target_job,
-                    "industry": industry,
-                }
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back", width="stretch", key="back_achieve"):
+                go_back_cv_quiz()
+        with col2:
+            if st.button("Generate My CV", width="stretch", type="primary", key="gen_cv"):
+                st.session_state.cv_quiz_data.update(
+                    {
+                        "achievements": [
+                            a.strip()
+                            for a in achievements.split("\n")
+                            if a.strip()
+                        ],
+                        "target_job": target_job,
+                        "industry": industry,
+                    }
+                )
+
+                with st.spinner("Polishing your CV..."):
+                    polished_cv = polish_quiz_cv(st.session_state.cv_quiz_data)
+                    st.session_state.cv_data = polished_cv
+                    st.session_state.cv_quiz_step = 0
+
+                st.success("CV ready! Saved to My Reports.")
+                st.rerun()  # ← ADD THIS to trigger the display below
+    
+    # This section now runs when cv_quiz_step == 0 after generation
+    if step == "personal_info" and st.session_state.get("cv_data"):
+        if "username" in st.session_state and st.session_state.username:
+            try:
+                cv_summary = f"Built from CV Builder quiz for {st.session_state.cv_quiz_data.get('target_job', 'Role')} in {st.session_state.cv_quiz_data.get('industry', 'Industry')}"
+                
+                save_report(
+                    user_id=st.session_state.username,
+                    report_type="professional_cv",
+                    title=f"CV Builder - {st.session_state.cv_quiz_data.get('name', 'Unnamed')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                    content=cv_summary,
+                    cv_data=st.session_state.cv_data
+                )
+                
+                st.info("Automatically saved to My Reports!")
+            except Exception as e:
+                st.warning(f"Could not auto-save: {e}")
+        
+        st.divider()
+        st.subheader("Your CV")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            pdf_bytes = generate_pretty_cv_pdf(st.session_state.cv_data)
+            st.download_button(
+                "Download CV (PDF)",
+                data=pdf_bytes,
+                file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.pdf",
+                mime="application/pdf",
+                width="stretch"
             )
-
-
-            with st.spinner("Polishing your CV..."):
-                polished_cv = polish_quiz_cv(st.session_state.cv_quiz_data)
-                st.session_state.cv_data = polished_cv
-                st.session_state.cv_quiz_step = 0
-
-
-            st.success("CV ready! Saved to My Reports.")
-            
-            if "username" in st.session_state and st.session_state.username:
-                try:
-                    cv_summary = f"Built from CV Builder quiz for {target_job} in {industry}"
-                    
-                    save_report(
-                        user_id=st.session_state.username,
-                        report_type="professional_cv",
-                        title=f"CV Builder - {st.session_state.cv_quiz_data.get('name', 'Unnamed')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-                        content=cv_summary,
-                        cv_data=polished_cv
-                    )
-                    
-                    st.info("Automatically saved to My Reports!")
-                except Exception as e:
-                    st.warning(f"Could not auto-save: {e}")
-            
-            st.divider()
-            st.subheader("Your CV")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                pdf_bytes = generate_pretty_cv_pdf(polished_cv)
-                st.download_button(
-                    "Download CV (PDF)",
-                    data=pdf_bytes,
-                    file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.pdf",
-                    mime="application/pdf",
-                    width="stretch"
-                )
-            
-            with col2:
-                cv_json = generate_cv_json(polished_cv)
-                st.download_button(
-                    "Download CV (JSON)",
-                    data=cv_json,
-                    file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.json",
-                    mime="application/json",
-                    width="stretch"
-                )
-            
-            with st.expander("Preview CV Data"):
-                st.json(polished_cv)
-
+        
+        with col2:
+            cv_json = generate_cv_json(st.session_state.cv_data)
+            st.download_button(
+                "Download CV (JSON)",
+                data=cv_json,
+                file_name=f"cv_{st.session_state.cv_quiz_data.get('name', 'resume').replace(' ', '_').lower()}.json",
+                mime="application/json",
+                width="stretch"
+            )
+        
+        with st.expander("Preview CV Data"):
+            st.json(st.session_state.cv_data)
 
 
 def render_cover_letter():
