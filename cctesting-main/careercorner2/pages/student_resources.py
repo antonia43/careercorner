@@ -53,29 +53,29 @@ def render_student_main_resources():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Past Exam Papers", width="stretch", type="primary"):
+        if st.button("Past Exam Papers", use_container_width=True, type="primary"):
             st.session_state.active_tool = "exams"
             st.rerun()
         
-        if st.button("Study Resources", width="stretch", type="primary"):
+        if st.button("Study Resources", use_container_width=True, type="primary"):
             st.session_state.active_tool = "study"
             st.rerun()
     
     with col2:
-        if st.button("Scholarships",width="stretch", type="primary"):
+        if st.button("Scholarships", use_container_width=True, type="primary"):
             st.session_state.active_tool = "scholarships"
             st.rerun()
         
-        if st.button("Career Options", width="stretch", type="primary"):
+        if st.button("Career Options", use_container_width=True, type="primary"):
             st.session_state.active_tool = "careers"
             st.rerun()
     
     with col3:
-        if st.button("Wage Finder", width="stretch", type="primary"):
+        if st.button("Wage Finder", use_container_width=True, type="primary"):
             st.session_state.active_tool = "wages"
             st.rerun()
         
-        if st.button("❤︎ Support Chat", width="stretch"):
+        if st.button("❤︎ Support Chat", use_container_width=True):
             st.session_state.resources_mode = "chat"
             st.rerun()
     
@@ -83,9 +83,6 @@ def render_student_main_resources():
     
     # Display selected tool
     if "active_tool" in st.session_state:
-        
-
-        
         if st.session_state.active_tool == "exams":
             render_exam_papers_tool()
         elif st.session_state.active_tool == "scholarships":
@@ -105,8 +102,14 @@ def render_student_resources_chat():
     
     user_id = st.session_state.get("username", "demo_user")
     
+    # Load all user data
     degree_reports = load_reports(user_id, "degree")
     grades_reports = load_reports(user_id, "grades")
+    saved_unis = get_saved_universities(user_id)
+    
+    # Split saved universities by type
+    portuguese_unis = [uni for uni in saved_unis if uni.get('type') != 'International']
+    international_unis = [uni for uni in saved_unis if uni.get('type') == 'International']
     
     col1, col2 = st.columns(2)
     with col1:
@@ -137,10 +140,26 @@ def render_student_resources_chat():
             selected_grades_data = None
             st.info("⚠︎ No grades analysis")
     
-    # Data summary
+    # Data summary with universities
     data_summary = f"""Student Data ({user_id}):
 • Degrees: {len(degree_reports)} available
-• Grades: {len(grades_reports)} available"""
+• Grades: {len(grades_reports)} available
+• Saved Universities: {len(portuguese_unis)} Portuguese, {len(international_unis)} International"""
+    
+    # Format saved universities for context
+    unis_context = ""
+    if portuguese_unis:
+        unis_context += "\n\nSAVED PORTUGUESE UNIVERSITIES:\n"
+        for uni in portuguese_unis:
+            unis_context += f"- {uni.get('name', 'N/A')}: {uni.get('program_name', 'N/A')} (Grade: {uni.get('average_grade_required', 'N/A')}, Location: {uni.get('location', 'N/A')})\n"
+    
+    if international_unis:
+        unis_context += "\n\nSAVED INTERNATIONAL UNIVERSITIES:\n"
+        for uni in international_unis:
+            unis_context += f"- {uni.get('name', 'N/A')}: {uni.get('program_name', 'N/A')} (Location: {uni.get('location', 'N/A')})\n"
+    
+    if not saved_unis:
+        unis_context = "\n\nSAVED UNIVERSITIES: None yet"
     
     # Internal context for AI
     internal_context = f"""You have access to this student's data:
@@ -149,7 +168,8 @@ SELECTED DEGREE: {selected_degree_data.get('title', 'None') if selected_degree_d
 Degree Content: {selected_degree_data.get('content', 'No degree recommendations yet') if selected_degree_data else 'No degree recommendations yet'}
 
 SELECTED GRADES: {selected_grades_data.get('title', 'None') if selected_grades_data else 'None'}
-Grades Content: {selected_grades_data.get('content', 'No grades uploaded yet') if selected_grades_data else 'No grades uploaded yet'}"""
+Grades Content: {selected_grades_data.get('content', 'No grades uploaded yet') if selected_grades_data else 'No grades uploaded yet'}
+{unis_context}"""
     
     welcome_message = f"""Hi! I'm here to support you on your academic journey!
 
@@ -158,9 +178,10 @@ Grades Content: {selected_grades_data.get('content', 'No grades uploaded yet') i
 I can help you with:  
 ✦ **Study planning** based on your grades and goals  
 ✦ **Degree selection advice** using your recommendations  
+✦ **University choices** from your saved list  
 ✦ **Academic improvement strategies** personalized to your level  
 ✦ **Emotional support** and motivation  
-✦ **Career guidance** and university choices  
+✦ **Career guidance** and application tips  
 
 What's on your mind today?"""
     
@@ -186,11 +207,12 @@ User question: {prompt}
 
 INSTRUCTIONS:
 - Be supportive, empathetic, and encouraging
-- Reference their degree recommendations and grades specifically when relevant
-- Help them make decisions about degrees, study plans, academic improvement
+- Reference their degree recommendations, grades, and saved universities specifically when relevant
+- Help them make decisions about degrees, study plans, university applications, academic improvement
 - Provide actionable advice and motivation
 - Focus on guidance and emotional support
-- For Portuguese students: consider DGES system, nacional exams, CIF scores"""
+- For Portuguese students: consider DGES system, nacional exams, CIF scores
+- When discussing universities, use the specific ones they've saved and compare admission requirements with their grades"""
                 
                 response_text = GEMINI_CHAT.generate_content(
                     enriched_prompt,
@@ -206,14 +228,14 @@ INSTRUCTIONS:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("⟲ Restart Chat", width='stretch'):
+        if st.button("⟲ Restart Chat", use_container_width=True):
             st.session_state.student_resources_chat_history = [
                 {"role": "assistant", "content": welcome_message}
             ]
             st.rerun()
     
     with col2:
-        if st.button("← Back to Tools", width='stretch'):
+        if st.button("← Back to Tools", use_container_width=True):
             if "resources_mode" in st.session_state:
                 del st.session_state.resources_mode
             st.rerun()
@@ -225,3 +247,4 @@ def render_student_resources():
         render_student_resources_chat()
     else:
         render_student_main_resources()
+
