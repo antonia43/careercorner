@@ -111,9 +111,9 @@ def render_student_resources_chat():
     col1, col2 = st.columns(2)
     with col1:
         if degree_reports:
-            degree_options = {f"Degree: {r.get('title', 'Untitled')}": r for r in degree_reports}
+            degree_options = {f"{r.get('title', 'Untitled')}": r for r in degree_reports}
             selected_degree = st.selectbox(
-                "☰ Select Degree:", 
+                "☰ Select Degree Picker Report:", 
                 options=list(degree_options.keys()), 
                 index=0,
                 key="selected_degree"
