@@ -318,7 +318,6 @@ def render_exam_papers_tool():
     st.subheader("Past Exam Papers")
     st.info("Access official IAVE nacional exam papers from previous years")
 
-    st.markdown("---")
 
     st.markdown("### Current Year Exams")
     st.caption("Browse the latest nacional exams")
@@ -329,7 +328,6 @@ def render_exam_papers_tool():
         type="primary"
     )
 
-    st.markdown("---")
 
     st.markdown("### Complete Archive (All Years)")
     st.caption("Access past papers from all previous years")
@@ -340,8 +338,7 @@ def render_exam_papers_tool():
         type="primary"
     )
 
-    st.markdown("---")
-    st.caption("Tip: Practice with past papers to improve your exam technique")
+    st.caption("✪ Tip: Practice with past papers to improve your exam technique!")
 
 
 def render_scholarships_tool():
