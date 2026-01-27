@@ -183,9 +183,8 @@ def render_cv_quiz_builder():
                     st.session_state.cv_quiz_step = 0
 
                 st.success("CV ready! Saved to My Reports.")
-                st.rerun()  # ← ADD THIS to trigger the display below
-    
-    # This section now runs when cv_quiz_step == 0 after generation
+                st.rerun()
+                
     if step == "personal_info" and st.session_state.get("cv_data"):
         if "username" in st.session_state and st.session_state.username:
             try:
@@ -245,7 +244,6 @@ def render_cover_letter():
 
     profile = base_cv if use_cv else {}
 
-    # ADD THIS: Input method selection
     input_method = st.radio(
         "How would you like to provide the job description?",
         ["Paste text", "Provide URL"],
@@ -267,8 +265,6 @@ def render_cover_letter():
         if st.button("Fetch Job Description", key="fetch_job_btn"):
             if job_url.strip():
                 with st.spinner("Reading job posting from URL..."):
-                    # Import the function at the top of the file
-                    from tools import fetch_job_description_from_url
                     
                     result = fetch_job_description_from_url(job_url.strip())
                     
