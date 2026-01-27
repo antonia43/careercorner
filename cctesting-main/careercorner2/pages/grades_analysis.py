@@ -95,7 +95,6 @@ def render_student_type_selection():
 
 def render_input_method_selection():
     """Choose input method based on student type"""
-    st.markdown("---")
     
     student_type = st.session_state.student_type
     
@@ -104,7 +103,6 @@ def render_input_method_selection():
     else:
         st.info("**International Student**: Choose how to enter your grades")
     
-    st.markdown("---")
     
     col1, col2 = st.columns(2)
     
@@ -132,7 +130,6 @@ def render_input_method_selection():
             st.session_state.grades_input_method = "upload"
             st.rerun()
     
-    st.markdown("---")
     
     if st.button("← Back to Student Type", width='stretch', key="btn_back_to_student_type"):
         st.session_state.student_type = None
@@ -159,7 +156,6 @@ def save_international_grades():
             for subj in subjects:
                 st.write(f"- **{subj['name']}**: {subj['grade']} ({subj.get('year', 'N/A')})")
     
-    st.markdown("---")
     
     # Auto saving to database
     if "username" in st.session_state and st.session_state.username:
@@ -181,7 +177,6 @@ def save_international_grades():
             st.success("🗂️ Grades saved to My Reports!")
             st.session_state.final_grade_calculated = True
             
-            st.markdown("---")
             
             st.info("ⓘ **Next Steps**: Use your saved grades in University Finder to find matching programs!")
             
@@ -210,7 +205,6 @@ def render_file_upload_grades():
         st.session_state.grades_input_method = None
         st.rerun()
     
-    st.markdown("---")
     
     student_type = st.session_state.student_type
     
@@ -239,7 +233,6 @@ def render_file_upload_grades():
         if file_extension in ['jpg', 'jpeg', 'png']:
             st.image(temp_filename, caption="Uploaded Document", width="stretch")
         
-        st.markdown("---")
         
         if st.button("⟡ Extract Grades", width='stretch', type="primary", key="btn_extract_grades"):
             with st.spinner("Analyzing document and extracting grades... This may take a moment!"):
@@ -278,7 +271,6 @@ def render_file_upload_grades():
                         for subj in extracted_data.get('subjects', []):
                             st.write(f"- **{subj['name']}**: {subj['grade']} ({subj.get('year', 'N/A')})")
                 
-                st.markdown("---")
                 
                 col1, col2 = st.columns(2)
                 
@@ -303,7 +295,6 @@ def render_file_upload_grades():
                 st.write("- Text is not clear or readable")
                 st.write("- Format is not recognized")
                 
-                st.markdown("---")
                 
                 if st.button("✎ Try Manual Entry Instead", width='stretch', key="btn_manual_after_failed_extract"):
                     st.session_state.grades_input_method = "manual"
@@ -422,7 +413,6 @@ def render_international_grades_input():
         st.session_state.grades_input_method = None
         st.rerun()
     
-    st.markdown("---")
     
     st.info("ⓘ Enter all your subjects and grades. We'll analyze them and provide guidance.")
     
@@ -437,7 +427,6 @@ def render_international_grades_input():
     with col2:
         grade_scale = st.text_input("Grade Scale", placeholder="e.g., 0-100, A-F, 1-10", key="intl_scale")
     
-    st.markdown("---")
     
     # subject input form
     with st.form("intl_grades_form", clear_on_submit=True):
@@ -464,7 +453,6 @@ def render_international_grades_input():
     
     # displaying current subjects
     if st.session_state.temp_intl_grades:
-        st.markdown("---")
         st.subheader(f"{len(st.session_state.temp_intl_grades)} Subjects Added")
         
         for i, subj in enumerate(st.session_state.temp_intl_grades):
@@ -480,7 +468,6 @@ def render_international_grades_input():
                     st.session_state.temp_intl_grades.pop(i)
                     st.rerun()
         
-        st.markdown("---")
         
         # saving
         col1, col2 = st.columns(2)
@@ -532,7 +519,6 @@ def calculate_and_save_grade():
     
 
     
-    st.markdown("---")
     
     # checking if stuedent has exam grades
     has_exams = False
@@ -545,7 +531,6 @@ def calculate_and_save_grade():
         
         weights = {'secondary': 1.0, 'exam': 0.0}
         
-        st.markdown("---")
         
         # calculate button
         if st.button("⟡ Calculate My Current Average", width='stretch', type="primary", key="btn_calculate_final_grade"):
@@ -637,7 +622,6 @@ def calculate_and_save_grade():
             weights = {'secondary': secondary_pct / 100, 'exam': exam_pct / 100}
             st.info(f"✓ Using {secondary_pct}:{exam_pct} split")
     
-    st.markdown("---")
     
     # calculate button
     if st.button("÷ Calculate My Final Grade", width='stretch', type="primary", key="btn_calculate_final_grade"):
@@ -679,7 +663,6 @@ def show_final_results():
     
     weights = st.session_state.grades_calculation_weights
     
-    st.markdown("---")
     st.success("✓ Your final grade has been calculated and saved!")
     
     st.markdown("𖥠 Your Admission Average")
@@ -697,7 +680,6 @@ def show_final_results():
         st.write(f"{int(weights['secondary']*100)}% Secondary")
         st.write(f"{int(weights['exam']*100)}% Exams")
     
-    st.markdown("---")
     
     # 3 options for comparing against courses
     st.subheader("Compare Against Courses")
@@ -841,7 +823,6 @@ def show_final_results():
                     
                     if saved_universities_data:
                         st.write(f"**Comparing your grade ({final_grade_20:.2f}/20) against your saved universities:**")
-                        st.markdown("---")
                         
                         # sorting by required grade (ascending)
                         saved_universities_data.sort(key=lambda x: x["required_grade"])
@@ -964,7 +945,6 @@ def show_university_finder_button():
 def check_course_grade_range(course_name, student_grade):
     """Check grade range for a specific course - NO UNIVERSITY LIST"""
     
-    st.markdown("---")
     
     with st.spinner(f"Searching DGES database for {course_name}!"):
         dges_results = fetch_dges_data(course_name)
@@ -1034,7 +1014,6 @@ def check_course_grade_range(course_name, student_grade):
     st.progress(position / 100)
     st.write(f"**Status:** {status}")
     
-    st.markdown("---")
 
 
 def calculate_admission_average(grades_data, weights):
@@ -1181,7 +1160,6 @@ def render_manual_grades_input():
     
 
     
-    st.markdown("---")
     
     st.subheader("Step 1: Select Your Track")
     track = st.selectbox(
@@ -1210,7 +1188,6 @@ def render_manual_grades_input():
             }
         st.rerun()
     
-    st.markdown("---")
     
     st.subheader("Step 2: Select Your Year")
     current_year = st.selectbox(
@@ -1219,7 +1196,6 @@ def render_manual_grades_input():
         key="current_year_select"
     )
     
-    st.markdown("---")
     
     if "temp_grades" not in st.session_state:
         st.session_state.temp_grades = {
@@ -1278,7 +1254,6 @@ def render_manual_grades_input():
         years_to_collect = ["10th", "11th", "12th"]
     
     # st.info(f"Track: **{track}** | Main subjects for this track: {', '.join(track_subjects)}")
-    st.markdown("---")
     
     for year_idx, year in enumerate(years_to_collect):
         st.subheader(f"Step {3 + year_idx}: {year} Grade Subjects")
@@ -1327,7 +1302,6 @@ def render_manual_grades_input():
                                         del st.session_state.temp_grades[year][subject]
                                     st.rerun()
         
-        st.markdown("---")
         st.write(f"**Add extra subjects for {year}:**")
         
         col1, col2, col3 = st.columns([2, 2, 1])
@@ -1368,7 +1342,6 @@ def render_manual_grades_input():
                 else:
                     st.warning("Please select or type a subject name first!")
         
-        st.markdown("---")
     
     if "11th" in current_year or "12th" in current_year:
         st.subheader("National Exams")
@@ -1422,8 +1395,7 @@ def render_manual_grades_input():
                         help="What grade do you think you'll get? Or leave as estimate."
                     )
                     st.session_state.temp_grades["exams"][exam] = predicted
-    
-    st.markdown("---")
+
     
     col1, col2 = st.columns(2)
     
@@ -1463,7 +1435,6 @@ def render_manual_grades_input():
         st.session_state.grades_input_method = None
         st.rerun()
     
-    st.markdown("---")
     
     st.info("ⓘ Enter all your subjects and grades. We'll analyze them and provide guidance.")
     
@@ -1514,7 +1485,6 @@ def render_manual_grades_input():
                 st.session_state.temp_intl_grades.pop(i)
                 st.rerun()
         
-        st.markdown("---")
         
         # saving
         col1, col2 = st.columns(2)
