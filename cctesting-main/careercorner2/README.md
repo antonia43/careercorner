@@ -137,8 +137,9 @@ Dual-mode feature combining five quick search options and support chat. Quick se
   - AI references your specific data for personalized advice
   - Ask: "Help me understand my final score", "I'm confused between two degrees, help me decide based on my quiz", "Are there any programs I saved that accept my current grade?"
 - **Tech:**
-  - Quick Search: Built-in Google Search tools (get_study_resources_web, get_career_options, get_wage_info, get_scholarships, get_exam_papers)
-  - Support Chat: Gemini 2.5 Flash with function calling (search_saved_universities, calculate_admission_grade, search_dges_database, get_student_profile)
+  - Quick Search: Built-in Google Search tools (`get_study_resources_web`, `get_career_options`, `get_wage_info`, `get_scholarships`, `get_exam_papers`)
+  - Support Chat: Gemini 2.5 Flash with function calling (`search_saved_universities`, `calculate_admission_grade`, `search_dges_database`, `get_student_profile`)
+
 
 ### For Professionals:
 
@@ -206,7 +207,6 @@ Practice job interviews with AI-generated questions tailored to your CV and targ
 - **Tech:** Gemini 2.5 Flash, CV JSON integration, session state for multi-question flow
 
 #### **Professional Resources – Your Next Steps**
-
 Dual-mode feature combining quick job/course search and support chat. Quick search mode surfaces real job postings (Portugal-focused) and online courses to grow your skills, while support chat lets you select CV/quiz reports from dropdowns so the AI can reference your actual profile when giving advice like "What roles fit my CV?" or "What courses close my skill gaps?".
 
 - **Quick Search Features:**
@@ -220,8 +220,8 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
   - AI reads your parsed skills, experience, and sector matches before answering
   - Ask: "What jobs match my CV?", "How do I pivot from data analyst to product manager?", "Which skills should I prioritize next?", "Does my profile fit this kind of role?"
 - **Tech:**
-  - Quick Search: Built-in web tools (get_job_search_results, get_course_recommendations, get_linkedin_profile_optimization, get_company_research)
-  - Support Chat: Gemini 2.5 Flash with function calling (get_cv_analysis, get_career_quiz_results, analyze_skill_gaps, get_career_roadmap, get_professional_profile)
+  - Quick Search: Built-in web tools (`get_job_search_results`, `get_course_recommendations`, `get_linkedin_profile_optimization`, `get_company_research`)
+  - Support Chat: Gemini 2.5 Flash with function calling (`get_cv_analysis`, `get_career_quiz_results`, `analyze_skill_gaps`, `get_career_roadmap`, `get_professional_profile`)
 
 
 ## Tech Stack
