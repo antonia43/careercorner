@@ -323,28 +323,64 @@ Centralizes all AI settings and prompts in three files: `models.py` (model names
 Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide animations, hover effects, and responsive components. `apply_custom_css()` called from `zapp.py` ensures consistent branding.
 
 
-### Key Design Decisions
 
-1. **Dual Dashboard Architecture:** Separate `student_dashboard.py` vs `professional_dashboard.py` prevents feature overload while sharing common services/database. Onboarding gates confirm user type before access.
+## File Overview
 
-2. **LangfuseGeminiWrapper Pattern:** Single wrapper handles 95% of Gemini calls with automatic tracing (user_id, session_id, temperature, metadata). Raw Gemini client used only for function calling in resources. Graceful fallback if Langfuse unavailable.
+| File | Purpose |
+|------|---------|
+| `zapp.py` | **Main Streamlit entry point** with student/professional dashboard routing and sidebar navigation |
+| `styles.py` | **Custom CSS styling** with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
+| `langfuse_helper.py` | **LangfuseGeminiWrapper** for all Gemini calls with v3 tracing, user_id/session_id tracking, feedback logging) |
+| `database.py` | **SQLite CRUD** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
+| `reports.py` | **Tabbed My Reports interface** with CV selectors, delete buttons, student/pro separate tabs |
+| `authentication.py` | **Local login/register** with Werkzeug password hashing and session management |
+| `student_dashboard.py` | **Student tool routing** (Career Quiz, Grades, Degree Picker, University Finder, Resources) |
+| `professional_dashboard.py` | **Professional tool routing** (CV Analysis, Career Growth, Interview Prep, CV Builder, Your Next Steps) |
+| `student_career_quiz.py` | **Adaptive 10Q career quiz** → sector matches (Healthcare 60%) + degree paths, auto-saves |
+| `career_growth_quiz.py` | **CV-aware professional quiz** (Experience + Soft Skills phases) → growth paths, uses parsed CV JSON |
+| `grades_analysis.py` | **Grades extractor and CIF calculator** → Portuguese/international transcript parsing, DGES admission comparison |
+| `cv_analysis.py` | **Multimodal PDF/DOCX parser** → structured CV JSON (skills/experience/education) |
+| `cv_builder.py` | **2-tab CV toolkit** (quiz→ build CV, cover letters) → ReportLab PDF + JSON export |
+| `university_finder.py` | **University degree search** (Portugal DGES + International Gemini search) → save favorites, grade comparison |
+| `interview_simulator.py` | **Mock interviews** (Quick Practice 3-5Q + Mock 10Q) with STAR feedback scoring (1-10) |
+| `student_resources.py` | **Student support tools** (exam papers, scholarships, study resources, wage finder) + function calling chat |
+| `resources.py` | **Professional support tools** (job search, courses, LinkedIn optimizer, company research) + function calling chat |
+| `student_chat.py` | **Student dashboard AI** (5Q rule → tool recs: "Career Quiz would suit you best") |
+| `professional_chat.py` | **Professional dashboard AI** (5Q rule → "CV Analysis would suit you best") |
+| `tools.py` | **Built-in tool definitions** (shared search tools for both student and professional resources) |
+| `student_tools.py` | **Function calling tool definitions** for student support chat (get_saved_universities, get_user_profile, etc.) |
+| `professional_tools.py` | **Function calling tool definitions** for professional support chat (analyze_cv, generate_roadmap, etc.) |
+| `models.py` | **Model configurations** (gemini-2.5-flash settings, temperature presets per feature: 0.1–0.9) |
+| `prompts.py` | **Centralized prompt templates** (30+ prompts organized by module with .format() placeholders) |
+| `schemas.py` | **Schemas and fallbacks** (CV extraction schema, fallback questions, dropdown options for UI) |
+| `.env` | **API secrets** (Gemini/Langfuse keys) - **do not commit to Git!** (.gitignore protected) |
+| `requirements.txt` | **Core dependencies** for pip install (streamlit, google-generativeai, langfuse, etc.) |
 
-3. **Database-First Persistence:** SQLite tempdir stores everything (reports, CVs, universities) enabling dropdown selection in chats ("Select CV: My Resume - 2025-12-21"). No data loss across Streamlit reruns/sessions.
 
-4. **One File Per Feature:** 14 UI files (`student_career_quiz.py`, `cv_builder.py`, etc.) = modular development, each file self-contained with session_state management.
+## **Key Features to Highlight**
 
-5. **5-Question Chat Routing:** Dashboard chatbots (`student_chat.py`, `professional_chat.py`) ask 5 natural questions before recommending tools ("Career Quiz would suit you best because..."). Prevents premature tool spam, builds context and helps users navigate the app with ease.
+#### **Data Persistence**
+- All reports saved in SQLite database
+- Reload past quizzes, CVs, grades, degrees
+- Delete individual saved universities
 
-6. **Streamlit-Native Workflows:** No FastAPI/React. Session_state + `st.rerun()` handles complex multi-step flows (10Q quizzes, 10Q interviews). Progress bars + back/next navigation prevent user frustration.
+#### **Auto-saving results**
+- Avoids data loss
 
-7. **Zero External Dependencies:** SQLite tempdir + standard library (json/re/os/datetime) = instant deployment. Only 6 pip packages needed. Works offline except Gemini API calls.
+#### **Interactive Map (University Finder for Portuguese Students)**
+- Click university markers on Folium map
+- See admission grades, location, website
+- Filter by CIF range
 
-**Why This Works:** All files are production-ready, so zero configurations are needed to deploy to Streamlit Cloud. The project relies only on a small, well-defined set of Python dependencies and the built-in SQLite database, which means there is no need to provision external services, containers, or complex infrastructure. The folder structure is clear and consistent, with each major feature living in its own file, so the application can be understood and modified quickly even by someone new joining the project.
+#### **Document Upload**
+- Supports PDF and images (JPG, PNG)
+- Multimodal Gemini extracts text from any format
+- Works with messy/scanned documents
 
-The use of a single Gemini wrapper with integrated tracing ensures that every AI interaction is automatically logged with the same pattern, instead of each page having its own fragile API logic. This makes it much easier to debug quizzes, CV analysis, or interview feedback without hunting through different files or logging systems. Observability becomes a built-in part of the architecture rather than an afterthought, so prompt iterations and quality improvements can be done with confidence.
-
-Because each feature is encapsulated in its own Streamlit page file, the codebase scales very naturally: new tools can be added as new files, and existing ones can be refactored in isolation. At the same time, the shared services and database utilities keep repeated logic in one place, so the overall complexity stays low. The result is a system that is modular enough to support team development—different people can own different feature files—but still simple enough that a single maintainer can understand, debug, and extend the whole application without feeling overwhelmed.
-
+#### **Dropdown Selection in Resources Chat**
+- Both student and professional chat modes have dropdowns
+- Select which report to reference (e.g., "CV: My Resume - 2025-12-11")
+- AI uses selected report content for personalized answers
 
 
 ## Installation & Setup
@@ -356,12 +392,13 @@ Because each feature is encapsulated in its own Streamlit page file, the codebas
 - **Langfuse Account (Optional):** [Sign up](https://langfuse.com)
 - **Google OAuth Credentials (Optional):** [Google Cloud Console](https://console.cloud.google.com)
 
+
 ### Installation Steps
 
 1. Clone the repository:
 ```bash
-git clone [your-repo-url]
-cd [careercorner1]
+git clone (https://github.com/antonia43/careercorner)
+cd [careercorner]
 ```
 
 2. Install dependencies:
@@ -455,6 +492,51 @@ sqlite3
 5. **Start Chat:** Have fun! The app is very intuitive, it tells you all you need to know to properly navigate it.
 
 
+## Deployment
+
+**Live Application:** https://careercorner.streamlit.app
+
+**Deployment Platform:** Streamlit Cloud
+
+### **Streamlit Cloud**
+1. **Push Code to GitHub:**
+```
+git add .
+git commit -m "Ready for deployment"
+git push origin main
+```
+
+2. **Deploy on Streamlit Cloud:**
+- Go to [share.streamlit.io](https://share.streamlit.io)
+- Click "New app"
+- Select your GitHub repo (career-corner)
+- Set main file: `zapp.py`
+
+3. **Add Secrets:**
+- In Streamlit Cloud dashboard -> "Settings" -> "Secrets"
+- Paste your `.env` content:
+
+4. **Deploy:**
+- Click "Deploy"
+- App will be live at your preferred https address
+
+Note: ensure imports are using the right structure (e.g. from utils.database import load_report; not from database import load_report)
+
+
+### **Local Deployment**
+
+Run with custom port
+streamlit run zapp.py --server.port 8502
+
+Run with network access
+streamlit run zapp.py --server.address 0.0.0.0
+
+Run with production-like settings
+streamlit run zapp.py --server.headless true
+
+Note: imports with structure `from utils.database import load_report` may yield errors. If thats the case, you can use directly `from database import load_report`.
+
+
 ---
 **Example Workflow (Student):**
 
@@ -544,114 +626,12 @@ sqlite3
 ```
 
 
-### **Key Features to Highlight**
-
-#### **Data Persistence**
-- All reports saved in SQLite database
-- Reload past quizzes, CVs, grades, degrees
-- Delete individual saved universities
-
-#### **Auto-saving results**
-- Avoids data loss
-
-#### **Interactive Map (University Finder for Portuguese Students)**
-- Click university markers on Folium map
-- See admission grades, location, website
-- Filter by CIF range
-
-#### **Document Upload**
-- Supports PDF and images (JPG, PNG)
-- Multimodal Gemini extracts text from any format
-- Works with messy/scanned documents
-
-#### **Dropdown Selection in Resources Chat**
-- Both student and professional chat modes have dropdowns
-- Select which report to reference (e.g., "CV: My Resume - 2025-12-11")
-- AI uses selected report content for personalized answers
-
-
-
-## Deployment
-
-**Live Application:** https://careercorner.streamlit.app
-
-**Deployment Platform:** Streamlit Cloud
-
-### **Streamlit Cloud**
-1. **Push Code to GitHub:**
-```
-git add .
-git commit -m "Ready for deployment"
-git push origin main
-```
-
-2. **Deploy on Streamlit Cloud:**
-- Go to [share.streamlit.io](https://share.streamlit.io)
-- Click "New app"
-- Select your GitHub repo (career-corner)
-- Set main file: `zapp.py`
-
-3. **Add Secrets:**
-- In Streamlit Cloud dashboard -> "Settings" -> "Secrets"
-- Paste your `.env` content:
-
-4. **Deploy:**
-- Click "Deploy"
-- App will be live at your preferred https address
-
-Note: ensure imports are using the right structure (e.g. from utils.database import load_report; not from database import load_report)
-
-
-### **Local Deployment (Testing)**
-
-Run with custom port
-streamlit run zapp.py --server.port 8502
-
-Run with network access
-streamlit run zapp.py --server.address 0.0.0.0
-
-Run with production-like settings
-streamlit run zapp.py --server.headless true
-
-Note: imports with structure `from utils.database import load_report` may yield errors. If thats the case, you can use directly `from database import load_report`.
-
-
-| File | Purpose |
-|------|---------|
-| `zapp.py` | **Main Streamlit entry point** with student/professional dashboard routing and sidebar navigation |
-| `styles.py` | **Custom CSS styling** with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
-| `langfuse_helper.py` | **LangfuseGeminiWrapper** for all Gemini calls with v3 tracing, user_id/session_id tracking, feedback logging (95% of AI calls) |
-| `database.py` | **SQLite CRUD** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
-| `reports.py` | **Tabbed My Reports interface** with CV selectors, delete buttons, student/pro separate tabs |
-| `authentication.py` | **Local login/register** with Werkzeug password hashing and session management |
-| `student_dashboard.py` | **Student tool routing** (Career Quiz, Grades, Degree Picker, University Finder, Resources) |
-| `professional_dashboard.py` | **Professional tool routing** (CV Analysis, Career Growth, Interview Prep, CV Builder, Your Next Steps) |
-| `student_career_quiz.py` | **Adaptive 10Q career quiz** → sector matches (Healthcare 60%) + degree paths, auto-saves |
-| `career_growth_quiz.py` | **CV-aware professional quiz** (Experience + Soft Skills phases) → growth paths, uses parsed CV JSON |
-| `grades_analysis.py` | **Grades extractor and CIF calculator** → Portuguese/international transcript parsing, DGES admission comparison |
-| `cv_analysis.py` | **Multimodal PDF/DOCX parser** → structured CV JSON (skills/experience/education) |
-| `cv_builder.py` | **2-tab CV toolkit** (quiz→ build CV, cover letters) → ReportLab PDF + JSON export |
-| `university_finder.py` | **University degree search** (Portugal DGES + International Gemini search) → save favorites, grade comparison |
-| `interview_simulator.py` | **Mock interviews** (Quick Practice 3-5Q + Mock 10Q) with STAR feedback scoring (1-10) |
-| `student_resources.py` | **Student support tools** (exam papers, scholarships, study resources, wage finder) + function calling chat |
-| `resources.py` | **Professional support tools** (job search, courses, LinkedIn optimizer, company research) + function calling chat |
-| `student_chat.py` | **Student dashboard AI** (5Q rule → tool recs: "Career Quiz would suit you best") |
-| `professional_chat.py` | **Professional dashboard AI** (5Q rule → "CV Analysis would suit you best") |
-| `tools.py` | **Built-in tool definitions** (shared search tools for both student and professional resources) |
-| `student_tools.py` | **Function calling tool definitions** for student support chat (get_saved_universities, get_user_profile, etc.) |
-| `professional_tools.py` | **Function calling tool definitions** for professional support chat (analyze_cv, generate_roadmap, etc.) |
-| `models.py` | **Model configurations** (gemini-2.5-flash settings, temperature presets per feature: 0.1–0.9) |
-| `prompts.py` | **Centralized prompt templates** (30+ prompts organized by module with .format() placeholders) |
-| `schemas.py` | **Schemas and fallbacks** (CV extraction schema, fallback questions, dropdown options for UI) |
-| `.env` | **API secrets** (Gemini/Langfuse keys) - **do not commit to Git!** (.gitignore protected) |
-| `requirements.txt` | **Core dependencies** for pip install (streamlit, google-generativeai, langfuse, etc.) |
-
 
 # License
 
 MIT License
 
-Copyright (c) 2025 Antónia Lemos (antonia43 on github) and Matilde Maximiano
+Copyright (c) 2026 Antónia Lemos (antonia43 on github) and Matilde Maximiano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -671,6 +651,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
 ## Team
 
 - **Antónia Lemos** - Core development (student + professional features)
@@ -679,11 +660,11 @@ SOFTWARE.
 
 **Both contributed equally across all aspects of the project including:**
 - Architecture design and modular file structure
-- Langfuse observability implementation
-- Gemini API wrapper and prompt engineering
+- Feature development
+- Function definition and prompt engineering
 - Authentication (Google OAuth + local login)
 - Production deployment to Streamlit Cloud
-- Documentation (README, ARCHITECTURE.md)
+- Documentation (README, ARCHITECTURE.md, TOOLS.md)
 
 **Institution:** Nova IMS, Universidade Nova de Lisboa  
 **Course:** BSc in Data Science 
@@ -691,6 +672,6 @@ SOFTWARE.
 
 
 Career Corner by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
-GitHub: https://github.com/antonia43/careercorner1
+GitHub: https://github.com/antonia43/careercorner
 
 ---
