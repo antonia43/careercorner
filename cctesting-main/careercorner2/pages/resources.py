@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from services.langfuse_helper import LangfuseGeminiWrapper
 from utils.database import load_reports
-from utils.tools import (
+from services.tools import (
     render_job_search_tool,
     render_course_finder_tool,
     render_wage_finder_tool,
