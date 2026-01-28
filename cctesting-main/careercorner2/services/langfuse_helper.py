@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 import streamlit as st
 import uuid
+import traceback
 
 
 try:
@@ -91,7 +92,6 @@ class LangfuseGeminiWrapper:
                     
             except Exception as e:
                 print(f"🔴 Langfuse error: {e}")
-                import traceback
                 traceback.print_exc()
                 # Fallback: run without tracing
         
@@ -173,7 +173,6 @@ class LangfuseGeminiWrapper:
                     
             except Exception as e:
                 print(f"🔴 Langfuse error: {e}")
-                import traceback
                 traceback.print_exc()
         
         # Fallback if Langfuse disabled or error
