@@ -20,6 +20,7 @@ from utils.database import (
 )
 from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_session_id
 from datetime import datetime
+import traceback
 
 
 init_database()
@@ -279,7 +280,6 @@ Return ONLY the JSON, no other text or markdown formatting."""
         return {"universities": []}
     except Exception as e:
         st.error(f"Search failed: {str(e)}")
-        import traceback
         traceback.print_exc()
         return {"universities": []}
 
@@ -873,7 +873,6 @@ def render_international_finder():
 
             except Exception as e:
                 st.error(f"Search failed: {str(e)}")
-                import traceback
                 st.code(traceback.format_exc())
 
     if "intl_university_results" in st.session_state and st.session_state.intl_university_results:
