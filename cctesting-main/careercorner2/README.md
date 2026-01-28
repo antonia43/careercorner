@@ -496,10 +496,10 @@ sqlite3
 ```
 
 ```
-6. Student Resources (Chat Mode)
+6. Student Resources (Chat Mode - 5 mins)
 ├─ Click "Need personalized help?"
 ├─ Select degree/grades from dropdowns
-└─ Ask: Please help me decipher me results, i wasn't expecting them.
+└─ Ask: Please help me decipher my results, i wasn't expecting them.
 ```
 
 **Example Workflow (Professional):**
