@@ -3,13 +3,14 @@ import os
 from dotenv import load_dotenv
 from services.langfuse_helper import LangfuseGeminiWrapper
 from utils.database import get_saved_universities, load_reports
-from utils.tools import (
+from services.tools import (
     render_exam_papers_tool,
     render_scholarships_tool,
     render_study_resources_tool,
     render_career_options_tool,
     render_wage_finder_tool
 )
+from services.studenttools import 
 
 load_dotenv()
 
@@ -194,52 +195,76 @@ What's on your mind today?"""
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
     
-    if prompt := st.chat_input("Ask for advice, support, or guidance..."):
+    if prompt := st.chat_input("Ask for advice..."):
         st.session_state.student_resources_chat_history.append({"role": "user", "content": prompt})
+        
         with st.chat_message("user"):
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
-            with st.spinner("𖦹 Thinking..."):
-                enriched_prompt = f"""{internal_context}
+            with st.spinner("Thinking..."):
+                # FUNCTION CALLING ENABLED
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=f"""You're a supportive student advisor with access to the student's data through tools.
 
-User question: {prompt}
+User ID: {user_id}
+
+Student question: {prompt}
 
 INSTRUCTIONS:
-- Be supportive, empathetic, and encouraging
-- Reference their degree recommendations, grades, and saved universities specifically when relevant
-- Help them make decisions about degrees, study plans, university applications, academic improvement
-- Provide actionable advice and motivation
-- Focus on guidance and emotional support
-- For Portuguese students: consider DGES system, nacional exams, CIF scores
-- When discussing universities, use the specific ones they've saved and compare admission requirements with their grades"""
-                
-                response_text = GEMINI_CHAT.generate_content(
-                    enriched_prompt,
-                    user_id=user_id,
-                    session_id="student_support_chat",
-                    temperature=0.7
+- Use tools to access their saved universities, grades, and profile
+- Give personalized advice based on their actual data
+- Be supportive and encouraging
+- Reference specific universities and grades when relevant""",
+                    config=types.GenerateContentConfig(
+                        tools=CAREER_CORNER_TOOLS,
+                        temperature=0.7
+                    )
                 )
-                st.markdown(response_text)
-        
-        st.session_state.student_resources_chat_history.append({"role": "assistant", "content": response_text})
-    
-    st.markdown("---")
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button("⟲ Restart Chat", width="stretch"):
-            st.session_state.student_resources_chat_history = [
-                {"role": "assistant", "content": welcome_message}
-            ]
-            st.rerun()
-    
-    with col2:
-        if st.button("← Back to Tools", width="stretch"):
-            if "resources_mode" in st.session_state:
-                del st.session_state.resources_mode
-            st.rerun()
-
+                
+                # Handle function calls
+                while response.candidates[0].content.parts:
+                    part = response.candidates[0].content.parts[0]
+                    
+                    # Check if it's a function call
+                    if hasattr(part, 'function_call') and part.function_call:
+                        func_call = part.function_call
+                        st.caption(f"🔧 Using tool: {func_call.name}")
+                        
+                        # Execute function
+                        func_result = execute_function_call(
+                            func_call.name,
+                            dict(func_call.args)
+                        )
+                        
+                        # Send result back to Gemini
+                        response = client.models.generate_content(
+                            model="gemini-2.5-flash",
+                            contents=[
+                                {"role": "user", "parts": [{"text": prompt}]},
+                                {"role": "model", "parts": [part]},
+                                {"role": "function", "parts": [{
+                                    "function_response": {
+                                        "name": func_call.name,
+                                        "response": func_result
+                                    }
+                                }]}
+                            ],
+                            config=types.GenerateContentConfig(
+                                tools=CAREER_CORNER_TOOLS,
+                                temperature=0.7
+                            )
+                        )
+                    else:
+                        # Final text response
+                        response_text = response.text
+                        st.markdown(response_text)
+                        st.session_state.student_resources_chat_history.append({
+                            "role": "assistant",
+                            "content": response_text
+                        })
+                        break
 
 def render_student_resources():
     """Main entry point - toggle between tools and chat"""
