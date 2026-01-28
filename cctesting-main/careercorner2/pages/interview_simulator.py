@@ -6,6 +6,7 @@ from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_ses
 import tempfile
 import os
 import time
+from pages.cv_analysis import _process_any_document
 
 load_dotenv()
 INTERVIEW_GEMINI = LangfuseGeminiWrapper(
@@ -74,7 +75,6 @@ def render_interview_personalization():
                 with open(temp_path, "wb") as f:
                     f.write(cover_file.read())
                 
-                from cv_analysis import _process_any_document
                 cover_text = _process_any_document(temp_path, "Extract all text from this cover letter.")
                 
                 # Clean up
