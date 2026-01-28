@@ -207,6 +207,11 @@ careercorner2/
 ├── docs/
 │ ├── ARCHITECTURE.md
 │ └── TOOLS.md
+├── config/
+│   ├── __init__.py
+│   ├── models.py
+│   ├── prompts.py
+│   └── schemas.py
 ├── zapp.py # Main Streamlit entry
 └── styles.py # Custom CSS styling functions
 ├── README.md
@@ -232,6 +237,275 @@ Centralizes all AI settings and prompts in three files: `models.py` (model names
 
 **Styling Layer** (`styles.py`)
 Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide animations, hover effects, and responsive components. `apply_custom_css()` called from `zapp.py` ensures consistent branding.
+
+---
+
+## Database Architecture
+
+### Schema Overview
+
+Career Corner uses SQLite with 5 tables optimized for dual dashboard architecture (student/professional). All complex data stored as JSON TEXT for flexibility, with tempdir persistence (`/tmp/career_corner.db`) ensuring zero-config deployment.
+
+---
+
+### Table Definitions
+
+#### **users** (Authentication & Profile)
+Core user table with local + OAuth support.
+
+| Column | Type | Constraints | Purpose |
+|--------|------|-------------|---------|
+| `id` | INTEGER | PRIMARY KEY AUTOINCREMENT | Internal user ID |
+| `username` | TEXT | UNIQUE NOT NULL | Login identifier |
+| `display_name` | TEXT | NOT NULL | UI display name |
+| `email` | TEXT | UNIQUE NOT NULL | Email address |
+| `password_hash` | TEXT | NOT NULL | Werkzeug bcrypt hash |
+| `created_at` | TEXT | NOT NULL | Account creation timestamp |
+| `remember_token` | TEXT | NULLABLE | Session persistence token |
+
+**Relationships:** Foreign key parent for all other tables via `user_id`
+
+---
+
+#### **saved_universities** (Bookmarked Programs)
+Stores favorite universities from University Finder with DGES admission data.
+
+| Column | Type | Constraints | Purpose |
+|--------|------|-------------|---------|
+| `id` | INTEGER | PRIMARY KEY AUTOINCREMENT | Record ID |
+| `user_id` | TEXT | NOT NULL | References users |
+| `institution_name` | TEXT | NOT NULL | University name |
+| `program_name` | TEXT | NOT NULL | Degree program |
+| `location` | TEXT | NULLABLE | City/region |
+| `type` | TEXT | NULLABLE | Public/private |
+| `grade_required` | TEXT | NULLABLE | Minimum CIF score |
+| `duration` | TEXT | NULLABLE | Program length |
+| `acceptance_rate` | TEXT | NULLABLE | Admission rate |
+| `data` | TEXT | NOT NULL | Full university JSON |
+| `saved_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Save timestamp |
+
+**Unique Constraint:** `(user_id, institution_name, program_name)` prevents duplicates  
+**Relationships:** References `users.username` via `user_id`  
+**Usage:** University Finder save feature, Grades Analysis comparison, Student Resources chat
+
+---
+
+#### **user_quizzes** (Student Career Quiz)
+One career quiz result per student (upsert pattern).
+
+| Column | Type | Constraints | Purpose |
+|--------|------|-------------|---------|
+| `user_id` | TEXT | PRIMARY KEY | References users |
+| `quiz_data` | TEXT | JSON | Quiz answers + sector results |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Quiz completion time |
+
+**Design Pattern:** `ON CONFLICT(user_id) DO UPDATE` ensures single quiz per user  
+**Relationships:** References `users.username` via `user_id`  
+**Usage:** Career Discovery Quiz storage, Degree Picker sector selection  
+**Note:** Partially deprecated - newer quizzes use `professional_reports` table
+
+---
+
+#### **user_cvs** (Parsed CV Data)
+One parsed CV per professional user (upsert pattern).
+
+| Column | Type | Constraints | Purpose |
+|--------|------|-------------|---------|
+| `user_id` | TEXT | PRIMARY KEY | References users |
+| `parsed_data` | TEXT | JSON | Structured CV (skills, experience, education) |
+| `updated_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Last upload time |
+
+**Design Pattern:** `ON CONFLICT(user_id) DO UPDATE` allows CV replacement  
+**Relationships:** References `users.username` via `user_id`  
+**Usage:** CV Analysis storage, Career Growth Quiz personalization, Interview Simulator context, CV Builder tailoring  
+**JSON Schema:**
+```json
+{
+  "skills": {"technical": ["Python", "SQL"], "soft": ["Leadership"]},
+  "experience": [{"role": "Data Analyst", "company": "X", "years": 3}],
+  "education": [{"degree": "BSc", "institution": "Y", "year": 2020}],
+  "strengths": ["Problem-solving"],
+  "gaps": ["Missing cloud certifications"]
+}
+```
+# professional_reports – Multi-Purpose Report Storage
+
+Flexible table storing all feature outputs for both students and professionals.
+
+## Table Definition
+
+| Column       | Type       | Constraints                    | Purpose                                      |
+|-------------|------------|--------------------------------|----------------------------------------------|
+| `id`        | INTEGER    | PRIMARY KEY AUTOINCREMENT      | Report ID                                    |
+| `user_id`   | TEXT       | NOT NULL                       | References users                             |
+| `report_type` | TEXT     | NOT NULL                       | Feature identifier (see below)               |
+| `title`     | TEXT       | NOT NULL                       | User-facing report name                      |
+| `content`   | TEXT       | NOT NULL                       | Markdown/text report                         |
+| `cv_json`   | TEXT       | NULLABLE JSON                  | Metadata (sector matches, CV data, etc.)     |
+| `created_at`| TIMESTAMP  | DEFAULT CURRENT_TIMESTAMP      | Generation timestamp                         |
+
+**Relationships:** References `users.username` via `user_id`, allows multiple reports per user.  
+**Usage:** My Reports interface, dropdown selectors in chat modes.
+
+### Report Types
+
+- `career_quiz` – Student career quiz results (stores sector percentages in `cv_json`)
+- `career_growth` – Professional growth quiz results
+- `cv_analysis` – CV feedback reports (stores parsed CV in `cv_json`)
+- `interview_feedback` – Mock interview scores/feedback
+- `cv_built` – Generated CVs from CV Builder
+- `cover_letter` – Generated cover letters
+- `degree_recommendations` – Degree Picker results
+- `grades_analysis` – CIF calculation reports
+
+---
+
+## Database Functions
+
+### University Management (6 functions)
+
+```python
+save_university(user_id, uni_data)           # Add bookmarked university
+get_saved_universities(user_id)              # Retrieve all saved universities
+remove_saved_university(user_id, name, prog) # Delete specific university
+is_university_saved(user_id, name, prog)     # Check save status
+get_saved_count(user_id)                     # Count saved universities
+clear_all_saved(user_id)                     # Delete all saved universities
+```
+
+### CV Management (2 functions)
+
+```python
+save_user_cv(user_id, parsed_data)           # Store/update CV JSON (upsert)
+load_user_cv(user_id)                        # Retrieve user's CV data
+```
+
+### Report Management (6 functions)
+
+```python
+save_report(user_id, type, title, content, cv_data)  # Store any report type
+load_reports(user_id, report_type)                   # Retrieve reports by type
+delete_report(report_id)                             # Remove specific report
+save_quiz_result(user_id, quiz_data)                 # Legacy quiz storage
+load_user_quiz(user_id)                              # Legacy quiz retrieval
+load_career_quiz_metadata(user_id)                   # Extract sector data from latest quiz
+```
+
+---
+
+## Design Patterns
+
+### 1. Upsert Pattern (User-Scoped Single Records)
+
+`user_cvs` and `user_quizzes` enforce one record per user using `ON CONFLICT DO UPDATE`:
+
+```sql
+INSERT INTO user_cvs (user_id, parsed_data)
+VALUES (?, ?)
+ON CONFLICT(user_id) DO UPDATE SET
+    parsed_data = excluded.parsed_data,
+    updated_at = CURRENT_TIMESTAMP;
+```
+
+**Why:** Students have one active career quiz, professionals have one active CV.
+
+---
+
+### 2. JSON Storage (Flexible Schema Evolution)
+
+All complex data stored as JSON TEXT.
+
+- **Benefits:** No schema migrations for CV structure changes, supports nested data.
+- **Trade-off:** No SQL queries inside JSON (acceptable for report retrieval patterns).
+- **Example:** CV skills array stored as  
+  `{"technical": ["Python"], "soft": ["Leadership"]}`
+
+---
+
+### 3. Backward Compatibility (Safe Upgrades)
+
+`load_reports()` checks for `cv_json` column before querying:
+
+```python
+c.execute("PRAGMA table_info(professional_reports)")
+columns = [col[1] for col in c.fetchall()]
+has_cv_json = 'cv_json' in columns
+```
+
+**Why:** Allows incremental deployments without breaking existing user data.
+
+---
+
+### 4. Tempdir Persistence (Zero-Config Deployment)
+
+Database stored in `/tmp/career_corner.db`:
+
+- **Benefits:** No connection strings, works on cloud hosting instantly.
+- **Persistence:** Survives app reruns and restarts.
+- **Scalability:** Sufficient for thousands of users with proper indexing.
+- **Production Note:** For 10K+ users, migrate to PostgreSQL with same schema.
+
+---
+
+### 5. Auto-Initialization (Import-Time Setup)
+
+`init_database()` called at module import:
+
+```python
+if __name__ == "__main__":
+    init_database()
+
+init_database()  # Runs when database.py is imported
+```
+
+**Why:** No manual setup needed – tables are created automatically on first run.
+
+---
+
+## Performance Considerations
+
+### Current Indexes
+
+- `saved_universities`: UNIQUE index on `(user_id, institution_name, program_name)`
+- `user_quizzes`: PRIMARY KEY on `user_id`
+- `user_cvs`: PRIMARY KEY on `user_id`
+
+### Recommended Indexes for Scale (PostgreSQL)
+
+```sql
+CREATE INDEX idx_reports_user_type
+  ON professional_reports(user_id, report_type);
+
+CREATE INDEX idx_universities_user
+  ON saved_universities(user_id);
+
+CREATE INDEX idx_reports_created
+  ON professional_reports(created_at DESC);
+```
+
+### Common Query Patterns
+
+- **My Reports:**  
+  `SELECT * FROM professional_reports WHERE user_id = ? AND report_type = ? ORDER BY created_at DESC;`
+- **Saved Universities:**  
+  `SELECT * FROM saved_universities WHERE user_id = ? ORDER BY saved_at DESC;`
+- **Latest Quiz:**  
+  `SELECT cv_json FROM professional_reports WHERE user_id = ? AND report_type = 'career_quiz' ORDER BY id DESC LIMIT 1;`
+
+---
+
+## Migration Strategy (Future Scalability)
+
+If outgrowing SQLite (e.g., 10K+ concurrent users):
+
+- **PostgreSQL Schema:** Use identical table definitions with minimal changes.
+- **Connection Pool:** Replace `sqlite3.connect()` with a pooled Postgres client.
+- **JSON Columns:** Switch TEXT to native `JSONB` for indexing inside JSON.
+- **User ID Type:** Change TEXT to INTEGER foreign key with `ON DELETE CASCADE`.
+- **Transactions:** Add explicit `BEGIN`/`COMMIT` for multi-table operations.
+
+**Estimated Migration Time:** 2–3 days (schema is mostly compatible; main work is connection logic and JSON column types).
+
 
 
 ## File Overview and Responsibilities
@@ -300,6 +574,55 @@ Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide anima
 | 0.6 | Reports | Interview feedback, career reports |
 | 0.7 | Creative + function calling | Cover letters, resource chats |
 | 0.9 | Adaptive/creative | Student career quiz questions |
+
+---
+
+---
+
+### Feature-Level AI Configuration
+
+Complete reference of model settings, temperature rationale, and prompt strategies per feature:
+
+| Feature | Model | Temp | Prompt Strategy | Rationale |
+|---------|-------|------|-----------------|-----------|
+| **Student Career Quiz** | gemini-2.5-flash | 0.9 | Creative personality questions with adaptive follow-ups based on previous answers | High creativity needed for non-academic questions that reveal thinking patterns |
+| **Career Growth Quiz** | gemini-2.5-flash | 0.3 | CV-aware behavioral questions across experience/skills dimensions | Analytical tone for professional assessment while maintaining conversational flow |
+| **Degree Picker** | gemini-2.5-flash | 0.2 | Yes/no questions that narrow DGES degree options based on sector preference | Structured output needed for binary decision tree logic |
+| **Grades Analysis (Extract)** | gemini-2.5-flash | 0.1 | Vision extraction of subject names and grades from uploaded images | Precision required for accurate data extraction from varied formats |
+| **Grades Analysis (Calculate)** | gemini-2.5-flash | 0.1 | Apply Portuguese CIF formula: (school_avg × 0.65) + (exam_avg × 0.35) | Deterministic calculation with no creative freedom |
+| **University Finder (Portuguese)** | N/A (DB Query) | N/A | SQL query against DGES dataset with location/grade filters | No AI generation - direct database lookup |
+| **University Finder (International)** | gemini-2.5-flash | 0.5 | Search and summarize universities offering {degree} in {country} | Moderate creativity for recommendation synthesis |
+| **Student Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Function calling: get_study_resources_web, get_wage_info, get_career_options | Creative search query formulation with factual grounding |
+| **Student Resources (Support Chat)** | gemini-2.5-flash | 0.7 | Personalized advice using function calling tools: search_saved_universities, calculate_admission_grade | Conversational guidance with access to user-specific data |
+| **CV Analysis (Extract)** | gemini-2.5-flash | 0.1 | Vision extraction of skills, experience, education into JSON schema | Precision required for structured data extraction |
+| **CV Analysis (Feedback)** | gemini-2.5-flash | 0.3 | Benchmarking analysis with actionable optimization tips | Analytical feedback grounded in job market standards |
+| **Interview Simulator (Generate Qs)** | gemini-2.5-flash | 0.5 | CV-aware questions for {role} at {company}: behavioral, technical, situational | Balanced creativity for realistic interview scenarios |
+| **Interview Simulator (Feedback)** | gemini-2.5-flash | 0.6 | STAR method evaluation with scoring (1-10) and improvement suggestions | Structured feedback with moderate creativity for constructive criticism |
+| **CV Builder (Build from Quiz)** | gemini-2.5-flash | 0.4 | Transform quiz responses into professional CV JSON with polished bullet points | Conversational input to formal output transformation |
+| **CV Builder (Tailor to Job)** | gemini-2.5-flash | 0.4 | Reorder CV bullets and inject keywords from job description | Moderate precision for ATS optimization |
+| **CV Builder (Cover Letter)** | gemini-2.5-flash | 0.7 | Generate 200-350 word letter matching CV + job description in professional/enthusiastic tone | Higher creativity for personalized narratives |
+| **Professional Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Function calling: get_job_search_results, get_course_recommendations, get_company_research | Creative search formulation with factual grounding |
+| **Professional Resources (Support Chat)** | gemini-2.5-flash | 0.7 | Personalized career guidance using: get_cv_analysis, analyze_skill_gaps, get_career_roadmap | Conversational advice with access to professional profile data |
+| **Dashboard Chat (Student)** | gemini-2.5-flash | 0.4 | 5-question routing: ask about challenges → recommend tool with reasoning | Conversational tone for natural guidance flow |
+| **Dashboard Chat (Professional)** | gemini-2.5-flash | 0.4 | 5-question routing: ask about frustrations → recommend tool with reasoning | Conversational tone for natural guidance flow |
+
+---
+
+### Prompt Template Organization
+
+All prompts centralized in `config/prompts.py` grouped by module:
+
+- **StudentCareerQuizPrompts** - 10Q adaptive personality assessment
+- **CareerGrowthQuizPrompts** - 12Q CV-aware professional assessment
+- **DegreePickerPrompts** - Binary decision tree for DGES degrees
+- **GradesAnalysisPrompts** - Vision extraction + CIF calculation
+- **CVAnalysisPrompts** - Vision extraction + feedback generation
+- **InterviewSimulatorPrompts** - Question generation + STAR feedback
+- **CVBuilderPrompts** - Build/tailor/cover letter generation
+- **ResourceChatPrompts** - Function calling + personalized guidance
+- **DashboardChatPrompts** - 5Q routing logic for both user types
+
+Each prompt template uses `.format()` placeholders for dynamic insertion of user data (CV JSON, quiz results, saved universities, etc.).
 
 ---
 
