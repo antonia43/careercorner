@@ -205,19 +205,22 @@ Practice job interviews with AI-generated questions tailored to your CV and targ
   - STAR method evaluation (Situation, Task, Action, Result)
 - **Tech:** Gemini 2.5 Flash, CV JSON integration, session state for multi-question flow
 
-#### **Professional Resources - Your Next Steps**
-Job search and course recommendation tools with conversational chat. Quick search returns real LinkedIn job links (Portugal-focused, recent postings) and Coursera/Udemy courses for skill development. Chat mode lets you select CV/quiz reports from dropdowns so AI references your specific profile when answering questions like "Find data science jobs matching my skills" or "Show me Python courses to fill my gaps." No function calling in chat mode to prevent link spam, just natural career guidance.
+#### **Professional Resources – Your Next Steps**
 
-- **What it does:** Two-mode professional resource finder
-  - **Quick Search:** Function calling tools return LinkedIn jobs + Coursera/Udemy courses
-  - **Chat Mode:** AI advisor with CV/quiz report dropdown selection for personalized guidance
-- **Features:**
-  - Job search: LinkedIn links filtered to Portugal, recent postings, matches your sector
-  - Course recommendations: Coursera, Udemy, skill-specific
-  - Report selection: Choose which CV/quiz to reference in chat
-  - Context-aware answers: AI knows your parsed CV skills + quiz sector
+Dual-mode feature combining quick job/course search and support chat. Quick search mode surfaces real job postings (Portugal-focused) and online courses to grow your skills, while support chat lets you select CV/quiz reports from dropdowns so the AI can reference your actual profile when giving advice like "What roles fit my CV?" or "What courses close my skill gaps?".
+
+- **Quick Search Features:**
+  - **Job search:** Finds recent LinkedIn-style job postings matching your role, skills, and preferred location (Portugal-focused but can search globally)
+  - **Course recommendations:** Suggests Coursera/Udemy-style courses of the user's choice
+  - **Wage finder:** Salary data by job title and country
+  - **LinkedIn/profile optimization:** Tips on headlines, About section, skills to highlight
+  - **Company research:** Culture, benefits, reviews, salary ranges to assess potential employers
+- **Support Chat Mode:**
+  - Select saved CV and career quiz reports from dropdowns for personalization
+  - AI reads your parsed skills, experience, and sector matches before answering
+  - Ask: "What jobs match my CV?", "How do I pivot from data analyst to product manager?", "Which skills should I prioritize next?", "Does my profile fit this kind of role?"
 - **Tech:**
-  - Quick Search: Built-in Google Search tools (get_job_search_results, get_course_recommendations, get_linkedin_profile_optimization, get_company_research)
+  - Quick Search: Built-in web tools (get_job_search_results, get_course_recommendations, get_linkedin_profile_optimization, get_company_research)
   - Support Chat: Gemini 2.5 Flash with function calling (get_cv_analysis, get_career_quiz_results, analyze_skill_gaps, get_career_roadmap, get_professional_profile)
 
 
@@ -277,7 +280,7 @@ Job search and course recommendation tools with conversational chat. Quick searc
      - `search_saved_universities` – Query user’s bookmarked/saved programs  
      - `calculate_admission_grade` – Compute CIF admission average from stored grades  
      - `search_dges_database` – Search the DGES Portuguese university database for degrees, grades, vacancies  
-     - `get_student_profile` – Aggregate student data (grades, saved universities, degree reports, CIF)  
+     - `get_student_profile` – Aggregate student data (grades, saved universities, degree reports, CIF)
   
      **Professional tools (5 functions)**  
      - `get_cv_analysis` – Retrieve and parse stored CV analysis (skills, experience, education)  
@@ -602,10 +605,12 @@ Note: imports with structure `from utils.database import load_report` may yield 
 ```
 
 ```
-6. Student Resources (Chat Mode - 5 mins)
-├─ Click "Need personalized help?"
-├─ Select degree/grades from dropdowns
-└─ Ask: Please help me decipher my results, i wasn't expecting them.
+6. Student Resources (10 mins)
+├─ Quick Search: "Biology study resources" → Khan Academy links, YouTube tutorials
+├─ Wage Finder: "Nurse salary Portugal" → €1,200-€2,500/month
+├─ Past Exams: Download IAVE Biology papers 2020-2024
+├─ Switch to Support Chat → Select "Career Quiz: Healthcare 60%" from dropdown
+└─ Ask: "Help me understand my results" → AI explains CIF competitiveness + career fit
 ```
 
 **Example Workflow (Professional):**
