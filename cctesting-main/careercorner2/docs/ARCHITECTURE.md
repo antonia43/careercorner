@@ -190,24 +190,72 @@ careercorner2/
 
 ### LLM Configuration
 
-**Client Temperatures** (`gemini-2.5-flash`):
--  Career Quiz Questions: 0.9
-- Dashboard Chats: 0.5 
-- Degree Picker -0.2
-- CV builder -0.4
-- Career Growth Quiz; CV analysis- 0.3
-- Interview prep -0.5
-- Extracting info - 0.1
+#### Temperature Guide
+
+| Temperature | Use Case | Files |
+|-------------|----------|-------|
+| 0.1 | Extraction, parsing | CV extraction, grades extraction |
+| 0.2 | Structured output | Degree questions |
+| 0.3 | Analysis with facts | CV feedback, career quiz analysis |
+| 0.4 | Conversational | Dashboard chats, polish CV |
+| 0.5 | Search/recommendations | University search, interview questions |
+| 0.6 | Reports | Interview feedback, career reports |
+| 0.7 | Creative + function calling | Cover letters, resource chats |
+| 0.9 | Adaptive/creative | Student career quiz questions |
+
+---
+
+#### Common Patterns
+
+#### Standard LangfuseGeminiWrapper setup:
+```python
+from config import ModelConfig
+
+CLIENT = LangfuseGeminiWrapper(
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    model=ModelConfig.MODULE_CONFIG["model"],
+)
+```
+
+#### Standard prompt call:
+```python
+from config import ModulePrompts
+
+prompt = ModulePrompts.PROMPT_NAME.format(
+    param1=value1,
+    param2=value2
+)
+
+response = CLIENT.generate_content(
+    prompt=prompt,
+    system_instruction=ModulePrompts.SYSTEM_INSTRUCTION,
+    temperature=ModelConfig.MODULE_CONFIG["temp"],
+    user_id=get_user_id(),
+    session_id=get_session_id()
+)
+```
+
+#### Standard fallback pattern:
+```python
+from config import FallbackQuestions
+
+try:
+    # AI generation
+    questions = generate_questions_ai()
+except Exception as e:
+    st.error(f"Using fallback: {e}")
+    questions = FallbackQuestions.FALLBACK_NAME
+```
 
 
-### Prompt Engineering Strategy
+#### Prompt Engineering Strategy
 
 Structured Outputs: Using markdown formatting for parseable reports
 System Instructions: Persona definitions and clear prompts for consistent tone
 Example: "You are a creative career counselor for Portuguese students. Ask unexpected questions that reveal thinking styles, not direct career preferences."
 
 **Client Prompts**:
-- accessible via dfghjklfgjhfdjk file
+- accessible at config/prompts.py
 
 ---
 
