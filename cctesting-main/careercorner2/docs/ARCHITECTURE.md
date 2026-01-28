@@ -90,6 +90,7 @@ Streamlit handled all UI components including tabs, chat interfaces, progress ba
 - **Observability:** Langfuse v3.11.1
 - **Function Calling:** 8 built-in tools + 9 custom function calling tools
 
+### Function Calling and Built-In Tools
 #### Built-In Tools (8)
 Built-in tools use Google's native capabilities (Google Search & URL Context) to retrieve real-time web data:
 
@@ -129,10 +130,14 @@ Langfuse wraps all Gemini calls to track prompts, responses, and token usage. Fu
 All function calling tools implement 3-attempt retry logic for resilience against database locks and transient errors.
 
 
+For detailed information about the tools, please refer to docs/TOOLS.md
+
+
 ### Deployment
 - Platform: Streamlit Cloud
 - Environment Management: .env files (local), Streamlit secrets (production)
 We deployed to Streamlit Cloud which worked perfectly for our GitHub based workflow. SQLite tempdir was used for persistence without external databases. Environment variables were used to secure our API keys in Streamlit Secrets.
+
 
 
 ---
@@ -577,8 +582,6 @@ If outgrowing SQLite (e.g., 10K+ concurrent users):
 
 ---
 
----
-
 ### Feature-Level AI Configuration
 
 Complete reference of model settings, temperature rationale, and prompt strategies per feature:
@@ -680,55 +683,37 @@ Example: "You are a creative career counselor for Portuguese students. Ask unexp
 
 ---
 
-## Function Calling & Tools
-
-### Available Tools
-
-**Built-In Tools**
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-
-**Custom Function Calling Tools**
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-
-- For in depth information about tools, access TOOLS.md file.
-
 ---
 
 ## Multimodal Processing
 
 ### CV Analysis Feature
 
-Capability: Upload PDF/image of grade report -> AI extracts CV information -> Writes a detailed report listing your strenghts and observations -> Saves it to database
+**Capability:** Upload PDF/DOCX/image → Gemini vision extracts structured JSON → Saves to database for cross-feature use
 
-Implementation:
-1. Multimodal Input: Gemini's vision capabilities process image/PDF directly
-2. Structured Extraction: Prompt engineered to output JSON
-3. Use: Use CV in other tabs (Interview Prep, CV Builder, Your Next Steps)
+**Implementation:**
+1. **Multimodal Input:** Gemini vision processes any format directly (no OCR libraries)
+2. **Two-Phase Extraction:** 
+   - Phase 1 (temp 0.1): Parse document into JSON (skills, experience, education)
+   - Phase 2 (temp 0.3): Generate benchmarked feedback
+3. **Storage:** Dual storage in `user_cvs` (active CV) and `professional_reports` (analysis history)
+4. **Integration:** CV JSON feeds Career Growth Quiz, Interview Simulator, CV Builder
 
-Why This Approach:
-- No OCR library needed (Gemini handles it)
-- Works with varied formats (flexibility)
-- Directly integrated with other feature logic
+**Why:** No OCR dependency, handles messy formats, structured output enables cross-feature data flow
 
+---
 
 ### Grades Analysis Feature
 
-write here
+**Capability:** Upload grade report image OR manual input → Extract subjects/scores → Calculate CIF → Compare to saved universities
 
+**Implementation:**
+1. **Four Input Modes:** Portuguese (Upload/Manual), International (Upload/Manual)
+2. **Vision Extraction (temp 0.1):** Parse grade report into JSON with subjects + scores
+3. **CIF Calculation:** Apply Portuguese formula `(school_avg × 0.65) + (exam_avg × 0.35)`
+4. **Integration:** CIF score filters University Finder search, compares to saved university thresholds
+
+**Why:** Format agnostic, automatic calculation (no manual errors), feeds University Finder for realistic target matching
 
 ---
 
