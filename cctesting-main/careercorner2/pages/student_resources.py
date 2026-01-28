@@ -10,7 +10,7 @@ from services.tools import (
     render_career_options_tool,
     render_wage_finder_tool
 )
-from services.studenttools import 
+from services.student_tools import STUDENT_TOOLS, execute_function_call
 
 load_dotenv()
 
