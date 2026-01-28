@@ -252,16 +252,46 @@ Job search and course recommendation tools with conversational chat. Quick searc
 - **Session management** through `st.session_state.logged_in` + `st.session_state.username`
 
 ### AI/ML
-- **Langfuse** production observability wrapping 95% of Gemini calls:
-  - Traces prompts/responses/tokens/temperature/metadata per generation
-  - User feedback scoring (thumbs up/down -> 0.0-1.0)
-  - Conversation turn tracking (5Q chat routing validation)
-- **Function Calling** 8 Gemini-native tools total:
-  - **6 Student tools** (student_resources.py): study links, DGES scholarships, IAVE exams, CIF tips
-  - **2 Pro tools** (resources.py): LinkedIn jobs, Coursera/Udemy courses
-- **Multimodal AI** Gemini vision processes:
-  - CV parsing (PDF/DOCX -> skills/work/education JSON)
-  - Grade reports (images -> subject scores -> CIF calculation)
+- **Langfuse** production observability wrapping most of Gemini calls (tools and function calling aren't wrapped but are still monitored using @observe):
+  - Traces prompts, responses, tokens, temperature, and metadata per generation  
+  - User feedback scoring (thumbs up/down → 0.0–1.0)
+  - Conversation turn tracking (multi-turn chat routing validation)
+  - Feedback mechanisms hidden in deployment version
+
+- **Two AI tool architectures** (17 tools total)
+  - **1. Built-in tools** (Google Search & URL Context) – 8 tools  
+     - Study resources finder (courses, videos, tutorials)  
+     - Career options explorer (job paths, progression, salaries)  
+     - Wage information lookup (by country and role)  
+     - Job search aggregator (LinkedIn, Indeed, Glassdoor, company sites)  
+     - Course recommendations (Coursera, Udemy, edX, etc.)  
+     - LinkedIn profile optimizer (headline, About, skills, strategy)  
+     - Company research tool (culture, reviews, news, salaries)  
+     - Job description URL extractor (URL → job description via URL context)  
+
+  - **2. Function calling tools** (custom Python functions) – 9 tools
+     **Student tools (4 functions)**  
+     - `search_saved_universities` – Query user’s bookmarked/saved programs  
+     - `calculate_admission_grade` – Compute CIF admission average from stored grades  
+     - `search_dges_database` – Search the DGES Portuguese university database for degrees, grades, vacancies  
+     - `get_student_profile` – Aggregate student data (grades, saved universities, degree reports, CIF)  
+  
+     **Professional tools (5 functions)**  
+     - `get_cv_analysis` – Retrieve and parse stored CV analysis (skills, experience, education)  
+     - `get_career_quiz_results` – Access stored career quiz/personality assessment results  
+     - `analyze_skill_gaps` – Compare current CV skills vs target role requirements, compute gaps and recommendations  
+     - `get_career_roadmap` – Generate phased career roadmap (e.g., 6 months / 1 year / 2 years) based on stored data  
+     - `get_professional_profile` – Aggregate professional data (CVs, quizzes, summaries)  
+
+   All function calling tools use:
+   - 3-attempt retry logic for robustness  
+   - Structured JSON responses  
+   - Central dispatchers and observability for monitoring  
+
+Multimodal AI (Gemini vision)
+- CV parsing: PDF/DOCX → structured JSON (skills, work experience, education)  
+- Grade reports: images → extracted subject scores → used in CIF/admission calculations  
+
 
 ### Data Sources
 - **DGES** Portuguese higher education (degrees, universities, 2024-2025 admission grades)
@@ -507,8 +537,9 @@ sqlite3
 └─ Download PDF CV + JSON backup and Branded ReportLab styling
 ```
 ```
-6. Professional Resources (Short Mode)
-└─ Ask: "Find data science jobs" or "Python courses"
+6. Professional Resources (10 mins)
+├─ Explore Quick Tools:
+└─ Use Career Support Chat: 
 ```
 
 
