@@ -110,7 +110,7 @@ An interactive assistant that uses the students sector of interest (results from
 #### **University Finder**
 A university search tool by degree name and location. Two options are available:
 
-- **Portuguese**: university search uses real Portuguese eal DGES admission data from 2024-2025 to show universities offering the chosen degree (can be chosen from the results of **Degree Picker**), including entry grades, location and an interactive map so students can explore their options. Favorite universities can be saved to compare later or match against **Grades Analysis** score to see which are realistic targets.
+- **Portuguese**: university search uses real Portuguese real DGES admission data from 2024-2025 to show universities offering the chosen degree (can be chosen from the results of **Degree Picker**), including entry grades, location and an interactive map so students can explore their options. Favorite universities can be saved to compare later or match against **Grades Analysis** score to see which are realistic targets.
 - **International**: more "search" based interface, where students can input degree names and search for universities offering that degree in the country of their choice.
 
 - **What it does:** Search and filter Portuguese universities by degree program using live DGES data
@@ -136,7 +136,7 @@ Dual-mode feature combining five quick search options and support chat. Quick se
 - **Support Chat Mode:**
   - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
-  - Ask: "Help me understand my CIF" or "Should I apply to Nova with 15.2?"
+  - Ask: "Help me understand my final score", "Should I apply to Nova with 15.2?", ADD OTHER QUESTIONS
 - **Tech:** Gemini 2.5 Flash function calling (5 tools) for quick search purposes, Gemini 2.5 Flash (temp 0.7) for support chat
 
 
@@ -173,7 +173,7 @@ An immersive 12-question conversational quiz designed for professionals and univ
   - Top 3 skills to develop with concrete next steps
   - 3-month action plan with resources
   - Profile summary describing your work style
-- **Tech:** Gemini 2.5 Flash (temp 0.3 for deterministic analysis), CV JSON integration, auto-saves to professional_reports
+- **Tech:** Gemini 2.5 Flash, CV JSON integration, auto-saves to professional_reports
 
 #### **CV Builder**
 Three AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info -> education -> experience -> skills -> achievements) that generates a polished CV with your target job/industry. Tailor existing CV by selecting a saved CV from My Reports, pasting a job description, and letting AI reorder bullets and inject relevant keywords. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
@@ -186,7 +186,7 @@ Three AI-powered tools in one interface. Build CV from scratch using a 5-step qu
   - Pretty PDF CVs with custom ReportLab styling (DM Sans font, lime/yellow branding)
   - JSON backup downloads for editing
   - TXT cover letters ready to paste
-- **Tech:** Gemini 2.5 Flash (temp 0.4 for CV building, 0.7 for cover letters), ReportLab PDF generation, auto-saves to professional_reports
+- **Tech:** Gemini 2.5 Flash, ReportLab PDF generation, auto-saves to professional_reports
 
 #### **Interview Simulator**
 Practice job interviews with AI-generated questions tailored to your CV and target role. Quick Practice mode (10-15 mins) lets you select focus areas (Behavioral, Technical, Situational) for 3-6 questions with instant per-answer feedback. Mock Interview mode (30 mins) generates 10 role-specific questions for full interview simulation with comprehensive feedback report including overall score (1-10), best answer, answer that needs work, STAR method analysis, and recommended practice areas. Upload cover letter for even more personalized questions.
@@ -204,7 +204,7 @@ Practice job interviews with AI-generated questions tailored to your CV and targ
   - Per-answer feedback (Quick Practice)
   - Comprehensive report (Mock Interview): overall score 1-10, strengths, areas for improvement, best answer analysis, answer that needs work with fixes, key takeaways, recommended practice
   - STAR method evaluation (Situation, Task, Action, Result)
-- **Tech:** Gemini 2.5 Flash (temp 0.5 for questions, 0.6 for feedback), CV JSON integration, session state for multi-question flow
+- **Tech:** Gemini 2.5 Flash, CV JSON integration, session state for multi-question flow
 
 #### **Professional Resources - Your Next Steps**
 Job search and course recommendation tools with conversational chat. Quick search returns real LinkedIn job links (Portugal-focused, recent postings) and Coursera/Udemy courses for skill development. Chat mode lets you select CV/quiz reports from dropdowns so AI references your specific profile when answering questions like "Find data science jobs matching my skills" or "Show me Python courses to fill my gaps." No function calling in chat mode to prevent link spam, just natural career guidance.
@@ -217,16 +217,15 @@ Job search and course recommendation tools with conversational chat. Quick searc
   - Course recommendations: Coursera, Udemy, skill-specific
   - Report selection: Choose which CV/quiz to reference in chat
   - Context-aware answers: AI knows your parsed CV skills + quiz sector
-- **Tech:** Gemini 2.0 Flash 001 function calling (2 tools: get_jobs, get_courses), Gemini 2.5 Flash chat (temp 0.7), report dropdown integration
+- **Tech:** Gemini 2.5 Flash function calling (2 tools: get_jobs, get_courses), Gemini 2.5 Flash chat (temp 0.7), report dropdown integration
 
 
 ## Tech Stack
 
 ### Backend
-- **Python 3.13** powers all 18 modular files with clean separation (pages/services/utils)
-- **Google Gemini API** dual-model approach for optimal performance:
-  - `gemini-2.5-flash` (regular tasks)
-  - `gemini-2.0-flash-001` for precise function calling
+- **Python 3.13** powers all files with clean separation (pages/services/utils)
+- **Google Gemini API**
+  - `gemini-2.5-flash`
 - **SQLite** lightweight tempdir database (`/tmp/career_corner.db`) with 4 tables:
   - `professional_reports` (CV/quiz/grades results with cv_json)
   - `saved_universities` (user favorites with admission data)
@@ -269,18 +268,16 @@ Job search and course recommendation tools with conversational chat. Quick searc
 - **DGES** Portuguese higher education (degrees, universities, 2024-2025 admission grades)
 - **IAVE** national exam archives (past papers, all subjects/years)
 - **Scholarships** DGES/FCT/Erasmus+ direct program links
-- **Study platforms** dynamic search links (Khan Academy, Coursera, YouTube, Quizlet, Reddit)
-- **No external APIs** - all resources retrieved via URLs + function calling
+- **No external APIs** - all resources retrieved via URLs + built-in google tools + function calling
 
 
 
 ## Architecture
 
-
 ### Layer Structure
 
 **Presentation Layer** (`zapp.py`, `pages/`)
-12 modular UI files, one per feature: `student_career_quiz.py` (10Q adaptive quiz), `cv_analysis.py` (PDF parsing), `interview_simulator.py` (mock interviews), etc. Each handles its own session_state, progress bars, back/next navigation, and auto-save confirmations. Streamlit widgets (tabs, expanders, chat, sliders) create intuitive multi-step workflows.
+14 modular UI files, one per feature: `student_career_quiz.py` (10Q adaptive quiz), `cv_analysis.py` (PDF parsing), `interview_simulator.py` (mock interviews), etc. Each handles its own session_state, progress bars, back/next navigation, and auto-save confirmations. Streamlit widgets (tabs, expanders, chat, sliders) create intuitive multi-step workflows.
 
 **Service Layer** (`services/`)
 `authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping 95% of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 12 UI files.
@@ -289,10 +286,11 @@ Job search and course recommendation tools with conversational chat. Quick searc
 `database.py` handles all SQLite CRUD across 4 tables (professional_reports, saved_universities, user_cvs, users) with tempdir persistence. `reports.py` renders tabbed My Reports with CV selectors and delete functionality. Zero external database configuration.
 
 **Tools Layer** (`tools/` - empty)
-All 8 tools (6 student, 2 pro) implemented inline in `student_resources.py` and `resources.py`. Gemini function calling routes directly to inline functions. Empty folder maintains future-proof structure.
+All tools implemented inline in `student_resources.py` and `resources.py`. Gemini function calling routes directly to inline functions. Empty folder maintains future-proof structure.
 
 **Styling Layer** (`styles.py`)
 Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide animations, hover effects, and responsive components. `apply_custom_css()` called from `zapp.py` ensures consistent branding.
+
 
 ### Key Design Decisions
 
@@ -306,11 +304,9 @@ Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide anima
 
 5. **5-Question Chat Routing:** Dashboard chatbots (`student_chat.py`, `professional_chat.py`) ask 5 natural questions before recommending tools ("Career Quiz would suit you best because..."). Prevents premature tool spam, builds context. Traced in Langfuse by conversation turn.
 
-6. **Function Calling Simplicity:** 8 tools (6 functions to call + 2 chats) live inline in resource files (no separate `tools/` complexity). Gemini 2.0 Flash 001 routes naturally ("biology resources" -> `get_study_resources`). Dual-mode resources toggle tools on/off.
+6. **Streamlit-Native Workflows:** No FastAPI/React. Session_state + `st.rerun()` handles complex multi-step flows (10Q quizzes, 10Q interviews). Progress bars + back/next navigation prevent user frustration.
 
-7. **Streamlit-Native Workflows:** No FastAPI/React. Session_state + `st.rerun()` handles complex multi-step flows (10Q quizzes, 10Q interviews). Progress bars + back/next navigation prevent user frustration.
-
-8. **Zero External Dependencies:** SQLite tempdir + standard library (json/re/os/datetime) = instant deployment. Only 6 pip packages needed. Works offline except Gemini API calls.
+7. **Zero External Dependencies:** SQLite tempdir + standard library (json/re/os/datetime) = instant deployment. Only 6 pip packages needed. Works offline except Gemini API calls.
 
 **Why This Works:** All files are production-ready, so zero configurations are needed to deploy to Streamlit Cloud. The project relies only on a small, well-defined set of Python dependencies and the built-in SQLite database, which means there is no need to provision external services, containers, or complex infrastructure. The folder structure is clear and consistent, with each major feature living in its own file, so the application can be understood and modified quickly even by someone new joining the project.
 
