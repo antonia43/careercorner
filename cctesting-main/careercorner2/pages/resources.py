@@ -11,6 +11,8 @@ from services.tools import (
     render_company_research_tool
 )
 
+from services.professional_tools import PROFESSIONAL_TOOLS, execute_function_call
+
 load_dotenv()
 
 GEMINI_CHAT = LangfuseGeminiWrapper(
@@ -162,50 +164,67 @@ What would you like to discuss today?"""
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
     
-    if prompt := st.chat_input("Ask for career advice, support, or guidance..."):
+    if prompt := st.chat_input("Ask for career advice..."):
         st.session_state.resources_chat_history.append({"role": "user", "content": prompt})
+        
         with st.chat_message("user"):
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                enriched_prompt = f"""{internal_context}
+                contents = [types.Content(role="user", parts=[types.Part(text=f"""You're a career advisor with access to tools.
+
+User ID: {user_id}
 
 User question: {prompt}
 
 INSTRUCTIONS:
-- Be supportive, empathetic, and encouraging
-- Reference their CV and quiz data specifically when relevant
-- Suggest courses and skills by name (users can search for links in Course Finder tool)
-- Help them make career decisions based on their profile
-- If they ask for specific job listings or course links, direct them to use the tools
-- Focus on guidance, strategy, and emotional support"""
+- Use tools to access CV, quiz results, and generate roadmaps
+- Be supportive and encouraging
+- Reference their actual data when giving advice
+- Generate roadmaps when asked about "how to become" or "next steps"
+- Analyze skill gaps when discussing career changes""")])]
                 
-                response_text = GEMINI_CHAT.generate_content(
-                    enriched_prompt,
-                    user_id=user_id,
-                    session_id="pro_support_chat",
+                config = types.GenerateContentConfig(
+                    tools=[PROFESSIONAL_TOOLS],
                     temperature=0.7
                 )
+                
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",  # ← Changed to 2.5-flash!
+                    contents=contents,
+                    config=config
+                )
+                
+                # Handle function calls
+                if response.function_calls:
+                    function_responses = []
+                    for fn_call in response.function_calls:
+                        st.caption(f"🔧 Using tool: {fn_call.name}")
+                        result = execute_function_call(fn_call.name, dict(fn_call.args))
+                        function_responses.append(
+                            types.Part.from_function_response(
+                                name=fn_call.name,
+                                response={"result": result}
+                            )
+                        )
+                    
+                    contents.append(response.candidates[0].content)
+                    contents.append(types.Content(role="user", parts=function_responses))
+                    
+                    final_response = client.models.generate_content(
+                        model="gemini-2.5-flash",  # ← And here!
+                        contents=contents,
+                        config=config
+                    )
+                    
+                    response_text = final_response.text
+                else:
+                    response_text = response.text
+                
                 st.markdown(response_text)
         
         st.session_state.resources_chat_history.append({"role": "assistant", "content": response_text})
-    
-    st.markdown("---")
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button("↺ Restart Chat", width='stretch'):
-            st.session_state.resources_chat_history = [
-                {"role": "assistant", "content": welcome_message}
-            ]
-            st.rerun()
-    
-    with col2:
-        if st.button("← Back to Tools", width='stretch'):
-            if "resources_mode" in st.session_state:
-                del st.session_state.resources_mode
-            st.rerun()
 
 
 def render_resources():
