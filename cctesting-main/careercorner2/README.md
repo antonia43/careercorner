@@ -270,6 +270,7 @@ Job search and course recommendation tools with conversational chat. Quick searc
      - Job description URL extractor (URL → job description via URL context)  
 
   - **2. Function calling tools** (custom Python functions) – 9 tools
+    
      **Student tools (4 functions)**  
      - `search_saved_universities` – Query user’s bookmarked/saved programs  
      - `calculate_admission_grade` – Compute CIF admission average from stored grades  
