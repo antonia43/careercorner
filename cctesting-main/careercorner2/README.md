@@ -83,7 +83,7 @@ Shared for all users:
 
 - **What it does:** Calculates CIF using the official Portuguese formula or other formulas the student may want to use. The user can either manually input their grades or upload a grade report image for the AI to extract subjects and grades automatically, and enter their planned or completed exam scores to see their final score. Four options are available: Portuguese (Manual Input/Upload) and International (Manual Input/Upload).
 - **Output:** 
-  - Final CIF score (e.g., 15.8/20)
+  - Final score (e.g., 15.8/20)
   - Comparison to saved university thresholds from University Finder (Portuguese Students)
  
 - **Tech:** Gemini multimodal vision for PDF/image parsing if upload option is selected
@@ -124,7 +124,7 @@ A university search tool by degree name and location. Two options are available:
 - **Tech:** DGES dataset (20+ universities), Folium map, SQLite saved_universities table with user_id tracking
 
 #### **Student Resources**
-Dual-mode feature combining five quick search options and support chat. Quick search mode provides instant access to study materials, scholarships, exam archives, career information, and wage data through 5 built-in Google Search tools. Support chat mode allows natural guidance conversations where you can select degree/grades reports from dropdowns and ask for more personal and catered advice.
+Dual-mode feature combining five quick search options and support chat. Quick search mode provides instant access to study materials, scholarships, exam archives, career information, and wage data through 5 built-in Google Search tools. Support chat mode allows natural guidance conversations where you can select degree/grades reports from dropdowns and ask for more personal and catered advice (the AI can understand what the student needs and call a function accordingly).
 
 - **Quick Search Features:**
   - **Study resources:** Khan Academy, Coursera, YouTube tutorials for any subject
@@ -136,14 +136,15 @@ Dual-mode feature combining five quick search options and support chat. Quick se
   - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
   - Ask: "Help me understand my final score", "Should I apply to Nova with 15.2?", "What universities match my interests and grades?", "How competitive is this program?"
-- **Tech:** Gemini 2.5 Flash function calling for quick search purposes and for support chat.
-
+- **Tech:** 
+  - Quick Search: Built-in Google Search tools (get_study_resources_web, get_career_options, get_wage_info, get_scholarships, get_exam_papers)
+  - Support Chat: Gemini 2.5 Flash with function calling (search_saved_universities, calculate_admission_grade, search_dges_database, get_student_profile)
 
 ### For Professionals:
 
 #### **CV Analysis**
 Upload any PDF or DOCX CV and the AI extracts structured data: skills (technical like Python/SQL + soft like leadership), work experience (roles, companies, years, achievements), education background, and hidden strengths. Saved CVs auto-load on login via My Reports. The parsed JSON feeds directly into Career Growth Quiz for personalized questions and CV Builder for tailored cover letter generation. Get benchmarking against job market standards and actionable optimization tips like "Add metrics to your achievements" or "Highlight AWS experience more prominently."
-- CV Analysis - A CV document parser that scans uploaded CVs (can be auto-reloaded from database on login), extracting skills, experience, achievements, and strenghts into structured insights. It highlights what makes your profile stand out, benchmarks against job market standards, suggests optimizations and feeds directly into the Career Growth Quiz for hyper-personalizer recommendations, or into the CV editor to enhance it or cater it to a specific job offering and position.
+- CV Analysis - A CV document parser that scans uploaded CVs (can be auto-reloaded from database on login), extracting skills, experience, achievements, and strengths into structured insights. It highlights what makes your profile stand out, benchmarks against job market standards, suggests optimizations and feeds directly into the Career Growth Quiz for hyper-personalizer recommendations, or into the CV editor to enhance it or cater it to a specific job offering and position.
 
 - **What it does:** Multimodal CV parser using Gemini vision to handle any PDF/DOCX/image format
 - **Extracts:**
@@ -175,11 +176,11 @@ An immersive 12-question conversational quiz designed for professionals and univ
 - **Tech:** Gemini 2.5 Flash, CV JSON integration, auto-saves to professional_reports
 
 #### **CV Builder**
-Three AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info -> education -> experience -> skills -> achievements) that generates a polished CV with your target job/industry. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
+Two AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info -> education -> experience -> skills -> achievements) that generates a polished CV with your target job/industry. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
 
 - **What it does:** Three modes in one tabbed interface
   1. **Build CV Quiz (Tab 1):** 5-step guided quiz collecting name/email, education, work experience, skills, achievements -> AI polishes into complete CV JSON
-  2. **Cover Letter (Tab 3):** Uses CV data + job description -> generates 200-350 word letter in professional/enthusiastic tone
+  2. **Cover Letter (Tab 2):** Uses CV data + job description -> generates 200-350 word letter in professional/enthusiastic tone
 - **Output:** 
   - Pretty PDF CVs with custom ReportLab styling (DM Sans font, lime/yellow branding)
   - JSON backup downloads for editing
@@ -215,7 +216,9 @@ Job search and course recommendation tools with conversational chat. Quick searc
   - Course recommendations: Coursera, Udemy, skill-specific
   - Report selection: Choose which CV/quiz to reference in chat
   - Context-aware answers: AI knows your parsed CV skills + quiz sector
-- **Tech:** Gemini 2.5 Flash function calling (2 tools: get_jobs, get_courses), Gemini 2.5 Flash chat (temp 0.7), report dropdown integration
+- **Tech:**
+  - Quick Search: Built-in Google Search tools (get_job_search_results, get_course_recommendations, get_linkedin_profile_optimization, get_company_research)
+  - Support Chat: Gemini 2.5 Flash with function calling (get_cv_analysis, get_career_quiz_results, analyze_skill_gaps, get_career_roadmap, get_professional_profile)
 
 
 ## Tech Stack
@@ -250,7 +253,7 @@ Job search and course recommendation tools with conversational chat. Quick searc
 - **Google OAuth 2.0** via native client credentials with localhost/production redirect URIs
 - **Session management** through `st.session_state.logged_in` + `st.session_state.username`
 
-### AI/ML
+### AI & Tools
 - **Langfuse** production observability wrapping most of Gemini calls (tools and function calling aren't wrapped but are still monitored using @observe):
   - Traces prompts, responses, tokens, temperature, and metadata per generation  
   - User feedback scoring (thumbs up/down → 0.0–1.0)
@@ -288,9 +291,13 @@ Job search and course recommendation tools with conversational chat. Quick searc
    - Structured JSON responses  
    - Central dispatchers and observability for monitoring  
 
-Multimodal AI (Gemini vision)
-- CV parsing: PDF/DOCX → structured JSON (skills, work experience, education)  
-- Grade reports: images → extracted subject scores → used in CIF/admission calculations  
+    - **Usage Pattern:**
+      - **Quick Search/Quick Tools pages:** Use built-in tools (8 tools total) for real-time web searches
+      - **Support Chat modes:** Use function calling tools (9 tools total) to access user's saved database records
+
+- **Multimodal AI** (Gemini vision)
+  - CV parsing: PDF/DOCX → structured JSON (skills, work experience, education)  
+  - Grade reports: images → extracted subject scores → used in CIF/admission calculations  
 
 
 ### Data Sources
@@ -314,7 +321,7 @@ Career Corner follows a modular layered architecture for maintainability and sca
 
 ### Project Structure
 ```
-2/
+careercorner2/
 ├── pages/ # User-facing pages
 │ ├── career_growth_quiz.py
 │ ├── cv_analysis.py
@@ -370,6 +377,7 @@ Career Corner follows a modular layered architecture for maintainability and sca
 
 **Key architectural decisions:** Dual dashboard design (student/professional), database-first persistence (SQLite tempdir), LangfuseGeminiWrapper pattern for observability, and one-file-per-feature modularity. For detailed architecture rationale, component breakdown, and design patterns, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+---
 
 ## **Key Features to Highlight**
 
@@ -458,10 +466,9 @@ LANGFUSE_HOST="https://cloud.langfuse.com"
 ```
 
 **Optional environment variables:**
-```
-- GOOGLE_CLIENT_ID="yourkey"
-- GOOGLE_CLIENT_SECRET="yourkey"
-
+```bash
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
 ```
 
 ### How to set up GoogleOAuth login (optional):
@@ -504,9 +511,9 @@ LANGFUSE_HOST="https://cloud.langfuse.com"
 2. **Choose Dashboard:** 
    - **Student Dashboard** -> high school students planning university
    - **Professional Dashboard** -> university students/professionals job hunting
-3. **Onboarding:** Confirm your user type (student gate prevents pro tool access)
+3. **Onboarding:** Confirm your user type
 4. **Start Chat:** AI asks 5 natural questions before recommending tools
-5. **Start Chat:** Have fun! The app is very intuitive, it tells you all you need to know to properly navigate it.
+5. **Usage:** Have fun! The app is very intuitive, it tells you all you need to know to properly navigate it.
 
 
 ## Deployment
