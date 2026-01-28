@@ -127,11 +127,11 @@ A university search tool by degree name and location. Two options are available:
 Dual-mode feature combining five quick search options and support chat. Quick search mode provides instant access to study materials, scholarships, exam archives, career information, and wage data through 5 built-in Google Search tools. Support chat mode allows natural guidance conversations where you can select degree/grades reports from dropdowns and ask for more personal and catered advice (the AI can understand what the student needs and call a function accordingly).
 
 - **Quick Search Features:**
-  - **Study resources:** Khan Academy, Coursera, YouTube tutorials for any subject
-  - **Career paths:** Job options and salary information for degrees
+  - **Study resources:** Google searches study resources for any subject
+  - **Career paths:** Discover what careers you can pursue with your degree
   - **Wage finder:** Salary data by job title and country
   - **Scholarships:** DGES bolsas, FCT grants, Erasmus+ programs (Portuguese only)
-  - **Exam papers:** IAVE nacional exam archives (all subjects, past years - Portuguese only)
+  - **Past Exam papers:** IAVE nacional exam archives (all subjects, past years - Portuguese only)
 - **Support Chat Mode:**
   - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
