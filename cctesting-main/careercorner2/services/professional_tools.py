@@ -5,7 +5,7 @@ import json
 from typing import Optional, List, Dict, Any
 from google.genai import types
 from utils.database import load_reports
-from langfuse import observe  # ← CORRECT IMPORT!
+from langfuse import observe
 import time
 
 
