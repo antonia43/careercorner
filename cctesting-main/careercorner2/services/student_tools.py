@@ -1,4 +1,3 @@
-# services/function_tools.py
 # FUNCTION CALLING TOOLS FOR STUDENTS WITH LANGFUSE MONITORING
 
 import json
@@ -7,7 +6,7 @@ from google.genai import types
 import pandas as pd
 from utils.database import get_saved_universities, load_reports
 from pages.university_finder import normalize_text
-from langfuse import observe  # ← CORRECT IMPORT!
+from langfuse import observe
 import time
 
 
