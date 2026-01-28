@@ -6,7 +6,9 @@ from google.genai import types
 import pandas as pd
 from utils.database import get_saved_universities, load_reports
 from pages.university_finder import normalize_text
+from services.langfuse_helper import get_user_id, get_session_id
 import time
+from langfuse.decorators import observe, langfuse_context
 
 
 # FUNCTION DECLARATIONS
@@ -87,23 +89,32 @@ get_student_data_tool = types.FunctionDeclaration(
 
 # FUNCTION IMPLEMENTATIONS
 
+# FUNCTION IMPLEMENTATIONS WITH LANGFUSE
+
+@observe(name="search_saved_universities")
 def search_saved_universities(degree_name: str, country: str = "All", max_retries: int = 3) -> Dict[str, Any]:
     """Search user's saved universities with retry logic"""
+    
+    langfuse_context.update_current_observation(
+        input={"degree_name": degree_name, "country": country},
+        metadata={"max_retries": max_retries}
+    )
 
     for attempt in range(max_retries):
         try:
             from streamlit import session_state
             user_id = session_state.get("username", "demo_user")
 
-            # Get saved universities
             saved_unis = get_saved_universities(user_id)
 
             if not saved_unis:
-                return {
+                result = {
                     "success": True,
                     "universities": [],
                     "message": "No saved universities found. Visit University Finder to save some!"
                 }
+                langfuse_context.update_current_observation(output=result)
+                return result
 
             # Filter by country
             if country == "Portugal":
@@ -127,54 +138,68 @@ def search_saved_universities(degree_name: str, country: str = "All", max_retrie
                         "duration": uni.get('duration', 'N/A')
                     })
 
-            return {
+            result = {
                 "success": True,
                 "universities": matching_unis,
                 "total_saved": len(saved_unis),
                 "matching_count": len(matching_unis)
             }
+            
+            langfuse_context.update_current_observation(output=result)
+            return result
 
         except Exception as e:
             if attempt < max_retries - 1:
-                time.sleep(0.5)  # Wait before retry
+                time.sleep(0.5)
                 continue
-            return {
+            
+            error_result = {
                 "success": False,
                 "error": f"Failed to search universities: {str(e)}",
                 "universities": []
             }
+            langfuse_context.update_current_observation(
+                output=error_result,
+                level="ERROR"
+            )
+            return error_result
 
     return {"success": False, "error": "Max retries reached", "universities": []}
 
 
+@observe(name="calculate_admission_grade")
 def calculate_admission_grade(user_id: str, max_retries: int = 3) -> Dict[str, Any]:
     """Calculate student's admission average with retry logic"""
+    
+    langfuse_context.update_current_observation(
+        input={"user_id": user_id},
+        metadata={"max_retries": max_retries}
+    )
 
     for attempt in range(max_retries):
         try:
             grades_reports = load_reports(user_id, "grades")
 
             if not grades_reports:
-                return {
+                result = {
                     "success": True,
                     "has_grades": False,
                     "message": "No grades found. Complete Grades Analysis first!"
                 }
+                langfuse_context.update_current_observation(output=result)
+                return result
 
-            # Get latest grade report
             latest_report = grades_reports[0]
             report_data = json.loads(latest_report['content'])
 
-            # Extract CIF
             final_cif = None
             if "final_cif" in report_data:
                 final_cif = report_data["final_cif"]
 
             if final_cif:
-                # Normalize to 0-20 scale
                 cif_20 = final_cif / 10.0 if final_cif > 20 else final_cif
 
-                return {
+                result = {
                     "success": True,
                     "has_grades": True,
                     "cif_200_scale": final_cif,
@@ -182,61 +207,78 @@ def calculate_admission_grade(user_id: str, max_retries: int = 3) -> Dict[str, A
                     "weights_used": report_data.get("weights_used", {}),
                     "message": f"Student's admission average: {cif_20:.2f}/20"
                 }
+                
+                langfuse_context.update_current_observation(output=result)
+                return result
             else:
-                return {
+                result = {
                     "success": True,
                     "has_grades": True,
                     "message": "Grades available but CIF not calculated yet"
                 }
+                langfuse_context.update_current_observation(output=result)
+                return result
 
         except Exception as e:
             if attempt < max_retries - 1:
                 time.sleep(0.5)
                 continue
-            return {
+            
+            error_result = {
                 "success": False,
                 "error": f"Failed to calculate grade: {str(e)}"
             }
+            langfuse_context.update_current_observation(
+                output=error_result,
+                level="ERROR"
+            )
+            return error_result
 
     return {"success": False, "error": "Max retries reached"}
 
 
+@observe(name="search_dges_database")
 def search_dges_database(degree_name: str, location: str = "All of Portugal", 
                          max_results: int = 10, max_retries: int = 3) -> Dict[str, Any]:
     """Search DGES database with retry logic"""
+    
+    langfuse_context.update_current_observation(
+        input={"degree_name": degree_name, "location": location, "max_results": max_results}
+    )
 
     for attempt in range(max_retries):
         try:
             from streamlit import session_state
 
             if "universities_df" not in session_state or session_state["universities_df"].empty:
-                return {
+                result = {
                     "success": False,
                     "error": "DGES database not loaded",
                     "universities": []
                 }
+                langfuse_context.update_current_observation(output=result, level="WARNING")
+                return result
 
             df = session_state["universities_df"].copy()
 
-            # Search by degree name
             normalized_degree = normalize_text(degree_name)
             df["course_name_normalized"] = df["course_name"].apply(normalize_text)
             mask = df["course_name_normalized"].str.contains(normalized_degree, case=False, na=False)
 
-            # Filter by location
             if location != "All of Portugal":
                 mask &= df["region"].eq(location)
 
             results = df[mask].head(max_results)
 
             if results.empty:
-                return {
+                result = {
                     "success": True,
                     "universities": [],
                     "message": f"No universities found for '{degree_name}' in {location}"
                 }
+                langfuse_context.update_current_observation(output=result)
+                return result
 
-            # Format results
             universities = []
             for _, row in results.iterrows():
                 universities.append({
@@ -248,27 +290,39 @@ def search_dges_database(degree_name: str, location: str = "All of Portugal",
                     "vacancies": int(row["vacancies"]) if pd.notna(row.get("vacancies")) else "N/A"
                 })
 
-            return {
+            result = {
                 "success": True,
                 "universities": universities,
                 "total_found": len(results)
             }
+            
+            langfuse_context.update_current_observation(output=result)
+            return result
 
         except Exception as e:
             if attempt < max_retries - 1:
                 time.sleep(0.5)
                 continue
-            return {
+            
+            error_result = {
                 "success": False,
                 "error": f"Database search failed: {str(e)}",
                 "universities": []
             }
+            langfuse_context.update_current_observation(
+                output=error_result,
+                level="ERROR"
+            )
+            return error_result
 
     return {"success": False, "error": "Max retries reached", "universities": []}
 
 
+@observe(name="get_student_profile")
 def get_student_profile(user_id: str, max_retries: int = 3) -> Dict[str, Any]:
     """Get complete student profile with retry logic"""
+    
+    langfuse_context.update_current_observation(input={"user_id": user_id})
 
     for attempt in range(max_retries):
         try:
@@ -282,13 +336,11 @@ def get_student_profile(user_id: str, max_retries: int = 3) -> Dict[str, Any]:
                 "degree_reports_count": 0
             }
 
-            # Get grades
             grades_reports = load_reports(user_id, "grades")
             if grades_reports:
                 profile["has_grades"] = True
                 profile["grade_reports_count"] = len(grades_reports)
 
-                # Try to extract CIF
                 try:
                     latest = json.loads(grades_reports[0]['content'])
                     if "final_cif" in latest:
@@ -297,34 +349,41 @@ def get_student_profile(user_id: str, max_retries: int = 3) -> Dict[str, Any]:
                 except:
                     pass
 
-            # Get degree reports
             degree_reports = load_reports(user_id, "degree")
             if degree_reports:
                 profile["has_degree_reports"] = True
                 profile["degree_reports_count"] = len(degree_reports)
 
-            # Get saved universities
             saved_unis = get_saved_universities(user_id)
             if saved_unis:
                 profile["has_saved_universities"] = True
                 profile["saved_universities_count"] = len(saved_unis)
 
-            return {
+            result = {
                 "success": True,
                 "profile": profile
             }
+            
+            langfuse_context.update_current_observation(output=result)
+            return result
 
         except Exception as e:
             if attempt < max_retries - 1:
                 time.sleep(0.5)
                 continue
-            return {
+            
+            error_result = {
                 "success": False,
                 "error": f"Failed to load profile: {str(e)}"
             }
+            langfuse_context.update_current_observation(
+                output=error_result,
+                level="ERROR"
+            )
+            return error_result
 
     return {"success": False, "error": "Max retries reached"}
-
+    
 
 # FUNCTION DISPATCHER (Mapping function calls to implementations)
 
