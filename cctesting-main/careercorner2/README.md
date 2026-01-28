@@ -279,13 +279,14 @@ Job search and course recommendation tools with conversational chat. Quick searc
 14 modular UI files, one per feature: `student_career_quiz.py` (10Q adaptive quiz), `cv_analysis.py` (PDF parsing), `interview_simulator.py` (mock interviews), etc. Each handles its own session_state, progress bars, back/next navigation, and auto-save confirmations. Streamlit widgets (tabs, expanders, chat, sliders) create intuitive multi-step workflows.
 
 **Service Layer** (`services/`)
-`authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping 95% of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 12 UI files.
+`authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping 95% of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 14 UI files.
+Built-in tools defined in `tools.py` (for both students and professionals, as some tools work for both). Function calling tools defined in `student_tools.py` and `professional_tools.py`. Gemini function calling in both student and professional resources support chat routes directly to these functions.
 
 **Data Layer** (`utils/`)
 `database.py` handles all SQLite CRUD across 4 tables (professional_reports, saved_universities, user_cvs, users) with tempdir persistence. `reports.py` renders tabbed My Reports with CV selectors and delete functionality. Zero external database configuration.
 
-**Tools Layer** (`tools/` - empty)
-All tools implemented inline in `student_resources.py` and `resources.py`. Gemini function calling routes directly to inline functions. Empty folder maintains future-proof structure.
+**Configuration Layer** (`config/`)
+Centralizes all AI settings and prompts in three files: `models.py` (model names and temperature presets per feature), `prompts.py` (30+ reusable prompt templates grouped by module) and `schemas.py` (CV schemas, fallback questions, dropdown options).
 
 **Styling Layer** (`styles.py`)
 Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide animations, hover effects, and responsive components. `apply_custom_css()` called from `zapp.py` ensures consistent branding.
@@ -299,9 +300,9 @@ Centralized CSS with DM Sans typography, lime/yellow gradients, fade/slide anima
 
 3. **Database-First Persistence:** SQLite tempdir stores everything (reports, CVs, universities) enabling dropdown selection in chats ("Select CV: My Resume - 2025-12-21"). No data loss across Streamlit reruns/sessions.
 
-4. **One File Per Feature:** 12 UI files (`student_career_quiz.py`, `cv_builder.py`, etc.) = modular development, easy Git branching, clear ownership. Each file self-contained with session_state management.
+4. **One File Per Feature:** 14 UI files (`student_career_quiz.py`, `cv_builder.py`, etc.) = modular development, each file self-contained with session_state management.
 
-5. **5-Question Chat Routing:** Dashboard chatbots (`student_chat.py`, `professional_chat.py`) ask 5 natural questions before recommending tools ("Career Quiz would suit you best because..."). Prevents premature tool spam, builds context. Traced in Langfuse by conversation turn.
+5. **5-Question Chat Routing:** Dashboard chatbots (`student_chat.py`, `professional_chat.py`) ask 5 natural questions before recommending tools ("Career Quiz would suit you best because..."). Prevents premature tool spam, builds context and helps users navigate the app with ease.
 
 6. **Streamlit-Native Workflows:** No FastAPI/React. Session_state + `st.rerun()` handles complex multi-step flows (10Q quizzes, 10Q interviews). Progress bars + back/next navigation prevent user frustration.
 
@@ -580,34 +581,38 @@ streamlit run zapp.py --server.address 0.0.0.0
 Run with production-like settings
 streamlit run zapp.py --server.headless true
 
-Note: imports with structure (from utils.database import load_report) may yield errors. If thats the case, you can use directly (from database import load_report)
+Note: imports with structure `from utils.database import load_report` may yield errors. If thats the case, you can use directly `from database import load_report`.
 
-
-### **Key Files Explained**
 
 | File | Purpose |
 |------|---------|
-| `zapp.py` | Main Streamlit entry point with student/professional dashboard routing and sidebar navigation |
-| `styles.py` | Custom CSS styling with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
+| `zapp.py` | **Main Streamlit entry point** with student/professional dashboard routing and sidebar navigation |
+| `styles.py` | **Custom CSS styling** with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
 | `langfuse_helper.py` | **LangfuseGeminiWrapper** for all Gemini calls with v3 tracing, user_id/session_id tracking, feedback logging (95% of AI calls) |
 | `database.py` | **SQLite CRUD** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
-| `reports.py` | Tabbed My Reports interface with CV selectors, delete buttons, student/pro separate tabs |
-| `authentication.py` | Local login/register + Google OAuth with Werkzeug password hashing and session management |
-| `student_dashboard.py` | Student tool routing (Career Quiz, Grades, Degree Picker, University Finder, Resources) |
-| `professional_dashboard.py` | Professional tool routing (CV Analysis, Career Growth, Interview Prep, CV Builder, Your Next Steps) |
+| `reports.py` | **Tabbed My Reports interface** with CV selectors, delete buttons, student/pro separate tabs |
+| `authentication.py` | **Local login/register** with Werkzeug password hashing and session management |
+| `student_dashboard.py` | **Student tool routing** (Career Quiz, Grades, Degree Picker, University Finder, Resources) |
+| `professional_dashboard.py` | **Professional tool routing** (CV Analysis, Career Growth, Interview Prep, CV Builder, Your Next Steps) |
 | `student_career_quiz.py` | **Adaptive 10Q career quiz** → sector matches (Healthcare 60%) + degree paths, auto-saves |
-| `career_growth_quiz.py` | **CV-aware 12Q pro quiz** (Experience + Soft Skills phases) → growth paths, uses parsed CV JSON |
-| `grades_analysis.py` | Get your CIF (Classificação de Ingresso Final) | Use it to compare to courses from the degree picker or any | Check your chances of getting in
+| `career_growth_quiz.py` | **CV-aware professional quiz** (Experience + Soft Skills phases) → growth paths, uses parsed CV JSON |
+| `grades_analysis.py` | **Grades extractor and CIF calculator** → Portuguese/international transcript parsing, DGES admission comparison |
 | `cv_analysis.py` | **Multimodal PDF/DOCX parser** → structured CV JSON (skills/experience/education) |
 | `cv_builder.py` | **2-tab CV toolkit** (quiz→ build CV, cover letters) → ReportLab PDF + JSON export |
-| `university_finder.py` | **Finding University in map** | Save your favorite universities | Saved grades if applicable to alert user 
-| `interview_simulator.py` | **Mock interviews** (Quick Practice 3-6Q + Mock 10Q) with STAR feedback scoring (1-10) |
-| `student_resources.py` | **6 PT student tools** (Khan/IAVE/DGES) + support chat with report dropdowns |
-| `resources.py` | **Pro resources** (LinkedIn jobs, Coursera courses) + chat with CV/quiz dropdowns |
+| `university_finder.py` | **University degree search** (Portugal DGES + International Gemini search) → save favorites, grade comparison |
+| `interview_simulator.py` | **Mock interviews** (Quick Practice 3-5Q + Mock 10Q) with STAR feedback scoring (1-10) |
+| `student_resources.py` | **Student support tools** (exam papers, scholarships, study resources, wage finder) + function calling chat |
+| `resources.py` | **Professional support tools** (job search, courses, LinkedIn optimizer, company research) + function calling chat |
 | `student_chat.py` | **Student dashboard AI** (5Q rule → tool recs: "Career Quiz would suit you best") |
-| `professional_chat.py` | **Pro dashboard AI** (5Q rule → "CV Analysis would suit you best") |
+| `professional_chat.py` | **Professional dashboard AI** (5Q rule → "CV Analysis would suit you best") |
+| `tools.py` | **Built-in tool definitions** (shared search tools for both student and professional resources) |
+| `student_tools.py` | **Function calling tool definitions** for student support chat (get_saved_universities, get_user_profile, etc.) |
+| `professional_tools.py` | **Function calling tool definitions** for professional support chat (analyze_cv, generate_roadmap, etc.) |
+| `models.py` | **Model configurations** (gemini-2.5-flash settings, temperature presets per feature: 0.1–0.9) |
+| `prompts.py` | **Centralized prompt templates** (30+ prompts organized by module with .format() placeholders) |
+| `schemas.py` | **Schemas and fallbacks** (CV extraction schema, fallback questions, dropdown options for UI) |
 | `.env` | **API secrets** (Gemini/Langfuse keys) - **do not commit to Git!** (.gitignore protected) |
-| `requirements.txt` | **6 core dependencies** for pip install (streamlit, google-generativeai, langfuse, etc.) |
+| `requirements.txt` | **Core dependencies** for pip install (streamlit, google-generativeai, langfuse, etc.) |
 
 
 # License
@@ -650,10 +655,10 @@ SOFTWARE.
 
 **Institution:** Nova IMS, Universidade Nova de Lisboa  
 **Course:** BSc in Data Science 
-**Project:** Capstone Project (December 2025)
+**Project:** Capstone Project (February 2026)
 
 
-Career Corner by Matilde Maximiano and Antónia Lemos (Nova IMS, December 2025)
+Career Corner by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
 GitHub: https://github.com/antonia43/careercorner1
 
 ---
