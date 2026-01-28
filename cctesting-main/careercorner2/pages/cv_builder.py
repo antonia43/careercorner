@@ -271,7 +271,7 @@ def render_cover_letter():
                     if result["success"]:
                         job_desc = result["job_description"]
                         st.session_state.fetched_job_desc = job_desc
-                        st.success("✅ Job description fetched successfully!")
+                        st.success("Job description fetched successfully!")
                         with st.expander("Preview fetched description"):
                             st.markdown(job_desc)
                     else:
