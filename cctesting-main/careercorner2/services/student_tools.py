@@ -213,7 +213,6 @@ def search_dges_database(degree_name: str, location: str = "All of Portugal",
 
     for attempt in range(max_retries):
         try:
-            from streamlit import session_state
 
             if "universities_df" not in session_state or session_state["universities_df"].empty:
                 return {
