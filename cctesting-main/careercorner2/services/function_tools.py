@@ -1,4 +1,4 @@
-# services/function_tools.py
+# FUNCTION CALLING TOOLS FOR STUDENTS
 
 import json
 from typing import Optional, List, Dict, Any
@@ -8,9 +8,8 @@ from utils.database import get_saved_universities, load_reports
 from pages.university_finder import normalize_text
 import time
 
-# ============================================================================
-# FUNCTION DECLARATIONS (What Gemini can call)
-# ============================================================================
+
+# FUNCTION DECLARATIONS
 
 search_universities_tool = types.FunctionDeclaration(
     name="search_saved_universities",
@@ -86,9 +85,7 @@ get_student_data_tool = types.FunctionDeclaration(
 )
 
 
-# ============================================================================
-# FUNCTION IMPLEMENTATIONS (What actually executes)
-# ============================================================================
+# FUNCTION IMPLEMENTATIONS
 
 def search_saved_universities(degree_name: str, country: str = "All", max_retries: int = 3) -> Dict[str, Any]:
     """Search user's saved universities with retry logic"""
@@ -329,9 +326,7 @@ def get_student_profile(user_id: str, max_retries: int = 3) -> Dict[str, Any]:
     return {"success": False, "error": "Max retries reached"}
 
 
-# ============================================================================
-# FUNCTION DISPATCHER (Maps function calls to implementations)
-# ============================================================================
+# FUNCTION DISPATCHER (Mapping function calls to implementations)
 
 FUNCTION_HANDLERS = {
     "search_saved_universities": search_saved_universities,
@@ -339,7 +334,6 @@ FUNCTION_HANDLERS = {
     "search_dges_database": search_dges_database,
     "get_student_profile": get_student_profile
 }
-
 
 def execute_function_call(function_name: str, function_args: Dict[str, Any]) -> Dict[str, Any]:
     """Execute a function call with error handling"""
@@ -362,11 +356,9 @@ def execute_function_call(function_name: str, function_args: Dict[str, Any]) -> 
         }
 
 
-# ============================================================================
-# TOOLS CONFIGURATION (For Gemini)
-# ============================================================================
+# TOOLS CONFIGURATION
 
-CAREER_CORNER_TOOLS = [
+STUDENT_TOOLS = [
     search_universities_tool,
     calculate_admission_grade_tool,
     search_dges_database_tool,
