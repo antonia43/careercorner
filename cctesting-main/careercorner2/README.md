@@ -127,22 +127,22 @@ A university search tool by degree name and location. Two options are available:
 Dual-mode feature combining five quick search options and support chat. Quick search mode provides instant access to study materials, scholarships, exam archives, career information, and wage data through 5 built-in Google Search tools. Support chat mode allows natural guidance conversations where you can select degree/grades reports from dropdowns and ask for more personal and catered advice.
 
 - **Quick Search Features:**
-  - Study resources: Khan Academy, Coursera, YouTube tutorials, Quizlet flashcards for any subject (mudarrrrrrrrrr)
-  - Scholarships: DGES bolsas, FCT grants, Erasmus+ programs
-  - Exam papers: IAVE nacional exam archives (all subjects, past years)
-  - sdfghjk
-  - sdfghjkl
+  - **Study resources:** Khan Academy, Coursera, YouTube tutorials for any subject
+  - **Career paths:** Job options and salary information for degrees
+  - **Wage finder:** Salary data by job title and country
+  - **Scholarships:** DGES bolsas, FCT grants, Erasmus+ programs (Portuguese only)
+  - **Exam papers:** IAVE nacional exam archives (all subjects, past years - Portuguese only)
 - **Support Chat Mode:**
   - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
-  - Ask: "Help me understand my final score", "Should I apply to Nova with 15.2?", ADD OTHER QUESTIONS
-- **Tech:** Gemini 2.5 Flash function calling (5 tools) for quick search purposes, Gemini 2.5 Flash (temp 0.7) for support chat
+  - Ask: "Help me understand my final score", "Should I apply to Nova with 15.2?", "What universities match my interests and grades?", "How competitive is this program?"
+- **Tech:** Gemini 2.5 Flash function calling for quick search purposes and for support chat.
 
 
 ### For Professionals:
 
 #### **CV Analysis**
-Upload any PDF or DOCX CV and the AI extracts structured data: skills (technical like Python/SQL + soft like leadership), work experience (roles, companies, years, achievements), education background, and hidden strengths. Saved CVs auto-load on login via My Reports. The parsed JSON feeds directly into Career Growth Quiz for personalized questions and CV Builder for tailoring. Get benchmarking against job market standards and actionable optimization tips like "Add metrics to your achievements" or "Highlight AWS experience more prominently."
+Upload any PDF or DOCX CV and the AI extracts structured data: skills (technical like Python/SQL + soft like leadership), work experience (roles, companies, years, achievements), education background, and hidden strengths. Saved CVs auto-load on login via My Reports. The parsed JSON feeds directly into Career Growth Quiz for personalized questions and CV Builder for tailored cover letter generation. Get benchmarking against job market standards and actionable optimization tips like "Add metrics to your achievements" or "Highlight AWS experience more prominently."
 - CV Analysis - A CV document parser that scans uploaded CVs (can be auto-reloaded from database on login), extracting skills, experience, achievements, and strenghts into structured insights. It highlights what makes your profile stand out, benchmarks against job market standards, suggests optimizations and feeds directly into the Career Growth Quiz for hyper-personalizer recommendations, or into the CV editor to enhance it or cater it to a specific job offering and position.
 
 - **What it does:** Multimodal CV parser using Gemini vision to handle any PDF/DOCX/image format
@@ -175,12 +175,11 @@ An immersive 12-question conversational quiz designed for professionals and univ
 - **Tech:** Gemini 2.5 Flash, CV JSON integration, auto-saves to professional_reports
 
 #### **CV Builder**
-Three AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info -> education -> experience -> skills -> achievements) that generates a polished CV with your target job/industry. Tailor existing CV by selecting a saved CV from My Reports, pasting a job description, and letting AI reorder bullets and inject relevant keywords. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
+Three AI-powered tools in one interface. Build CV from scratch using a 5-step quiz (personal info -> education -> experience -> skills -> achievements) that generates a polished CV with your target job/industry. Generate cover letters by combining your CV data with a job posting into personalized 200-350 word letters. All outputs export as pretty PDFs using ReportLab (custom fonts, colors, professional layouts) plus JSON backups.
 
 - **What it does:** Three modes in one tabbed interface
   1. **Build CV Quiz (Tab 1):** 5-step guided quiz collecting name/email, education, work experience, skills, achievements -> AI polishes into complete CV JSON
-  2. **Tailor CV to Job (Tab 2):** Select saved CV from dropdown, enter target job + company, paste job description -> AI reorders bullets and adds missing keywords
-  3. **Cover Letter (Tab 3):** Uses CV data + job description -> generates 200-350 word letter in professional/enthusiastic tone
+  2. **Cover Letter (Tab 3):** Uses CV data + job description -> generates 200-350 word letter in professional/enthusiastic tone
 - **Output:** 
   - Pretty PDF CVs with custom ReportLab styling (DM Sans font, lime/yellow branding)
   - JSON backup downloads for editing
@@ -315,7 +314,7 @@ Career Corner follows a modular layered architecture for maintainability and sca
 
 ### Project Structure
 ```
-careercorner2/
+2/
 ├── pages/ # User-facing pages
 │ ├── career_growth_quiz.py
 │ ├── cv_analysis.py
@@ -348,14 +347,19 @@ careercorner2/
 ├── data/ # static files
 │ ├── bg1.png
 │ ├── bg2.png
-│ ├── careercornerlogo2.png
-│ ├── careercornermini.png
+│ ├── logo2.png
+│ ├── mini.png
 │ ├── crumpledpaper2.jpg
 │ ├── crumpledpaper3.avif
 │ └── universities_2025_1f.csv
 ├── docs/
 │ ├── ARCHITECTURE.md
 │ └── TOOLS.md
+├── config/
+│   ├── __init__.py
+│   ├── models.py
+│   ├── prompts.py
+│   └── schemas.py
 ├── zapp.py # Main Streamlit entry
 └── styles.py # Custom CSS styling functions
 ├── README.md
@@ -443,15 +447,16 @@ reportlab>=4.2.2
 werkzeug>=3.0.4
 sqlite3
 
-**Required environment variables (.env file):**
-```
 
+# REPLACE WITH (proper code block):
+**Required environment variables (.env file):**
+```bash
 GOOGLE_API_KEY="your_gemini_api_key"
 LANGFUSE_PUBLIC_KEY="your_langfuse_public_key"
 LANGFUSE_SECRET_KEY="your_langfuse_secret_key"
 LANGFUSE_HOST="https://cloud.langfuse.com"
-
 ```
+
 **Optional environment variables:**
 ```
 - GOOGLE_CLIENT_ID="yourkey"
@@ -627,14 +632,14 @@ Note: imports with structure `from utils.database import load_report` may yield 
 ```
 5. CV Builder (10 mins)
 ├─ Tab 1: Build new CV from quiz (5-step: info/education/exp/skills)
-├─ Tab 2: Tailor saved CV -> "Data Scientist @ Google" + job desc
-├─ Tab 3: Cover letter (350 words, enthusiastic tone)
+├─ Tab 2: Cover letter (350 words, enthusiastic tone)
 └─ Download PDF CV + JSON backup and Branded ReportLab styling
 ```
 ```
 6. Professional Resources (10 mins)
-├─ Explore Quick Tools:
-└─ Use Career Support Chat: 
+├─ Quick Search: Find "Python Developer" jobs in Lisbon
+├─ Get Coursera/Udemy courses for missing skills
+└─ Chat Mode: "What jobs match my CV?" with CV dropdown selected
 ```
 
 
