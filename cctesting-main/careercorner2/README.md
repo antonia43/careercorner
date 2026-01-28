@@ -135,8 +135,8 @@ Dual-mode feature combining five quick search options and support chat. Quick se
 - **Support Chat Mode:**
   - Select saved degree/grades reports from dropdowns for personalization
   - AI references your specific data for personalized advice
-  - Ask: "Help me understand my final score", "Should I apply to Nova with 15.2?", "What universities match my interests and grades?", "How competitive is this program?"
-- **Tech:** 
+  - Ask: "Help me understand my final score", "I'm confused between two degrees, help me decide based on my quiz", "Are there any programs I saved that accept my current grade?"
+- **Tech:**
   - Quick Search: Built-in Google Search tools (get_study_resources_web, get_career_options, get_wage_info, get_scholarships, get_exam_papers)
   - Support Chat: Gemini 2.5 Flash with function calling (search_saved_universities, calculate_admission_grade, search_dges_database, get_student_profile)
 
