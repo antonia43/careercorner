@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
+from google.genai import types
 from services.langfuse_helper import LangfuseGeminiWrapper
 from utils.database import load_reports
 from services.tools import (
@@ -88,10 +89,16 @@ def render_main_resources():
         elif st.session_state.active_pro_tool == "company":
             render_company_research_tool()
 
-
 def render_resources_chat():
     """Career support chat"""
-    st.header("Career Support Chat")
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        if st.button("← Back", type="secondary"):
+            st.session_state.resources_mode = "tools"
+            st.rerun()
+    with col2:
+        st.header("Career Support Chat")
+    
     st.info("Get personalized career guidance and emotional support")
     
     user_id = st.session_state.get("username", "demo_user")
@@ -190,7 +197,7 @@ INSTRUCTIONS:
                     temperature=0.7
                 )
                 
-                response = client.models.generate_content(
+                response = GEMINI_CHAT.client.models.generate_content(
                     model="gemini-2.5-flash",  # ← Changed to 2.5-flash!
                     contents=contents,
                     config=config
@@ -212,8 +219,8 @@ INSTRUCTIONS:
                     contents.append(response.candidates[0].content)
                     contents.append(types.Content(role="user", parts=function_responses))
                     
-                    final_response = client.models.generate_content(
-                        model="gemini-2.5-flash",  # ← And here!
+                    final_response = GEMINI_CHAT.client.models.generate_content(
+                        model="gemini-2.5-flash",
                         contents=contents,
                         config=config
                     )
