@@ -11,7 +11,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib import colors
-from utils.tools import fetch_job_description_from_url
+from services.tools import fetch_job_description_from_url
 
 load_dotenv()
 GEMINI = LangfuseGeminiWrapper(
