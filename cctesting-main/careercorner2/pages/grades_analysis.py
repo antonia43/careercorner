@@ -236,7 +236,7 @@ def render_file_upload_grades():
         
         if st.button("⟡ Extract Grades", width='stretch', type="primary", key="btn_extract_grades"):
             with st.spinner("Analyzing document and extracting grades... This may take a moment!"):
-                extracted_data = (temp_filename, student_type)
+                extracted_data = extract_grades_from_file(temp_filename, student_type)
             
             if extracted_data:
                 st.success("✓ Grades extracted successfully!")
