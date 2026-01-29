@@ -26,6 +26,22 @@ def go_back_cv_quiz():
         st.session_state.cv_quiz_step -= 1
         st.rerun()
 
+def clean_url(url: str) -> str:
+    """Clean URL by removing markdown formatting and ensuring proper scheme"""
+    url = url.strip()
+    
+    # Remove markdown link formatting [text](url)
+    if url.startswith('[') and '](' in url:
+        url = url.split('](')[1].rstrip(')')
+    
+    # Remove any remaining brackets
+    url = url.strip('[]() ')
+    
+    # Ensure proper URL scheme
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    return url
 
 
 def render_cv_builder():
@@ -265,8 +281,9 @@ def render_cover_letter():
         if st.button("Fetch Job Description", key="fetch_job_btn"):
             if job_url.strip():
                 with st.spinner("Reading job posting from URL..."):
+                    cleaned_url = clean_url(job_url.strip())  # Clean the URL first
                     
-                    result = fetch_job_description_from_url(job_url.strip())
+                    result = fetch_job_description_from_url(cleaned_url)
                     
                     if result["success"]:
                         job_desc = result["job_description"]
