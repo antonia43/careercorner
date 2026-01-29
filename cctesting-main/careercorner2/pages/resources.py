@@ -165,26 +165,26 @@ What's on your mind today?"""
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
     
-       if prompt := st.chat_input("Ask for advice, support, or guidance..."):
+    if prompt := st.chat_input("Ask for advice, support, or guidance..."):
         st.session_state.resources_chat_history.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
             with st.spinner("𖦹 Thinking..."):
-                # Try with function calling first
+                # Function calling setup
                 contents = [types.Content(role="user", parts=[types.Part(text=f"""{internal_context}
-    
-    User question: {prompt}
-    
-    INSTRUCTIONS:
-    - Be supportive, empathetic, and encouraging
-    - Reference their CV/quiz data specifically when relevant
-    - Use tools (get_cv_analysis, analyze_skill_gaps, get_career_roadmap) when helpful
-    - Suggest courses/skills by NAME only (e.g., "Consider learning Python" not links)
-    - Help them make decisions based on their profile
-    - If they ask for job/course links, tell them to go back and use the Quick Search feature
-    - Focus on guidance and support, not direct job searches""")])]
+
+User question: {prompt}
+
+INSTRUCTIONS:
+- Be supportive, empathetic, and encouraging
+- Reference their CV/quiz data specifically when relevant
+- Use tools (get_cv_analysis, analyze_skill_gaps, get_career_roadmap) when helpful
+- Suggest courses/skills by NAME only (e.g., "Consider learning Python" not links)
+- Help them make decisions based on their profile
+- If they ask for job/course links, tell them to go back and use the Quick Search feature
+- Focus on guidance and support, not direct job searches""")])]
                 
                 config = types.GenerateContentConfig(
                     tools=[PROFESSIONAL_TOOLS],
