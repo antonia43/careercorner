@@ -896,6 +896,8 @@ Function calling tools consist of three parts:
 2. **Function Implementation** - Actual Python code that executes with retry logic
 3. **Function Dispatcher** - Routes Gemini's calls to the correct implementation
 
+
+# CHANGE THIS EXAMPLE PLS TO ONE OF THE 4 TOOLS
 ```python
 # 1. Declaration (what Gemini sees)
 tool = types.FunctionDeclaration(
