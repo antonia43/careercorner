@@ -34,7 +34,7 @@ We used Langfuse because it was taught in class and the free tier worked for our
 
 1. **Dual Dashboard Architecture:** Separate `student_dashboard.py` vs `professional_dashboard.py` prevents feature overload while sharing common services/database. Onboarding gates confirm user type before access.
 
-2. **LangfuseGeminiWrapper Pattern:** Single wrapper handles 95% of Gemini calls with automatic tracing (user_id, session_id, temperature, metadata). Raw Gemini client used only for function calling in resources. Graceful fallback if Langfuse unavailable.
+2. **LangfuseGeminiWrapper Pattern:** Single wrapper handles most of Gemini calls with automatic tracing (user_id, session_id, temperature, metadata). Raw Gemini client used only for function calling in resources. Graceful fallback if Langfuse unavailable.
 
 3. **Database-First Persistence:** SQLite tempdir stores everything (reports, CVs, universities) enabling dropdown selection in chats ("Select CV: My Resume - 2025-12-21"). No data loss across Streamlit reruns/sessions.
 
@@ -91,7 +91,7 @@ Streamlit handled all UI components including tabs, chat interfaces, progress ba
 - **Function Calling:** 8 built-in tools + 9 custom function calling tools
 
 ### Function Calling and Built-In Tools
-#### Built-In Tools (8)
+#### Built-In Tools (7)
 Built-in tools use Google's native capabilities (Google Search & URL Context) to retrieve real-time web data:
 
 1. **get_study_resources_web** - Finds free online courses, video tutorials, practice websites, and community resources for any subject
@@ -101,30 +101,27 @@ Built-in tools use Google's native capabilities (Google Search & URL Context) to
 5. **get_course_recommendations** - Finds online courses from Coursera, Udemy, edX, LinkedIn Learning, and YouTube for specific skills
 6. **get_linkedin_profile_optimization** - Provides headline options, About section rewrites, skill recommendations, and profile improvement tips
 7. **get_company_research** - Delivers company culture, reviews, news, benefits, and salary information
-8. **fetch_job_description_from_url** - Extracts job descriptions from URLs using Gemini's URL context tool
 
 #### Custom Function Calling Tools (4)
 Function calling tools access user-specific data from Career Corner's SQLite database:
 
 **Professional Tools (4):**
-1. **get_cv_analysis** - Accesses stored CV analysis with skills, experience, education, and recommendations
-2. **get_career_quiz_results** - Retrieves career quiz results including personality type, interests, and recommended paths
-3. **analyze_skill_gaps** - Compares current CV skills against target role requirements and identifies missing competencies
-4. **get_career_roadmap** - Generates phased career roadmaps (6 months / 1 year / 2 years) based on stored profile data
-5. **get_professional_profile** - Aggregates all professional data including CVs, quizzes, and career assessments
+1. **analyze_skill_gaps** - Compares current CV skills against target role requirements and identifies missing competencies
+2. **get_career_roadmap** - Generates phased career roadmaps (6 months / 1 year / 2 years) based on stored profile data
+3. **compare_career_paths** - Compares two careers based on suitability for users in relation to their data
+4. **calculate_career_readiness** - Tells user how ready they are (on a scale of 0-100%) for a certain career based on their data
+
 
 #### Tool Usage & Monitoring
 
-Langfuse wraps all Gemini calls to track prompts, responses, and token usage. Function calls in `student_resources.py` and `resources.py` are monitored using the `@observe` decorator rather than wrapped directly.
+Langfuse wraps all Gemini calls to track prompts, responses, and token usage. Function calls in `resources.py` (professional resources) are monitored using the `@observe` decorator rather than wrapped directly.
 
 **Distribution:**
-- **Student Resources:** 4 custom function calling tools (support chat) + 3 built-in tools (main page: study resources, career options, wage info)
-- **Professional Resources:** 5 custom function calling tools (support chat) + 5 built-in tools (4 on main page: job search, courses, LinkedIn optimizer, company research + 1 in CV Builder cover letter page: fetch_job_description_from_url)
+- **Professional Resources:** 4 custom function calling tools (career support chat) + 5 built-in tools (4 on main page: job search, courses, LinkedIn optimizer, company research + 1 in CV Builder cover letter page: fetch_job_description_from_url)
 
 All function calling tools implement 3-attempt retry logic for resilience against database locks and transient errors.
 
-
-For detailed information about the tools, please refer to docs/TOOLS.md
+For detailed information about the tools, please refer to [TOOLS.md](docs/TOOLS.md)
 
 
 ### Deployment
@@ -147,7 +144,7 @@ Career Corner follows a modular layered architecture with clear separation of co
 - `degree_picker.py` - AI-guided degree recommendations via yes/no questions
 - `grades_analysis.py` - CIF calculator with multimodal grade extraction
 - `university_finder.py` - DGES database search with interactive maps
-- `student_resources.py` - Quick search tools + AI support chat with function calling
+- `student_resources.py` - Quick search tools for students
 
 **Professional Pipeline:**
 - `cv_analysis.py` - Multimodal CV parser extracting structured JSON
@@ -186,7 +183,6 @@ careercorner2/
 │ ├── authentication.py  # manual and Google Login/session helpers
 │ ├── langfuse_helper.py  # Langfuse + Gemini wrappers
 │ ├── professional_tools.py
-│ ├── student_tools.py
 │ └── tools.py
 ├── utils/ # shared helpers and data access
 │ ├── __init__.py
@@ -225,11 +221,11 @@ careercorner2/
 14 modular UI files, one per feature: `student_career_quiz.py` (10Q adaptive quiz), `cv_analysis.py` (PDF parsing), `interview_simulator.py` (mock interviews), etc. Each handles its own session_state, progress bars, back/next navigation, and auto-save confirmations. Streamlit widgets (tabs, expanders, chat, sliders) create intuitive multi-step workflows.
 
 **Service Layer** (`services/`)
-`authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping 95% of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 14 UI files.
-Built-in tools defined in `tools.py` (for both students and professionals, as some tools work for both). Function calling tools defined in `student_tools.py` and `professional_tools.py`. Gemini function calling in both student and professional resources support chat routes directly to these functions.
+`authentication.py` manages SQLite users + Google OAuth. `langfuse_helper.py` provides `LangfuseGeminiWrapper` class wrapping most of Gemini calls with v3 tracing (prompts, responses, tokens, user feedback). Centralized services prevent code duplication across 14 UI files.
+Built-in tools defined in `tools.py` (for both students and professionals, as some tools work for both). Function calling tools defined in `student_tools.py` and `professional_tools.py`. Gemini function calling in professional resources' "career support chat" routes directly to these functions.
 
 **Data Layer** (`utils/`)
-`database.py` handles all SQLite CRUD across 4 tables (professional_reports, saved_universities, user_cvs, users) with tempdir persistence. `reports.py` renders tabbed My Reports with CV selectors and delete functionality. Zero external database configuration.
+`database.py` handles all SQLite operations across 4 tables (professional_reports, saved_universities, user_cvs, users) with tempdir persistence. `reports.py` renders tabbed My Reports with CV selectors and delete functionality. Zero external database configuration.
 
 **Configuration Layer** (`config/`)
 Centralizes all AI settings and prompts in three files: `models.py` (model names and temperature presets per feature), `prompts.py` (30+ reusable prompt templates grouped by module) and `schemas.py` (CV schemas, fallback questions, dropdown options).
@@ -514,7 +510,7 @@ If outgrowing SQLite (e.g., 10K+ concurrent users):
 | `zapp.py` | **Main Streamlit entry point** with student/professional dashboard routing and sidebar navigation |
 | `styles.py` | **Custom CSS styling** with DM Sans fonts, lime/yellow gradients, animations, and responsive components |
 | `langfuse_helper.py` | **LangfuseGeminiWrapper** for all Gemini calls with v3 tracing, user_id/session_id tracking, feedback logging) |
-| `database.py` | **SQLite CRUD** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
+| `database.py` | **SQLite operations** for professional_reports (CV/quiz results), saved_universities, user_cvs tables with tempdir persistence |
 | `reports.py` | **Tabbed My Reports interface** with CV selectors, delete buttons, student/pro separate tabs |
 | `authentication.py` | **Local login/register** with Werkzeug password hashing and session management |
 | `student_dashboard.py` | **Student tool routing** (Career Quiz, Grades, Degree Picker, University Finder, Resources) |
@@ -526,13 +522,12 @@ If outgrowing SQLite (e.g., 10K+ concurrent users):
 | `cv_builder.py` | **2-tab CV toolkit** (quiz→ build CV, cover letters) → ReportLab PDF + JSON export |
 | `university_finder.py` | **University degree search** (Portugal DGES + International Gemini search) → save favorites, grade comparison |
 | `interview_simulator.py` | **Mock interviews** (Quick Practice 3-5Q + Mock 10Q) with STAR feedback scoring (1-10) |
-| `student_resources.py` | **Student support tools** (exam papers, scholarships, study resources, wage finder) + function calling chat |
+| `student_resources.py` | **Student support tools** (exam papers, scholarships, study resources, wage finder) |
 | `resources.py` | **Professional support tools** (job search, courses, LinkedIn optimizer, company research) + function calling chat |
 | `student_chat.py` | **Student dashboard AI** (5Q rule → tool recs: "Career Quiz would suit you best") |
 | `professional_chat.py` | **Professional dashboard AI** (5Q rule → "CV Analysis would suit you best") |
 | `tools.py` | **Built-in tool definitions** (shared search tools for both student and professional resources) |
-| `student_tools.py` | **Function calling tool definitions** for student support chat (get_saved_universities, get_user_profile, etc.) |
-| `professional_tools.py` | **Function calling tool definitions** for professional support chat (analyze_cv, generate_roadmap, etc.) |
+| `professional_tools.py` | **Function calling tool definitions** for professional support chat (get_career_roadmap, analyze_skill_gaps, etc.) |
 | `models.py` | **Model configurations** (gemini-2.5-flash settings, temperature presets per feature: 0.1–0.9) |
 | `prompts.py` | **Centralized prompt templates** (30+ prompts organized by module with .format() placeholders) |
 | `schemas.py` | **Schemas and fallbacks** (CV extraction schema, fallback questions, dropdown options for UI) |
@@ -571,7 +566,7 @@ If outgrowing SQLite (e.g., 10K+ concurrent users):
 | 0.4 | Conversational | Dashboard chats, polish CV |
 | 0.5 | Search/recommendations | University search, interview questions |
 | 0.6 | Reports | Interview feedback, career reports |
-| 0.7 | Creative + function calling | Cover letters, resource chats |
+| 0.7 | Creative + function calling | Cover letters, resource chat |
 | 0.9 | Adaptive/creative | Student career quiz questions |
 
 ---
@@ -589,8 +584,8 @@ Complete reference of model settings, temperature rationale, and prompt strategi
 | **Grades Analysis (Calculate)** | gemini-2.5-flash | 0.1 | Apply Portuguese CIF formula: (school_avg × 0.65) + (exam_avg × 0.35) | Deterministic calculation with no creative freedom |
 | **University Finder (Portuguese)** | N/A (DB Query) | N/A | SQL query against DGES dataset with location/grade filters | No AI generation - direct database lookup |
 | **University Finder (International)** | gemini-2.5-flash | 0.5 | Search and summarize universities offering {degree} in {country} | Moderate creativity for recommendation synthesis |
-| **Student Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Function calling: get_study_resources_web, get_wage_info, get_career_options | Creative search query formulation with factual grounding |
-| **Student Resources (Support Chat)** | gemini-2.5-flash | 0.7 | Personalized advice using function calling tools: search_saved_universities, calculate_admission_grade | Conversational guidance with access to user-specific data |
+| **Student Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Built-In Tools: get_study_resources_web, get_wage_info, get_career_options | Creative search query formulation with factual grounding |
+
 | **CV Analysis (Extract)** | gemini-2.5-flash | 0.1 | Vision extraction of skills, experience, education into JSON schema | Precision required for structured data extraction |
 | **CV Analysis (Feedback)** | gemini-2.5-flash | 0.3 | Benchmarking analysis with actionable optimization tips | Analytical feedback grounded in job market standards |
 | **Interview Simulator (Generate Qs)** | gemini-2.5-flash | 0.5 | CV-aware questions for {role} at {company}: behavioral, technical, situational | Balanced creativity for realistic interview scenarios |
@@ -598,8 +593,8 @@ Complete reference of model settings, temperature rationale, and prompt strategi
 | **CV Builder (Build from Quiz)** | gemini-2.5-flash | 0.4 | Transform quiz responses into professional CV JSON with polished bullet points | Conversational input to formal output transformation |
 | **CV Builder (Tailor to Job)** | gemini-2.5-flash | 0.4 | Reorder CV bullets and inject keywords from job description | Moderate precision for ATS optimization |
 | **CV Builder (Cover Letter)** | gemini-2.5-flash | 0.7 | Generate 200-350 word letter matching CV + job description in professional/enthusiastic tone | Higher creativity for personalized narratives |
-| **Professional Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Function calling: get_job_search_results, get_course_recommendations, get_company_research | Creative search formulation with factual grounding |
-| **Professional Resources (Support Chat)** | gemini-2.5-flash | 0.7 | Personalized career guidance using: get_cv_analysis, analyze_skill_gaps, get_career_roadmap | Conversational advice with access to professional profile data |
+| **Professional Resources (Quick Search)** | gemini-2.5-flash | 0.7 | Built-In Tools: get_job_search_results, get_course_recommendations, get_company_research | Creative search formulation with factual grounding |
+| **Professional Resources (Support Chat)** | gemini-2.5-flash | 0.7 | Personalized career guidance using: calculate_career_readiness, compare_career_paths, analyze_skill_gaps, get_career_roadmap | Conversational advice with access to professional profile data with function calling |
 | **Dashboard Chat (Student)** | gemini-2.5-flash | 0.4 | 5-question routing: ask about challenges → recommend tool with reasoning | Conversational tone for natural guidance flow |
 | **Dashboard Chat (Professional)** | gemini-2.5-flash | 0.4 | 5-question routing: ask about frustrations → recommend tool with reasoning | Conversational tone for natural guidance flow |
 
