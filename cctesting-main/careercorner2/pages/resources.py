@@ -1,3 +1,96 @@
+import streamlit as st
+import os
+from dotenv import load_dotenv
+from google.genai import types
+from services.langfuse_helper import LangfuseGeminiWrapper
+from utils.database import load_reports
+from services.tools import (
+    render_job_search_tool,
+    render_course_finder_tool,
+    render_wage_finder_tool,
+    render_linkedin_optimizer_tool,
+    render_company_research_tool
+)
+
+from services.professional_tools import PROFESSIONAL_TOOLS, execute_function_call
+
+load_dotenv()
+
+GEMINI_CHAT = LangfuseGeminiWrapper(
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    model="gemini-2.5-flash"
+)
+
+def render_main_resources():
+    """Main professional resource hub"""
+    st.header("Career Resources")
+    st.markdown("Tools and resources to advance your professional journey")
+    
+    user_id = st.session_state.get("username", "demo_user")
+    
+    # Optional data check (not mandatory)
+    has_cv = bool(st.session_state.get("cv_data"))
+    has_quiz = bool(st.session_state.get("quiz_result"))
+    
+    if has_cv or has_quiz:
+        st.success("Loaded your CV and career data for personalized support!")
+    else:
+        st.info("ⓘ Complete CV Analysis or Career Quiz for more personalized guidance!")
+    
+    st.divider()
+    
+    # Tool selection buttons
+    st.subheader("Choose a Tool:")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("Job Search", width="stretch", type="primary"):
+            st.session_state.active_pro_tool = "jobs"
+            st.rerun()
+        
+        if st.button("LinkedIn Optimizer", width="stretch", type="primary"):  # Changed
+            st.session_state.active_pro_tool = "linkedin"  # Changed
+            st.rerun()
+            
+    with col2:
+        if st.button("Course Finder", width="stretch", type="primary"):
+            st.session_state.active_pro_tool = "courses"
+            st.rerun()
+        
+        if st.button("Company Research", width="stretch", type="primary"):  # Changed
+            st.session_state.active_pro_tool = "company"  # Changed
+            st.rerun()
+    
+    with col3:
+        if st.button("Wage Finder", width="stretch", type="primary"):
+            st.session_state.active_pro_tool = "wages"
+            st.rerun()
+        
+        if st.button("❤︎ Career Support Chat", width="stretch"):
+            st.session_state.resources_mode = "chat"
+            st.rerun()
+    
+    st.divider()
+    
+    # display selected tool
+    if "active_pro_tool" in st.session_state:
+        
+
+        
+        if st.session_state.active_pro_tool == "jobs":
+            render_job_search_tool()
+        elif st.session_state.active_pro_tool == "courses":
+            render_course_finder_tool()
+        elif st.session_state.active_pro_tool == "wages":
+            render_wage_finder_tool()
+        elif st.session_state.active_pro_tool == "linkedin":  # Changed
+            render_linkedin_optimizer_tool()  # Changed
+        elif st.session_state.active_pro_tool == "company":
+            render_company_research_tool()
+
+
+
 def render_resources_chat():
     """Career support chat WITH function calling for skill gaps and roadmaps"""
     st.header("❤︎ Career Support Chat")
