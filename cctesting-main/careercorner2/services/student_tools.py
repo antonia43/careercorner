@@ -171,6 +171,26 @@ def calculate_admission_grade(user_id: str, max_retries: int = 3) -> Dict[str, A
             latest_report = grades_reports[0]
             report_data = json.loads(latest_report['content'])
 
+            # CHECK FOR INTERNATIONAL STUDENTS
+            student_type = report_data.get("student_type", "portuguese")
+            
+            if student_type == "international":
+                # International students don't have CIF
+                grades_data = report_data.get("grades_data", {})
+                subjects = grades_data.get("subjects", [])
+                
+                return {
+                    "success": True,
+                    "has_grades": True,
+                    "student_type": "international",
+                    "total_subjects": len(subjects),
+                    "country": grades_data.get("country", "Unknown"),
+                    "grade_scale": grades_data.get("grade_scale", "Unknown"),
+                    "subjects": subjects[:10],  # Show first 10
+                    "message": f"International student with {len(subjects)} subjects recorded from {grades_data.get('country', 'Unknown')}"
+                }
+
+            # Portuguese students - calculate CIF
             final_cif = None
             if "final_cif" in report_data:
                 final_cif = report_data["final_cif"]
@@ -181,16 +201,18 @@ def calculate_admission_grade(user_id: str, max_retries: int = 3) -> Dict[str, A
                 return {
                     "success": True,
                     "has_grades": True,
+                    "student_type": "portuguese",
                     "cif_200_scale": final_cif,
                     "cif_20_scale": round(cif_20, 2),
                     "weights_used": report_data.get("weights_used", {}),
-                    "message": f"Student's admission average: {cif_20:.2f}/20"
+                    "message": f"Portuguese student - Admission average: {cif_20:.2f}/20 (CIF: {final_cif:.1f}/200)"
                 }
             else:
                 return {
                     "success": True,
                     "has_grades": True,
-                    "message": "Grades available but CIF not calculated yet"
+                    "student_type": "portuguese",
+                    "message": "Portuguese grades available but CIF not calculated yet"
                 }
 
         except Exception as e:
@@ -204,7 +226,6 @@ def calculate_admission_grade(user_id: str, max_retries: int = 3) -> Dict[str, A
             }
 
     return {"success": False, "error": "Max retries reached"}
-
 
 @observe(name="search_dges_database")
 def search_dges_database(degree_name: str, location: str = "All of Portugal", 
