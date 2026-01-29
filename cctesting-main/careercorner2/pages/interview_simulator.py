@@ -6,7 +6,7 @@ from services.langfuse_helper import LangfuseGeminiWrapper, get_user_id, get_ses
 import tempfile
 import os
 import time
-from pages.cv_analysis import _process_any_document
+from pages.cv_analysis import _extract_structured_multimodal
 
 load_dotenv()
 INTERVIEW_GEMINI = LangfuseGeminiWrapper(
@@ -28,14 +28,13 @@ def render_interview_personalization():
     cv = st.session_state.get("cv_data")
     has_cv = bool(cv)
 
-    # st.markdown("### ⋆˚꩜｡ Personalization (optional)")
     col1, col2 = st.columns(2)
 
     with col1:
         if has_cv:
             use_cv = st.checkbox(
                 "✓ Use my CV for personalized questions", 
-                value=True, #default checked
+                value=True,
                 key="use_cv_for_interview"
             )
             
@@ -69,17 +68,16 @@ def render_interview_personalization():
                 cover_text = cover_file.read().decode("utf-8")
             
             elif file_extension in ["pdf", "docx"]:
-                # saving to temp file and use Gemini to extract
-                temp_path = os.path.join(tempfile.gettempdir(), f"cover_{int(time.time())}.{file_extension}")
+                # Reuse CV extraction with simple schema
+                result = _extract_structured_multimodal(
+                    cover_file, 
+                    schema={"text": "Extract all text from this document"}
+                )
                 
-                with open(temp_path, "wb") as f:
-                    f.write(cover_file.read())
-                
-                cover_text = _process_any_document(temp_path, "Extract all text from this cover letter.")
-                
-                # Clean up
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
+                if result.get("success"):
+                    cover_text = result["data"].get("text", "")
+                else:
+                    cover_text = ""
             
             st.success(f"✓ Loaded cover letter: {cover_file.name}")
             
@@ -89,10 +87,6 @@ def render_interview_personalization():
 
     st.session_state.interview_cover = cover_text
 
-    # only setting interview_cover, interview_cv already set above
-    st.session_state.interview_cover = cover_text
-
-    # st.markdown("---")
     nav1, nav2 = st.columns(2)
     with nav1:
         if st.button("✍︎ Build / Improve my CV", width='stretch'):
