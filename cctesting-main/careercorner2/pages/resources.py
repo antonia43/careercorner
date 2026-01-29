@@ -155,11 +155,10 @@ I can help you with:
 ✦ **Next steps** and action planning  
 
 **Try asking me:**
-- "What are my key skills and experience?"
-- "What careers would suit my personality?"
-- "I want to become a [job role] - what skills am I missing?"
-- "Show me a roadmap to become a [job role] in [timeframe]"
-- "What should my next career step be?"
+- "Should I become a Data Scientist or Product Manager?" (compares careers)
+- "Am I ready to be a Software Engineer?" (readiness score)
+- "I want to become a [job role] - what skills am I missing?" (skill gaps)
+- "Show me a roadmap to become a [job role] in [timeframe]" (career roadmap)
 
 What's on your mind today?"""
 
@@ -192,10 +191,11 @@ What's on your mind today?"""
     - **IMPORTANT: When using tools, ALWAYS pass user_id: {user_id}**
     
     HANDLING MISSING DATA:
-    - If a tool returns "has_cv": False or "has_quiz": False, politely tell them:
-      "You need to complete [CV Analysis/Career Quiz] first. Go back to the main menu, 
-       complete it, then come back and I can help you with [their request]!"
-    - Be encouraging and explain WHY it's needed
+    - If tool returns "has_data": False, politely redirect them:
+      "You need to complete [CV Analysis/Career Quiz] first. Click **← Back to Quick Search**, 
+       complete it, then return here for personalized insights!"
+    - Be encouraging and explain the benefit of completing it
+    - If they only have CV (no quiz), tools still work but mention quiz is optional for better results
     
     REDIRECT TO QUICK SEARCH TOOLS:
     If they ask for any of these, tell them to use Quick Search instead:
@@ -208,12 +208,13 @@ What's on your mind today?"""
     DO NOT provide links or search results for these - ONLY redirect them.
     
     WHEN TO USE TOOLS:
-    - Use get_cv_analysis when they ask about their skills, experience, or background
-    - Use get_career_quiz_results when they ask about personality, career interests, or career fit
     - Use analyze_skill_gaps when they mention a target role and want to know what skills they need
     - Use get_career_roadmap when they ask about steps, timeline, or how to transition to a role
-    - Use get_professional_profile when you need comprehensive context about them
+    - Use compare_career_paths when they're deciding between 2-3 career options
+    - Use calculate_career_readiness when they ask if they're ready for a role or want a readiness score
     
+    NOTE: Their CV and quiz data is already available in context - you don't need to fetch it.
+
     NUDGE STRATEGY:
     - If they ask a vague question (e.g., "help me", "what should I do?", "I'm confused"), respond supportively BUT:
       1. Acknowledge their feelings
