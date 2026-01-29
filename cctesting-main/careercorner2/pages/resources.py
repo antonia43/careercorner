@@ -201,16 +201,29 @@ INSTRUCTIONS:
                 if response.candidates[0].content.parts and hasattr(response.candidates[0].content.parts[0], 'function_call'):
                     function_responses = []
                     for part in response.candidates[0].content.parts:
-                        if hasattr(part, 'function_call'):
-                            fn_call = part.function_call
-                            st.caption(f"🔧 Using: {fn_call.name}")
-                            result = execute_function_call(fn_call.name, dict(fn_call.args))
-                            function_responses.append(
-                                types.Part.from_function_response(
-                                    name=fn_call.name,
-                                    response={"result": result}
+                        try:
+                            if hasattr(part, 'function_call') and part.function_call:
+                                fn_call = part.function_call
+                                
+                                # ✅ Skip if function_call is None or has no name
+                                if not fn_call or not hasattr(fn_call, 'name') or not fn_call.name:
+                                    continue
+                                
+                                st.caption(f"🔧 Using: {fn_call.name}")
+                                result = execute_function_call(fn_call.name, dict(fn_call.args))
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_call.name,
+                                        response={"result": result}
+                                    )
                                 )
-                            )
+                        except AttributeError:
+                            # Skip invalid function calls silently
+                            continue
+                        except Exception as e:
+                            st.warning(f"⚠ Function call failed: {e}")
+                            continue
+
                     
                     contents.append(response.candidates[0].content)
                     contents.append(types.Content(role="user", parts=function_responses))
