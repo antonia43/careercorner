@@ -226,7 +226,7 @@ INSTRUCTIONS:
                     contents=contents,
                     config=config
                 )
-                
+
                 # Handle function calls
                 if response.candidates[0].content.parts and hasattr(response.candidates[0].content.parts[0], 'function_call'):
                     function_responses = []
@@ -235,7 +235,6 @@ INSTRUCTIONS:
                             if hasattr(part, 'function_call') and part.function_call:
                                 fn_call = part.function_call
                                 
-                                # ✅ Skip if function_call is None or has no name
                                 if not fn_call or not hasattr(fn_call, 'name') or not fn_call.name:
                                     continue
                                 
@@ -248,12 +247,10 @@ INSTRUCTIONS:
                                     )
                                 )
                         except AttributeError:
-                            # Skip invalid function calls silently
                             continue
                         except Exception as e:
                             st.warning(f"⚠ Function call failed: {e}")
                             continue
-
                     
                     contents.append(response.candidates[0].content)
                     contents.append(types.Content(role="user", parts=function_responses))
@@ -268,8 +265,19 @@ INSTRUCTIONS:
                 else:
                     response_text = response.text
                 
+                # ✅ FIX: Check if response is actually empty
+                if not response_text or response_text.strip() == "":
+                    # Retry without tools for simple queries
+                    simple_response = GEMINI_CHAT.generate_content(
+                        prompt=f"User said: {prompt}\n\nRespond in a friendly, supportive way.",
+                        user_id=user_id,
+                        session_id=user_id,
+                        temperature=0.7
+                    )
+                    response_text = simple_response if simple_response else "I'm here to help! What would you like to talk about?"
+                
                 st.markdown(response_text)
-        
+
         st.session_state.student_resources_chat_history.append({"role": "assistant", "content": response_text})
     
     st.markdown("---")
