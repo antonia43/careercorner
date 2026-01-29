@@ -397,7 +397,6 @@ def render_country_selector(key_prefix: str, label: str = "Country:", default: s
 
 
 # UI Render Functions
-
 def render_city_guide_tool():
     """City guide for students - any city worldwide"""
     st.subheader("City Guide")
@@ -413,7 +412,7 @@ def render_city_guide_tool():
         "France": ["Paris", "Lyon", "Toulouse", "Marseille", "Bordeaux"],
         "Netherlands": ["Amsterdam", "Rotterdam", "Utrecht", "The Hague", "Groningen"],
         "Italy": ["Rome", "Milan", "Florence", "Bologna", "Turin"],
-        "Other": []
+        "Other": ["Other"]
     }
 
     col1, col2 = st.columns(2)
@@ -433,9 +432,10 @@ def render_city_guide_tool():
                 key="city_guide_city"
             )
         else:
+            # If "Other" country selected, skip city dropdown entirely
             city = "Other"
 
-    # Custom input if "Other" selected
+    # Show text inputs when "Other" is selected
     if city == "Other" or country == "Other":
         col1, col2 = st.columns(2)
         with col1:
@@ -446,34 +446,39 @@ def render_city_guide_tool():
             )
         with col2:
             custom_country = st.text_input(
-                "Country (optional):",
-                placeholder="e.g., Japan, Canada...",
-                key="city_guide_custom_country"
+                "Country:",
+                placeholder="e.g., Japan, Singapore, Canada..." if country == "Other" else country,
+                value="" if country == "Other" else country,
+                key="city_guide_custom_country",
+                disabled=(country != "Other")  # Disable if country already selected
             )
         
         final_city = custom_city.strip()
-        final_country = custom_country.strip()
+        final_country = custom_country.strip() if country == "Other" else country
     else:
         final_city = city
         final_country = country
 
-    if st.button("Explore City", width="stretch", type="primary"):
-        if final_city and final_city != "Other":
-            with st.spinner(f"Researching {final_city}..."):
-                results = get_city_guide(final_city, final_country if final_country != "Other" else "")
-                if results["success"]:
-                    st.markdown(results["answer"])
+    # Disable button if required fields are empty
+    can_search = bool(final_city and final_city != "Other" and final_country and final_country != "Other")
 
-                    if results["sources"]:
-                        with st.expander("View Sources"):
-                            for source in results["sources"]:
-                                st.markdown(f"[{source['title']}]({source['url']})")
-                else:
-                    st.error(f"Error: {results.get('error', 'Unknown error')}")
-        else:
-            st.warning("Please enter a city name")
+    if st.button("Explore City", width="stretch", type="primary", disabled=not can_search):
+        with st.spinner(f"Researching {final_city}..."):
+            results = get_city_guide(final_city, final_country)
+            if results["success"]:
+                st.markdown(results["answer"])
+
+                if results["sources"]:
+                    with st.expander("View Sources"):
+                        for source in results["sources"]:
+                            st.markdown(f"[{source['title']}]({source['url']})")
+            else:
+                st.error(f"Error: {results.get('error', 'Unknown error')}")
     
-    st.caption("ⓘ Tip: Compare multiple cities to find the perfect match for your study abroad plans!")
+    if not can_search and (city == "Other" or country == "Other"):
+        st.caption("ⓘ Tip: Enter a city name to search")
+    else:
+        st.caption("ⓘ Tip: Compare multiple cities to find the perfect match for your study abroad plans!")
 
 
 def render_exam_papers_tool():
