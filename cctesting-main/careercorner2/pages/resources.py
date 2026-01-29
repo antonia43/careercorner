@@ -90,19 +90,14 @@ def render_main_resources():
             render_company_research_tool()
 
 
-
 def render_resources_chat():
     """Career support chat WITH function calling for skill gaps and roadmaps"""
     st.header("❤︎ Career Support Chat")
 
     user_id = st.session_state.get("username", "demo_user")
     
-    # Load CVs from BOTH sources
-    cv_analysis_reports = load_reports(user_id, "professional_cv") or []
-    cv_builder_reports = load_reports(user_id, "cv_builder") or []  # Add this if CV Builder uses different type
-    
-    # Combine all CV reports
-    cv_reports = cv_analysis_reports + cv_builder_reports
+    # Load all CVs (from both CV Analysis and CV Builder - same report type)
+    cv_reports = load_reports(user_id, "professional_cv") or []
     
     # Load quizzes
     quiz_reports = load_reports(user_id, "professional_career_quiz") or []
@@ -136,11 +131,11 @@ def render_resources_chat():
             selected_quiz_data = None
             st.info("⚠︎ No career quiz")
     
-    # data summary with combined count
+    # data summary
     data_summary = f"""Professional Data ({user_id}):
 • CVs: {len(cv_reports)} available
 • Quizzes: {len(quiz_reports)} available"""
-    
+
     # internal context for the ai
     internal_context = f"""You have access to this professional's data:
 
