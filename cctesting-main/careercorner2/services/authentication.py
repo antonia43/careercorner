@@ -111,13 +111,17 @@ def google_login_button():
         st.info("Google login: Add GOOGLE_CLIENT_ID to .env")
         return
     
-    # Auto-detect environment
-    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
-        # Production: Use environment variable
-        redirect_uri = os.getenv("REDIRECT_URI")
+    # Detect environment
+    is_cloud = (
+        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
+        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud"
+    )
+    
+    # Use exact URIs from Google Console
+    if is_cloud:
+        redirect_uri = "https://careercorner.streamlit.app"  # No trailing slash!
     else:
-        # Local development
-        redirect_uri = "http://localhost:8501"
+        redirect_uri = "http://localhost:8501"  # No trailing slash!
     
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -127,9 +131,5 @@ def google_login_button():
         f"scope=openid%20email%20profile"
     )
     
-    st.markdown(f'''
+    st.link_button("Sign in with Google", auth_url)
 
-        <a href="{auth_url}" target="_self" style="text-decoration:none;display:block;">
-            <button class="gbtn"> Google Login</button>
-        </a>
-    ''', unsafe_allow_html=True)
