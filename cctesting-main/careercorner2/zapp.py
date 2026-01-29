@@ -146,12 +146,6 @@ if "welcome_animated" not in st.session_state:
 @st.dialog("⟡ Welcome to Career Corner!")
 def login_modal():
     st.caption("Please log in or register to continue")
-    # Temporary debug
-    if st.button("🔍 Check Secrets"):
-        st.write(f"REDIRECT_URI exists: {bool(os.getenv('REDIRECT_URI'))}")
-        st.write(f"REDIRECT_URI value: {os.getenv('REDIRECT_URI')}")
-        st.write(f"CLIENT_ID exists: {bool(os.getenv('GOOGLE_CLIENT_ID'))}")
-
 
     tab1, tab2 = st.tabs(["Login", "Register"])
     with tab1:
