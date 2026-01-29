@@ -43,6 +43,15 @@ def clean_url(url: str) -> str:
     
     return url
 
+def is_likely_job_url(url: str) -> bool:
+    """Check if URL pattern suggests it might be a job posting"""
+    job_keywords = [
+        'job', 'career', 'vacancy', 'position', 'hiring', 
+        'apply', 'recruit', 'employment', 'opening'
+    ]
+    url_lower = url.lower()
+    return any(keyword in url_lower for keyword in job_keywords)
+
 
 def render_cv_builder():
     st.markdown('<div class="cc-fade-in">', unsafe_allow_html=True)
@@ -280,9 +289,13 @@ def render_cover_letter():
         
         if st.button("Fetch Job Description", key="fetch_job_btn"):
             if job_url.strip():
+                cleaned_url = clean_url(job_url.strip())
+                
+                # Warning if URL doesn't look like a job posting
+                if not is_likely_job_url(cleaned_url):
+                    st.warning("This URL doesn't look like a job posting. Proceeding anyway...")
+                
                 with st.spinner("Reading job posting from URL..."):
-                    cleaned_url = clean_url(job_url.strip())  # Clean the URL first
-                    
                     result = fetch_job_description_from_url(cleaned_url)
                     
                     if result["success"]:
@@ -294,7 +307,7 @@ def render_cover_letter():
                     else:
                         st.error(f"Failed to fetch: {result.get('error', 'Unknown error')}")
             else:
-                st.warning("Please enter a valid URL")
+                st.warning("Please enter a valid job posting URL")
         
         # Show fetched description if available
         if "fetched_job_desc" in st.session_state:
