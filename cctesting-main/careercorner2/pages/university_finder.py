@@ -337,7 +337,7 @@ def render_portuguese_finder():
     if portuguese_unis:
         with st.expander(f"Your Saved Portuguese Universities ({len(portuguese_unis)})", expanded=False):
             for uni in portuguese_unis:
-                col1, col2 = st.columns()[5][6]
+                col1, col2 = st.columns([5, 6])
                 with col1:
                     st.write(
                         f"**{uni['name']}** - {uni['program_name']} "
