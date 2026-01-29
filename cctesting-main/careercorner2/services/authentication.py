@@ -25,7 +25,7 @@ def get_redirect_uri():
     )
     
     if is_cloud:
-        # Try to get from environment variable first
+        # Try to get from environment variable first (for flexibility)
         return os.getenv("REDIRECT_URI", "https://careercorner.streamlit.app")
     else:
         return "http://localhost:8501"
@@ -118,7 +118,6 @@ def require_login():
 def current_user():
     return st.session_state.get("user", None)
 
-
 def google_login_button():
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     if not GOOGLE_CLIENT_ID:
@@ -136,5 +135,3 @@ def google_login_button():
     )
     
     st.link_button("Sign in with Google", auth_url)
-
-
