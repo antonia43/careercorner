@@ -120,7 +120,28 @@ def google_login_button():
         f"scope=openid%20email%20profile"
     )
     
-    st.link_button("Sign in with Google", auth_url)
+    # Use HTML with target="_self" to stay in same tab
+    st.markdown(
+        f"""
+        <a href="{auth_url}" target="_self">
+            <button style="
+                background-color: #4285F4;
+                color: white;
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 0.5rem;
+                cursor: pointer;
+                font-size: 1rem;
+                width: 100%;
+                font-weight: 500;
+            ">
+                🔐 Sign in with Google
+            </button>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 def get_redirect_uri():
     """Get the correct redirect URI for current environment"""
