@@ -18,28 +18,6 @@ def render_student_main_resources():
     st.header("✄ Student Resources")
     st.markdown("Explore tools and resources to help with your academic journey!")
     
-    user_id = st.session_state.get("username", "demo_user")
-    
-    # Check if user has data
-    has_data = False
-    try:
-        degree_reports = load_reports(user_id, "degree")
-        grades_reports = load_reports(user_id, "grades")
-        saved_unis = get_saved_universities(user_id)
-        
-        has_degree = len(degree_reports) > 0
-        has_grades = len(grades_reports) > 0
-        has_unis = len(saved_unis) > 0
-        
-        has_data = has_degree or has_grades or has_unis
-        
-        if has_data:
-            st.success(f"✓ Loaded {len(degree_reports)} degrees, {len(grades_reports)} grades, {len(saved_unis)} unis")
-        else:
-            st.info("ⓘ Tip: For better results, try Degree Picker or Grades Analysis first!")
-    except:
-        pass
-    
     st.divider()
     
     # Tool selection
