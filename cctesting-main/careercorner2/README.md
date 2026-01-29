@@ -4,6 +4,8 @@
 
 Helping you build your career, every step of the way.
 
+![Alt text](data/careercornermini.png)
+
 ## Overview
 
 Career Corner is an AI-powered application designed to help high-school students and professionals make informed career decisions. Whether you're a high-school student preparing for exams and struggling to pick a degree, or a professional seeking a career change or job opportunities based on your skills, Career Corner provides comprehensive support through two dedicated interfaces: one for high-school students and another for university students and professionals.
