@@ -36,8 +36,8 @@ Career Corner uses **two distinct types of AI tools** to provide comprehensive c
 **What they are**: Native Google Gemini capabilities that access external web data in real-time.
 
 **Tools available**:
-- 🌐 **Google Search** (`types.GoogleSearch()`) - Real-time web search with grounding
-- 🔗 **URL Context** (`types.UrlContext()`) - Extract content from specific URLs
+- **Google Search** (`types.GoogleSearch()`) - Real-time web search with grounding
+- **URL Context** (`types.UrlContext()`) - Extract content from specific URLs
 
 **Purpose**: Retrieve current information from the internet
 - Study resources (courses, tutorials, videos)
