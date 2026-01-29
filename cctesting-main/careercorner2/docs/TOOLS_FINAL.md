@@ -29,7 +29,7 @@ This document provides comprehensive documentation for all tools and functions u
 
 ## Tool Types Overview
 
-CareerCorner uses **two distinct types of AI tools** to provide comprehensive career guidance:
+Career Corner uses **two distinct types of AI tools** to provide comprehensive career guidance:
 
 ### 1. Built-in Tools (Google Search & URL Context)
 
@@ -47,11 +47,10 @@ CareerCorner uses **two distinct types of AI tools** to provide comprehensive ca
 - Job postings and opportunities
 - LinkedIn optimization tips
 - Online course recommendations
-- Job description URL extractor 
 
 **Data source**: Public internet, updated in real-time
 
-**When to use**: Need current, general information that's publicly available online
+**When to use**: When we need current, general information that's publicly available online
 
 **Sections in this document**:
 - [Built-in Tools: Core Functions](#built-in-tools-core-functions)
@@ -64,20 +63,18 @@ CareerCorner uses **two distinct types of AI tools** to provide comprehensive ca
 **What they are**: Custom Python functions that Gemini can invoke to access CareerCorner's database and user-specific data.
 
 **Tools available**:
-- **Student Tools** (4 functions) - Grades, saved universities, DGES database
-- **Professional Tools** (5 functions) - CV analysis, career quiz, skill gaps, roadmaps
+- **Professional Tools** (4 functions) - skill gaps, roadmaps, career paths, career readiness
 
 **Purpose**: Access user-specific data and perform personalized calculations
-- User's admission grades (CIF)
-- Saved universities and programs
-- CV analysis and work history
-- Career quiz results
 - Skill gap analysis
 - Personalized career roadmaps
+- Career path comparison
+- Career readiness calculation
 
-**Data source**: CareerCorner application database (SQLite)
 
-**When to use**: Need user-specific, personalized information that's stored in the application
+**Data source**: Career Corner application database (SQLite)
+
+**When to use**: Need user-specific, personalized information
 
 **Sections in this document**:
 - [Function Calling Tools](#function-calling-tools)
@@ -101,50 +98,30 @@ CareerCorner uses **two distinct types of AI tools** to provide comprehensive ca
 
 ### How They Work Together
 
-CareerCorner uses **both tool types in combination** to provide the best experience:
+Career Corner uses **both tool types** to provide the best experience:
 
-**Example 1: Personalized University Search**
-```
-User: "Find me universities I can get into with my grade"
-
-Workflow:
-1. 🔧 Function Calling: calculate_admission_grade(user_id) 
-   → Gets user's grade: 17.85/20
-
-2. 🔧 Function Calling: search_dges_database("Engineering", "Lisbon")
-   → Finds programs with requirements
-
-3. 🌐 Google Search: "University of Lisbon Engineering program reviews"
-   → Gets current student reviews and rankings
-
-4. 🤖 Gemini combines all data:
-   → Personalized recommendations with web context
-```
-
-**Example 2: Career Transition Planning**
+**Example: Career Transition Planning**
 ```
 User: "I want to become a Data Scientist. What should I do?"
 
 Workflow:
-1. 🔧 Function Calling: get_professional_profile(user_id)
+1. Function Calling: get_professional_profile(user_id)
    → Gets user's CV and career quiz data
 
-2. 🔧 Function Calling: analyze_skill_gaps(user_id, "Data Scientist")
+2. Function Calling: analyze_skill_gaps(user_id, "Data Scientist")
    → Identifies missing skills (ML, Statistics)
 
-3. 🌐 Google Search: "Machine Learning online courses"
+3. Google Search: "Machine Learning online courses"
    → Finds Coursera, Udemy courses
 
-4. 🔧 Function Calling: get_career_roadmap(user_id, "Data Scientist", "1 year")
+4. Function Calling: get_career_roadmap(user_id, "Data Scientist", "1 year")
    → Creates personalized timeline
 
-5. 🤖 Gemini delivers:
+5. Gemini delivers:
    → Complete transition plan with specific resources
 ```
 
 ---
-
-
 
 ## Setup and Configuration
 
@@ -415,37 +392,6 @@ result = get_company_research("Microsoft")
 
 ---
 
-### 8. `fetch_job_description_from_url(url: str) -> dict`
-
-**Purpose**: Extracts job description from a URL using Gemini's URL context tool.
-
-**Parameters**:
-- `url` (str): URL of the job posting
-
-**Returns**:
-- `dict` with keys:
-  - `success` (bool): Operation status
-  - `job_description` (str): Extracted job details
-  - `source_url` (str): Original URL
-  - `error` (str): Error message if applicable
-
-**Features**:
-- Extracts job title, company name, responsibilities, requirements
-- Formats as clean text
-- Uses URL context tool (not Google Search)
-
-**Model Configuration**:
-- Model: `gemini-2.5-flash`
-- Tools: URL Context
-
-**Example**:
-```python
-result = fetch_job_description_from_url("https://careers.google.com/jobs/...")
-if result["success"]:
-    print(result["job_description"])
-```
-
----
 
 ## Built-in Tools: UI Rendering Functions
 
@@ -980,198 +926,6 @@ All functions use `@observe` decorator for:
 
 ---
 
-## Student Tools
-
-Tools for students to access grades, saved universities, and DGES database.
-
-### Configuration
-
-```python
-STUDENT_TOOLS = types.Tool(function_declarations=[
-    search_universities_tool,
-    calculate_admission_grade_tool,
-    search_dges_database_tool,
-    get_student_data_tool
-])
-```
-
----
-
-### 1. search_saved_universities
-
-**Type**: Function Calling Tool
-
-**Purpose**: Search through user's saved universities and programs
-
-**When Gemini calls**: User asks about saved universities, wants to compare programs, needs info about saved degrees
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `degree_name` | string | Yes | - | Degree to search (e.g., "Computer Science") |
-| `country` | string | No | "All" | Filter: "Portugal", "International", "All" |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "universities": [
-        {
-            "university": "University of Lisbon",
-            "program": "Computer Science Engineering",
-            "location": "Lisbon",
-            "type": "Public",
-            "grade_required": "17.5/20",
-            "duration": "3 years"
-        }
-    ],
-    "total_saved": 5,
-    "matching_count": 1
-}
-```
-
-#### Use Cases
-
-- "Show me all Computer Science programs I saved"
-- "What engineering degrees did I save in Portugal?"
-- "Which universities did I bookmark for Medicine?"
-
-#### Example
-
-```
-User: "What Computer Science programs did I save?"
-
-Gemini calls: search_saved_universities("Computer Science", "All")
-
-Response: "You have 3 Computer Science programs saved:
-- University of Lisbon: CS Engineering (17.5/20)
-- University of Porto: Informatics Engineering (16.8/20)
-- IST: Computer Science (18.0/20)"
-```
-
----
-
-### 2. calculate_admission_grade
-
-**Type**: Function Calling Tool
-
-**Purpose**: Calculate student's admission average (CIF) from grades
-
-**When Gemini calls**: User asks about chances, admission average, university qualification
-
-#### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | string | Yes | User ID to fetch grades |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "has_grades": True,
-    "cif_200_scale": 178.5,
-    "cif_20_scale": 17.85,
-    "weights_used": {
-        "exam_weight": 0.5,
-        "coursework_weight": 0.5
-    },
-    "message": "Student's admission average: 17.85/20"
-}
-```
-
-#### Use Cases
-
-- "What's my admission average?"
-- "Can I get into this university?"
-- "Do I meet the grade requirement?"
-
----
-
-### 3. search_dges_database
-
-**Type**: Function Calling Tool
-
-**Purpose**: Search Portuguese university database (DGES) for degrees
-
-**When Gemini calls**: User wants to find Portuguese universities for a specific degree
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `degree_name` | string | Yes | - | Degree in Portuguese (e.g., "Engenharia Informática") |
-| `location` | string | No | "All of Portugal" | Region: "Lisbon", "Porto", "Coimbra", etc. |
-| `max_results` | integer | No | 10 | Max results (1-50) |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "universities": [
-        {
-            "university": "Instituto Superior Técnico",
-            "program": "Engenharia Informática e de Computadores",
-            "location": "Lisbon",
-            "type": "Public",
-            "last_grade": "18.2/20",
-            "vacancies": 180
-        }
-    ],
-    "total_found": 15
-}
-```
-
-#### Use Cases
-
-- "Show me Computer Engineering programs in Lisbon"
-- "What's the grade needed for Medicine in Porto?"
-- "List all Engineering programs in Portugal"
-
----
-
-### 4. get_student_profile
-
-**Type**: Function Calling Tool
-
-**Purpose**: Get complete student profile (grades, saved universities, preferences)
-
-**When Gemini calls**: Needs context about student for personalized advice
-
-#### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | string | Yes | User ID |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "profile": {
-        "user_id": "student123",
-        "has_grades": True,
-        "has_degree_reports": True,
-        "has_saved_universities": True,
-        "admission_average": 17.85,
-        "saved_universities_count": 5,
-        "degree_reports_count": 2
-    }
-}
-```
-
-#### Use Cases
-
-- "What should I do next in my university search?"
-- "What information am I missing?"
-- Context gathering for personalized advice
-
----
 
 ## Professional Tools
 
@@ -1181,91 +935,16 @@ Tools for professionals to access CV, career quiz, and career planning features.
 
 ```python
 PROFESSIONAL_TOOLS = types.Tool(function_declarations=[
-    get_cv_analysis_tool,
-    get_career_quiz_results_tool,
     analyze_skill_gaps_tool,
     get_career_roadmap_tool,
-    get_professional_profile_tool
+    compare_career_paths_tool,
+    calculate_career_readiness_tool
 ])
 ```
 
 ---
 
-### 5. get_cv_analysis
-
-**Type**: Function Calling Tool
-
-**Purpose**: Get professional's CV analysis (skills, experience, recommendations)
-
-**When Gemini calls**: Needs to reference background, skills, work history
-
-#### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | string | Yes | User ID |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "has_cv": True,
-    "cv_title": "Software Engineer CV",
-    "cv_data": {
-        "skills": ["Python", "React", "AWS"],
-        "experience": [...],
-        "education": [...]
-    },
-    "total_cvs": 3
-}
-```
-
-#### Use Cases
-
-- "Does my CV match this job description?"
-- "What skills are on my CV?"
-- "Summarize my work history"
-
----
-
-### 6. get_career_quiz_results
-
-**Type**: Function Calling Tool
-
-**Purpose**: Get career quiz results (personality, interests, career paths)
-
-**When Gemini calls**: Advising on career direction or job fit
-
-#### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | string | Yes | User ID |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "has_quiz": True,
-    "quiz_data": {
-        "personality_type": "INTJ",
-        "interests": ["Technology", "Problem-solving"],
-        "recommended_paths": ["Data Science", "Software Architecture"]
-    }
-}
-```
-
-#### Use Cases
-
-- "Is this job a good fit for me?"
-- "Should I transition to data science?"
-- "What are my career strengths?"
-
----
-
-### 7. analyze_skill_gaps
+### 1. analyze_skill_gaps
 
 **Type**: Function Calling Tool
 
@@ -1313,7 +992,7 @@ PROFESSIONAL_TOOLS = types.Tool(function_declarations=[
 
 ---
 
-### 8. get_career_roadmap
+### 2. get_career_roadmap
 
 **Type**: Function Calling Tool
 
@@ -1356,36 +1035,11 @@ PROFESSIONAL_TOOLS = types.Tool(function_declarations=[
 
 ---
 
-### 9. get_professional_profile
+### 3. compare_career_paths_tool
 
-**Type**: Function Calling Tool
+---
 
-**Purpose**: Get complete professional profile
-
-**When Gemini calls**: Needs comprehensive context about the professional
-
-#### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | string | Yes | User ID |
-
-#### Returns
-
-```python
-{
-    "success": True,
-    "profile": {
-        "user_id": "prof456",
-        "has_cv": True,
-        "has_quiz": True,
-        "cv_count": 3,
-        "quiz_count": 2,
-        "cv_summary": "Senior Software Engineer CV",
-        "quiz_summary": "Career Direction Assessment"
-    }
-}
-```
+### 4. calculate_career_readiness_tool
 
 ---
 
@@ -1394,39 +1048,40 @@ PROFESSIONAL_TOOLS = types.Tool(function_declarations=[
 ### When to Use Each Type
 
 **Use Built-in Tools (Google Search):**
-✅ Finding online courses and resources  
-✅ Researching companies  
-✅ Getting salary data by country  
-✅ Finding job postings  
-✅ Getting career advice from web  
-✅ Current news and trends  
+- Finding online courses and resources
+- Researching companies
+- Getting salary data by country
+- Finding job postings
+- Getting career advice from web
+- Current news and trends  
 
 **Use Function Calling Tools:**
-✅ Accessing user's saved data  
-✅ Calculating user's grades  
-✅ Analyzing user's CV  
-✅ Personalized recommendations  
-✅ Tracking user progress  
-✅ Database queries  
+- Accessing user's saved data
+- Calculating user's grades
+- Analyzing user's CV
+- Personalized recommendations
+- Tracking user progress
+- Database queries  
+
 
 ### Hybrid Usage Example
 
 ```
 User: "Find Data Science programs I can get into"
 
-Step 1: 🔧 calculate_admission_grade(user_id)
+Step 1: calculate_admission_grade(user_id)
 → Result: 17.85/20
 
-Step 2: 🔧 search_dges_database("Data Science", "Portugal")
+Step 2: search_dges_database("Data Science", "Portugal")
 → Result: 15 programs found
 
 Step 3: Filter by user's grade
 → Result: 8 programs user qualifies for
 
-Step 4: 🌐 Google Search top programs for reviews
+Step 4: Google Search top programs for reviews
 → Result: Student reviews, rankings
 
-Step 5: 🤖 Gemini combines everything
+Step 5: Gemini combines everything
 → "You qualify for 8 programs. Top 3 based on reviews..."
 ```
 
@@ -1473,11 +1128,11 @@ def function_implementation(params, max_retries=3):
 
 ### What It Tracks
 
-- ⏱️ Function execution times
-- ✅ Success/failure rates
-- 📊 Input/output data
-- 🐛 Error messages
-- 📈 Usage patterns
+- Function execution times
+- Success/failure rates
+- Input/output data
+- Error messages
+- Usage patterns
 
 ### Benefits
 
@@ -1541,8 +1196,4 @@ FUNCTION_HANDLERS = {
 
 ---
 
-*Function Calling Tools Documentation - Updated January 2026*
-
-
-*Documentation generated for CareerCorner v1.0*  
-*Last updated: January 2026*
+*Function Calling Tools Documentation - Updated February 2026*
