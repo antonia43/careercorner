@@ -5,12 +5,13 @@ import pandas as pd
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from services.authentication import init_db, login_ui, register_ui, google_login_button, get_redirect_uri
+from services.authentication import init_db, login_ui, register_ui, google_login_button, get_redirect_uri, DB_PATH
 from services.langfuse_helper import get_user_id
 from pages.student_dashboard import render_student_dashboard
 from pages.professional_dashboard import render_professional_dashboard
 from styles import apply_custom_css
 from utils.database import load_user_cv, load_user_quiz
+import traceback
 import warnings
 warnings.filterwarnings("ignore", message=".*Session State.*|.*widget with key.*")
 
@@ -87,6 +88,9 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     REDIRECT_URI = get_redirect_uri()
+    
+    # DEBUG - Remove after testing
+    st.write(f"🔍 Using REDIRECT_URI: {REDIRECT_URI}")
 
     try:
         token_url = "https://oauth2.googleapis.com/token"
@@ -113,8 +117,8 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
             display_name = user_data.get("name", "Unknown User")
             
             # Save to database if new user
+            from services.authentication import get_user_by_username, create_user, DB_PATH
             with sqlite3.connect(DB_PATH, check_same_thread=False) as conn:
-                from services.authentication import get_user_by_username, create_user
                 existing_user = get_user_by_username(conn, email)
                 if not existing_user:
                     create_user(conn, username, display_name, email, "google_oauth_placeholder")
@@ -127,13 +131,16 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
             }
             st.session_state.username = username
             st.query_params.clear()
+            st.success(f"✓ Logged in as {display_name}")
             st.rerun()
         else:
             error_msg = token_json.get('error_description', token_json.get('error', 'Unknown error'))
             st.error(f"Google login failed: {error_msg}")
+            st.write(f"Token response: {token_json}")  # Debug
             st.query_params.clear()
     except Exception as e:
         st.error(f"OAuth error: {str(e)}")
+        st.code(traceback.format_exc())  # Show full error
         st.query_params.clear()
         st.rerun()
     else:
