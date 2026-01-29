@@ -256,26 +256,3 @@ CV DATA:
                     st.rerun()
                 except Exception as e:
                     st.error(f"Could not save: {e}")
-    
-    # previous analyses section
-    st.markdown("---")
-    if st.session_state.reports["professional_cv"]:
-        with st.expander(f"Previous CV Analyses ({len(st.session_state.reports['professional_cv'])})", expanded=False):
-            for report in st.session_state.reports["professional_cv"][:3]:
-                with st.container():
-                    st.markdown(f"**{report['title']}**")
-                    st.caption(f"Created: {report.get('timestamp', 'N/A')}")
-                    
-                    col1, col2 = st.columns()[7][8]
-                    with col1:
-                        content_preview = report.get("content", "No content")[:200]
-                        st.write(content_preview + ("..." if len(report.get("content", "")) > 200 else ""))
-                    with col2:
-                        if st.button("Load", key=f"load_{report.get('id', report['title'])}", width="stretch"):
-                            if report.get("cv_data"):
-                                st.session_state.cv_data = report["cv_data"]
-                                st.session_state.current_feedback = report.get("content", "")
-                                st.session_state.feedback_saved = True
-                                st.rerun()
-                    
-                    st.divider()
