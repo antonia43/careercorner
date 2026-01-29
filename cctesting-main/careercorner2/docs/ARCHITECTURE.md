@@ -103,16 +103,10 @@ Built-in tools use Google's native capabilities (Google Search & URL Context) to
 7. **get_company_research** - Delivers company culture, reviews, news, benefits, and salary information
 8. **fetch_job_description_from_url** - Extracts job descriptions from URLs using Gemini's URL context tool
 
-#### Custom Function Calling Tools (9)
-Function calling tools access user-specific data from CareerCorner's SQLite database:
+#### Custom Function Calling Tools (4)
+Function calling tools access user-specific data from Career Corner's SQLite database:
 
-**Student Tools (4):**
-1. **search_saved_universities** - Searches through user's bookmarked universities and programs by degree name and country
-2. **calculate_admission_grade** - Calculates student's CIF admission average from stored grades
-3. **search_dges_database** - Queries Portuguese university database (DGES) for degrees, admission grades, and vacancies
-4. **get_student_profile** - Retrieves complete student profile including grades, saved universities, and degree reports
-
-**Professional Tools (5):**
+**Professional Tools (4):**
 1. **get_cv_analysis** - Accesses stored CV analysis with skills, experience, education, and recommendations
 2. **get_career_quiz_results** - Retrieves career quiz results including personality type, interests, and recommended paths
 3. **analyze_skill_gaps** - Compares current CV skills against target role requirements and identifies missing competencies
