@@ -132,13 +132,9 @@ Dual-mode feature combining five quick search options and support chat. Quick se
   - **Wage finder:** Salary data by job title and country
   - **Scholarships:** DGES bolsas, FCT grants, Erasmus+ programs (Portuguese only)
   - **Past Exam papers:** IAVE nacional exam archives (all subjects, past years - Portuguese only)
-- **Support Chat Mode:**
-  - Select saved degree/grades reports from dropdowns for personalization
-  - AI references your specific data for personalized advice
-  - Ask: "Help me understand my final score", "I'm confused between two degrees, help me decide based on my quiz", "Are there any programs I saved that accept my current grade?"
+
 - **Tech:**
   - Quick Search: Built-in Google Search tools (`get_study_resources_web`, `get_career_options`, `get_wage_info`, `get_scholarships`, `get_exam_papers`)
-  - Support Chat: Gemini 2.5 Flash with function calling (`search_saved_universities`, `calculate_admission_grade`, `search_dges_database`, `get_student_profile`)
 
 
 ### For Professionals:
@@ -218,10 +214,11 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
 - **Support Chat Mode:**
   - Select saved CV and career quiz reports from dropdowns for personalization
   - AI reads your parsed skills, experience, and sector matches before answering
-  - Ask: "What jobs match my CV?", "How do I pivot from data analyst to product manager?", "Which skills should I prioritize next?", "Does my profile fit this kind of role?"
+  - Ask: "Should I become a Data Scientist or Product Manager?", "Am I ready to be a Software Engineer?", "I want to become a [job role] - what skills am I missing?", "Show me a roadmap to become a [job role] in [timeframe]"
 - **Tech:**
   - Quick Search: Built-in web tools (`get_job_search_results`, `get_course_recommendations`, `get_linkedin_profile_optimization`, `get_company_research`)
-  - Support Chat: Gemini 2.5 Flash with function calling (`get_cv_analysis`, `get_career_quiz_results`, `analyze_skill_gaps`, `get_career_roadmap`, `get_professional_profile`)
+  - Support Chat: Gemini 2.5 Flash with function calling (`analyze_skill_gaps`, `get_career_roadmap`, `compare_career_paths`,
+    `calculate_career_readiness`)
 
 
 ## Tech Stack
@@ -264,7 +261,7 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
   - Feedback mechanisms hidden in deployment version
 
 - **Two AI tool architectures** (17 tools total)
-  - **1. Built-in tools** (Google Search & URL Context) – 8 tools  
+  - **1. Built-in tools** (Google Search & URL Context) – 7 tools  
      - Study resources finder (courses, videos, tutorials)  
      - Career options explorer (job paths, progression, salaries)  
      - Wage information lookup (by country and role)  
@@ -272,22 +269,14 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
      - Course recommendations (Coursera, Udemy, edX, etc.)  
      - LinkedIn profile optimizer (headline, About, skills, strategy)  
      - Company research tool (culture, reviews, news, salaries)  
-     - Job description URL extractor (URL → job description via URL context)  
 
-  - **2. Function calling tools** (custom Python functions) – 9 tools
+  - **2. Function calling tools** (custom Python functions) –  4 tools
     
-     **Student tools (4 functions)**  
-     - `search_saved_universities` – Query user’s bookmarked/saved programs  
-     - `calculate_admission_grade` – Compute CIF admission average from stored grades  
-     - `search_dges_database` – Search the DGES Portuguese university database for degrees, grades, vacancies  
-     - `get_student_profile` – Aggregate student data (grades, saved universities, degree reports, CIF)
-  
-     **Professional tools (5 functions)**  
-     - `get_cv_analysis` – Retrieve and parse stored CV analysis (skills, experience, education)  
-     - `get_career_quiz_results` – Access stored career quiz/personality assessment results  
+     **Professional tools (4 functions)**  
      - `analyze_skill_gaps` – Compare current CV skills vs target role requirements, compute gaps and recommendations  
-     - `get_career_roadmap` – Generate phased career roadmap (e.g., 6 months / 1 year / 2 years) based on stored data  
-     - `get_professional_profile` – Aggregate professional data (CVs, quizzes, summaries)  
+     - `get_career_roadmap` – Generate phased career roadmap (e.g., 6 months / 1 year / 2 years) based on stored data
+     - `compare_career_paths`- Compare two careers based on suitability for user
+     - `calculate_career_readiness` - Tell user how ready they are (on a scale of 0-100%) for a certain career
 
    All function calling tools use:
    - 3-attempt retry logic for robustness  
@@ -295,8 +284,8 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
    - Central dispatchers and observability for monitoring  
 
     - **Usage Pattern:**
-      - **Quick Search/Quick Tools pages:** Use built-in tools (8 tools total) for real-time web searches
-      - **Support Chat modes:** Use function calling tools (9 tools total) to access user's saved database records
+      - **Quick Search/Quick Tools pages:** Use built-in tools (7 tools total) for real-time web searches
+      - **Career Support Chat:** Use function calling tools (4 tools total) to access user's saved database records and get personalized answers
 
 - **Multimodal AI** (Gemini vision)
   - CV parsing: PDF/DOCX → structured JSON (skills, work experience, education)  
@@ -304,11 +293,10 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
 
 
 ### Data Sources
-- **DGES** Portuguese higher education (degrees, universities, 2024-2025 admission grades)
 - **IAVE** national exam archives (past papers, all subjects/years)
 - **Scholarships** DGES/FCT/Erasmus+ direct program links
+- **Google** data available publicly online
 - **No external APIs** - all resources retrieved via URLs + built-in google tools + function calling
-
 
 
 ## Architecture
@@ -316,9 +304,9 @@ Dual-mode feature combining quick job/course search and support chat. Quick sear
 Career Corner follows a modular layered architecture for maintainability and scalability:
 
 - **Presentation Layer** (`pages/`) - 14 Streamlit UI files, one per feature, with independent session state management
-- **Service Layer** (`services/`) - Authentication, AI wrapper (LangfuseGeminiWrapper), and tool definitions (built-in + function calling)
+- **Service Layer** (`services/`) - Authentication (both local and google logins), Langfuse wrapper (LangfuseGeminiWrapper), and tool definitions (built-in + function calling tools)
 - **Data Layer** (`utils/`) - SQLite database operations and report rendering
-- **Configuration Layer** (`config/`) - Centralized AI settings, prompts, and schemas
+- **Configuration Layer** (`config/`) - Centralized AI settings, prompts, and schemas in three separate files
 - **Styling Layer** (`styles.py`) - Custom CSS with DM Sans fonts and lime/yellow theme
 
 
@@ -345,7 +333,6 @@ careercorner2/
 │ ├── authentication.py  # manual and Google Login/session helpers
 │ ├── langfuse_helper.py  # Langfuse + Gemini wrappers
 │ ├── professional_tools.py
-│ ├── student_tools.py
 │ └── tools.py
 ├── utils/ # shared helpers and data access
 │ ├── __init__.py
@@ -405,8 +392,8 @@ All quiz results, CVs, grades, and saved universities are stored in SQLite and a
 - Works with messy/scanned documents
 
 #### **Dropdown Selection in Resources Chat**
-- Both student and professional chat modes have dropdowns
-- Select which report to reference (e.g., "CV: My Resume - 2025-12-11")
+- Professional career support chat mode has dropdowns
+- Select which CV report and Quiz results to reference (e.g., "CV: My Resume - 2025-12-11")
 - AI uses selected report content for personalized answers
 
 
@@ -414,14 +401,61 @@ All quiz results, CVs, grades, and saved universities are stored in SQLite and a
 
 ### Prerequisites
 ### **Prerequisites**
+
+- **Required Packages:**
+  streamlit>=1.40.0
+  google-generativeai>=0.8.3
+  langfuse>=3.11.1
+  python-dotenv>=1.0.1
+  reportlab>=4.2.2
+  werkzeug>=3.0.4
+  sqlite3
+
 - **Python 3.10+**
 - **Google Gemini API Key:** [Get it here](https://ai.google.dev)
 - **Langfuse Account (Optional):** [Sign up](https://langfuse.com)
-- **Google OAuth Credentials (Optional):** [Google Cloud Console](https://console.cloud.google.com)
+- **Google OAuth Credentials (Optional)**
 
 
-### Installation Steps
+### How to set up GoogleOAuth login (optional):
+#### ** Create Credentials (both local and deployment)**
+  1. Go to [Google Cloud Console](https://console.cloud.google.com)
+  2. Create new project → **"Career Corner"**
+  3. Enable **Google+ API**
+  4. **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+     - App type: **Web application**
+     - Name: **Career Corner Streamlit**
+  
+  **2. Add Redirect URIs**
+    ```
+      https://your-app.streamlit.app (i.e. https://careercorner.streamlit.app)
+      http://localhost:8501
+    ```
 
+
+### Local Installation Instructions
+
+**Required environment variables (.env file):**
+```bash
+GOOGLE_API_KEY="your_gemini_api_key"
+LANGFUSE_PUBLIC_KEY="your_langfuse_public_key"
+LANGFUSE_SECRET_KEY="your_langfuse_secret_key"
+LANGFUSE_HOST="https://cloud.langfuse.com"
+```
+
+**Optional environment variables:**
+Keep your .env file simple (no REDIRECT_URI needed for local):
+```bash
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret
+```
+
+**Security Note:** 
+- **NEVER commit `.env` to Git!** It's already in `.gitignore`
+- For deployment, use Streamlit Secrets (see [Deployment](#deployment))
+
+
+#### Steps
 1. Clone the repository:
 ```bash
 git clone https://github.com/antonia43/careercorner
@@ -439,8 +473,6 @@ cp .env.example .env
 
 ```
 
-### **Step 4: Run the Application**
-
 4. Run the application:
 ```bash
 streamlit run zapp.py  
@@ -448,80 +480,12 @@ streamlit run zapp.py
 
 **App will open at:** `http://localhost:8501`
 
-
-**Required Packages:**
-streamlit>=1.40.0
-google-generativeai>=0.8.3
-langfuse>=3.11.1
-python-dotenv>=1.0.1
-reportlab>=4.2.2
-werkzeug>=3.0.4
-sqlite3
-
-
-# REPLACE WITH (proper code block):
-**Required environment variables (.env file):**
-```bash
-GOOGLE_API_KEY="your_gemini_api_key"
-LANGFUSE_PUBLIC_KEY="your_langfuse_public_key"
-LANGFUSE_SECRET_KEY="your_langfuse_secret_key"
-LANGFUSE_HOST="https://cloud.langfuse.com"
-```
-
-**Optional environment variables:**
-```bash
-GOOGLE_CLIENT_ID="your_google_client_id"
-GOOGLE_CLIENT_SECRET="your_google_client_secret"
-```
-
-### How to set up GoogleOAuth login (optional):
-## Google OAuth Setup (Optional)
-
-### **1. Create Credentials**
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create new project → **"Career Corner"**
-3. Enable **Google+ API**
-4. **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
-   - App type: **Web application**
-   - Name: **Career Corner Streamlit**
-
-### **2. Add Redirect URIs**
-```
-  https://your-app.streamlit.app
-  http://localhost:8501
-```
-2. **Add to Secrets:**
-```
-- GOOGLE_API_KEY: "yourapikey"
-- LANGFUSE_PUBLIC_KEY: "yourkey"
-- LANGFUSE_SECRET_KEY: "yourkey"
-- LANGFUSE_HOST: "https://cloud.langfuse.com"
-- GOOGLE_CLIENT_ID="yourkey"
-- GOOGLE_CLIENT_SECRET="yourkey"
-```
-
-**Security Note:** 
-- **NEVER commit `.env` to Git!** It's already in `.gitignore`
-- For deployment, use Streamlit Secrets (see [Deployment](#deployment))
+**Note:** imports with structure `from utils.database import load_report` may yield errors. If thats the case, you can use directly `from database import load_report`.
 
 
 ---
 
-## Usage Guide
-
-### First-Time Setup
-1. **Launch App:** Run `streamlit run zapp.py` (opens http://localhost:8501)
-2. **Choose Dashboard:** 
-   - **Student Dashboard** -> high school students planning university
-   - **Professional Dashboard** -> university students/professionals job hunting
-3. **Onboarding:** Confirm your user type
-4. **Start Chat:** AI asks 5 natural questions before recommending tools
-5. **Usage:** Have fun! The app is very intuitive, it tells you all you need to know to properly navigate it.
-
-
 ## Deployment
-
-**Live Application:** https://careercorner.streamlit.app
 
 **Deployment Platform:** Streamlit Cloud
 
@@ -541,8 +505,21 @@ git push origin main
 
 3. **Add Secrets:**
 - In Streamlit Cloud dashboard -> "Settings" -> "Secrets"
-- Paste your `.env` content:
+- **Required Variables**:
+```bash
+GOOGLE_API_KEY="your_gemini_api_key"
+LANGFUSE_PUBLIC_KEY="your_langfuse_public_key"
+LANGFUSE_SECRET_KEY="your_langfuse_secret_key"
+LANGFUSE_HOST="https://cloud.langfuse.com"
+```
 
+- **Additional Variables** (For Google Login):
+```bash
+GOOGLE_CLIENT_ID = "your_client_id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "your_client_secret"
+REDIRECT_URI = "https://careercorner.streamlit.app"
+```
+  
 4. **Deploy:**
 - Click "Deploy"
 - App will be live at your preferred https address
@@ -550,19 +527,18 @@ git push origin main
 Note: ensure imports are using the right structure (e.g. from utils.database import load_report; not from database import load_report)
 
 
-### **Local Deployment**
+---
 
-Run with custom port
-streamlit run zapp.py --server.port 8502
+## Usage Guide
 
-Run with network access
-streamlit run zapp.py --server.address 0.0.0.0
-
-Run with production-like settings
-streamlit run zapp.py --server.headless true
-
-Note: imports with structure `from utils.database import load_report` may yield errors. If thats the case, you can use directly `from database import load_report`.
-
+### First-Time Setup
+1. **Launch App:** Run `streamlit run zapp.py` (opens http://localhost:8501) and `streamlit run authentication.py`(if using Google oAuth)
+2. **Choose Dashboard:** 
+   - **Student Dashboard** -> high school students planning university
+   - **Professional Dashboard** -> university students/professionals job hunting
+3. **Onboarding:** Confirm your user type
+4. **Start Chat:** AI asks natural questions before recommending tools
+5. **Usage:** Have fun! The app is very intuitive, it tells you all you need to know to properly navigate it.
 
 ---
 **Example Workflow (Student):**
@@ -656,7 +632,7 @@ Note: imports with structure `from utils.database import load_report` may yield 
 
 
 
-# License
+## License
 
 MIT License
 
@@ -700,7 +676,8 @@ SOFTWARE.
 **Project:** AI Capstone Project  
 **Completion:** February 2026
 
-Career Corner by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
-GitHub: https://github.com/antonia43/careercorner
+**GitHub:** https://github.com/antonia43/careercorner
+**Live Application:** https://careercorner.streamlit.app
 
+**Career Corner** by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
 ---
