@@ -205,7 +205,8 @@ What's on your mind today?"""
             with st.spinner("𖦹 Thinking..."):
                 # Function calling setup
                 contents = [types.Content(role="user", parts=[types.Part(text=f"""{internal_context}
-
+                
+USER ID: {user_id}
 User question: {prompt}
 
 INSTRUCTIONS:
