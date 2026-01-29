@@ -112,18 +112,6 @@ def google_login_button():
     
     redirect_uri = get_redirect_uri()
     
-    # DEBUG - SHOW WHAT WE'RE SENDING
-    st.write(f"🔍 **Button will use redirect_uri:** {redirect_uri}")
-    
-    # Also check the environment detection
-    is_cloud = (
-        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
-        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud" or
-        "streamlit.app" in os.getenv("HOSTNAME", "")
-    )
-    st.write(f"🔍 **Is cloud detected:** {is_cloud}")
-    st.write(f"🔍 **HOSTNAME:** {os.getenv('HOSTNAME')}")
-    
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={GOOGLE_CLIENT_ID}&"
