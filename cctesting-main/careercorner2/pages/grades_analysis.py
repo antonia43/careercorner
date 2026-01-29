@@ -1218,18 +1218,18 @@ def generate_simple_grade_report(grades_data, final_grade, weights):
 ### Secondary School Grades (10th-12th)
 """
     
-for year in ["10th", "11th", "12th"]:
-    year_grades = grades.get(year, {})
-    if year_grades:
-        valid_grades = [g for g in year_grades.values() if g > 0]
-        if valid_grades:  # Only calculate if there are valid grades
-            avg = sum(valid_grades) / len(valid_grades)
-            report += f"\n**{year} Grade:** {avg:.2f}\n"
-            for subject, grade in year_grades.items():
-                if grade > 0:
-                    report += f"  - {subject}: {grade}\n"
-        else:
-            report += f"\n**{year} Grade:** No grades entered yet\n"
+    for year in ["10th", "11th", "12th"]:
+        year_grades = grades.get(year, {})
+        if year_grades:
+            valid_grades = [g for g in year_grades.values() if g > 0]
+            if valid_grades:
+                avg = sum(valid_grades) / len(valid_grades)
+                report += f"\n**{year} Grade:** {avg:.2f}\n"
+                for subject, grade in year_grades.items():
+                    if grade > 0:
+                        report += f"  - {subject}: {grade}\n"
+            else:
+                report += f"\n**{year} Grade:** No grades entered yet\n"
     
     report += "\n### National Exams\n"
     exams = grades.get("exams", {})
@@ -1246,7 +1246,6 @@ for year in ["10th", "11th", "12th"]:
     report += f"\n---\n*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*"
     
     return report
-
 
 def fetch_dges_data(course_name: str):
     """Fetch DGES data for a specific course"""
