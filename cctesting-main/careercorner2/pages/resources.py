@@ -154,8 +154,15 @@ I can help you with:
 ✦ **Course suggestions** (names/topics - search for links in Quick Search)  
 ✦ **Next steps** and action planning  
 
+**Try asking me:**
+- "What are my key skills and experience?"
+- "What careers would suit my personality?"
+- "I want to become a [job role] - what skills am I missing?"
+- "Show me a roadmap to become a [job role] in [timeframe]"
+- "What should my next career step be?"
+
 What's on your mind today?"""
-    
+
     if "resources_chat_history" not in st.session_state:
         st.session_state.resources_chat_history = [
             {"role": "assistant", "content": welcome_message}
@@ -174,17 +181,28 @@ What's on your mind today?"""
             with st.spinner("𖦹 Thinking..."):
                 # Function calling setup
                 contents = [types.Content(role="user", parts=[types.Part(text=f"""{internal_context}
-
-User question: {prompt}
-
-INSTRUCTIONS:
-- Be supportive, empathetic, and encouraging
-- Reference their CV/quiz data specifically when relevant
-- Use tools (get_cv_analysis, analyze_skill_gaps, get_career_roadmap) when helpful
-- Suggest courses/skills by NAME only (e.g., "Consider learning Python" not links)
-- Help them make decisions based on their profile
-- If they ask for job/course links, tell them to go back and use the Quick Search feature
-- Focus on guidance and support, not direct job searches""")])]
+    
+    USER_ID: {user_id}
+    
+    User question: {prompt}
+    
+    INSTRUCTIONS:
+    - Be supportive, empathetic, and encouraging
+    - Reference their CV/quiz data specifically when relevant
+    - **IMPORTANT: When using tools, ALWAYS pass user_id: {user_id}**
+    
+    WHEN TO USE TOOLS:
+    - Use get_cv_analysis when they ask about their skills, experience, or background
+    - Use get_career_quiz_results when they ask about personality, career interests, or career fit
+    - Use analyze_skill_gaps when they mention a target role and want to know what skills they need
+    - Use get_career_roadmap when they ask about steps, timeline, or how to transition to a role
+    - Use get_professional_profile when you need comprehensive context about them
+    
+    RULES:
+    - Suggest courses/skills by NAME only (e.g., "Consider learning Python" - no links)
+    - If they ask for job/course links, tell them to use Quick Search tools
+    - Focus on guidance and support, not direct job searches
+    - Always acknowledge tool results naturally in your response""")])]
                 
                 config = types.GenerateContentConfig(
                     tools=[PROFESSIONAL_TOOLS],
@@ -199,7 +217,7 @@ INSTRUCTIONS:
                 
                 response_text = None
                 
-                # ✅ CHECK: Does response have actual content?
+                # CHECK: Does response have actual content?
                 if not response.candidates or not response.candidates[0].content.parts:
                     # Empty response - retry without tools
                     st.caption("⚠ Retrying...")
@@ -258,7 +276,7 @@ INSTRUCTIONS:
                     # Normal text response
                     response_text = response.text
                 
-                # ✅ FINAL CHECK: If still empty/None, use fallback
+                # FINAL CHECK: If still empty/None, use fallback
                 if not response_text or response_text.strip() == "":
                     response_text = GEMINI_CHAT.generate_content(
                         prompt=f"{internal_context}\n\nUser: {prompt}",
@@ -270,7 +288,7 @@ INSTRUCTIONS:
                 st.markdown(response_text)
         
         st.session_state.resources_chat_history.append({"role": "assistant", "content": response_text})
-    
+
     st.markdown("---")
     col1, col2 = st.columns([1, 1])
     
