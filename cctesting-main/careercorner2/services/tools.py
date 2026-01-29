@@ -285,6 +285,84 @@ def fetch_job_description_from_url(url: str) -> dict:
             "error": str(e)
         }
 
+def get_city_guide(city_name: str, country: str = "") -> dict:
+    """Get comprehensive city guide for students using Google Search"""
+    try:
+        location = f"{city_name}, {country}" if country else city_name
+        
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"""Create a comprehensive student guide for {location}.
+
+Structure your response exactly like this:
+
+# {location} Student Guide
+
+## Overview
+[Brief description of the city, country, population, and general vibe]
+
+## Universities & Education
+• Major universities and institutions
+• Student population and campus locations
+• Academic reputation and popular programs
+
+## Cost of Living
+• Average monthly rent (student accommodation)
+• Food and groceries budget
+• Transportation costs
+• Overall affordability rating for students
+
+## Student Life
+• Popular student neighborhoods
+• Nightlife and entertainment options
+• Student discounts and benefits
+• Social activities and clubs
+
+## Transportation
+• Public transport options (metro, bus, train)
+• Student transport passes and prices
+• Bike-friendliness
+• Airport and intercity connections
+
+## Culture & Activities
+• Museums, theaters, and cultural venues
+• Parks and outdoor spaces
+• Famous landmarks and attractions
+• Events and festivals
+
+## Practical Information
+• Weather and climate
+• Safety and student safety tips
+• Healthcare and student services
+• Language(s) spoken and difficulty for internationals
+• Visa requirements for international students (if applicable)
+
+---
+
+FORMATTING RULES:
+- Use standard markdown headers (##)
+- Use bullet points (•) for lists
+- Write numbers and currency as plain text (e.g., "€400/month", "$800/month")
+- NO code formatting or syntax highlighting
+- Be concise and student-focused
+- Include specific examples and locations""",
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.4
+            )
+        )
+
+        sources = []
+        metadata = response.candidates[0].grounding_metadata
+        if metadata and metadata.grounding_chunks:
+            sources = [{"title": c.web.title, "url": c.web.uri} for c in metadata.grounding_chunks[:8]]
+
+        return {"success": True, "answer": response.text, "sources": sources}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+
 
 # Helper function for country selection with "Other" option
 def render_country_selector(key_prefix: str, label: str = "Country:", default: str = "Portugal"):
@@ -319,6 +397,84 @@ def render_country_selector(key_prefix: str, label: str = "Country:", default: s
 
 
 # UI Render Functions
+
+def render_city_guide_tool():
+    """City guide for students - any city worldwide"""
+    st.subheader("City Guide")
+    st.info("Discover everything about any city worldwide - perfect for choosing where to study!")
+
+    # Popular university cities worldwide
+    popular_cities = {
+        "Portugal": ["Lisbon", "Porto", "Coimbra", "Braga", "Aveiro", "Faro"],
+        "Spain": ["Barcelona", "Madrid", "Valencia", "Seville", "Granada"],
+        "UK": ["London", "Edinburgh", "Manchester", "Oxford", "Cambridge"],
+        "USA": ["New York", "Boston", "Los Angeles", "San Francisco", "Chicago"],
+        "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Heidelberg"],
+        "France": ["Paris", "Lyon", "Toulouse", "Marseille", "Bordeaux"],
+        "Netherlands": ["Amsterdam", "Rotterdam", "Utrecht", "The Hague", "Groningen"],
+        "Italy": ["Rome", "Milan", "Florence", "Bologna", "Turin"],
+        "Other": []
+    }
+
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        country = st.selectbox(
+            "Select country:",
+            list(popular_cities.keys()),
+            key="city_guide_country"
+        )
+    
+    with col2:
+        if country != "Other":
+            city = st.selectbox(
+                "Select city:",
+                popular_cities[country] + ["Other"],
+                key="city_guide_city"
+            )
+        else:
+            city = "Other"
+
+    # Custom input if "Other" selected
+    if city == "Other" or country == "Other":
+        col1, col2 = st.columns(2)
+        with col1:
+            custom_city = st.text_input(
+                "City name:",
+                placeholder="e.g., Tokyo, Singapore, Toronto...",
+                key="city_guide_custom_city"
+            )
+        with col2:
+            custom_country = st.text_input(
+                "Country (optional):",
+                placeholder="e.g., Japan, Canada...",
+                key="city_guide_custom_country"
+            )
+        
+        final_city = custom_city.strip()
+        final_country = custom_country.strip()
+    else:
+        final_city = city
+        final_country = country
+
+    if st.button("Explore City", width="stretch", type="primary"):
+        if final_city and final_city != "Other":
+            with st.spinner(f"Researching {final_city}..."):
+                results = get_city_guide(final_city, final_country if final_country != "Other" else "")
+                if results["success"]:
+                    st.markdown(results["answer"])
+
+                    if results["sources"]:
+                        with st.expander("View Sources"):
+                            for source in results["sources"]:
+                                st.markdown(f"[{source['title']}]({source['url']})")
+                else:
+                    st.error(f"Error: {results.get('error', 'Unknown error')}")
+        else:
+            st.warning("Please enter a city name")
+    
+    st.caption("ⓘ Tip: Compare multiple cities to find the perfect match for your study abroad plans!")
+
 
 def render_exam_papers_tool():
     """IAVE exam papers - direct links only"""
@@ -437,6 +593,7 @@ def render_career_options_tool():
                     st.error(f"Error: {results.get('error', 'Unknown error')}")
         else:
             st.warning("Please enter a course name")
+
 
 
 def render_wage_finder_tool():
