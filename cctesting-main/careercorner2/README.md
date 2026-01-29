@@ -4,7 +4,9 @@
 
 Helping you build your career, every step of the way.
 
-![Alt text](data/careercornermini.png)
+
+<img src="data/careercornermini.png" alt="Description" width="50%">
+
 
 ## Overview
 
