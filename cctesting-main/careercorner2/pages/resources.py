@@ -97,8 +97,15 @@ def render_resources_chat():
 
     user_id = st.session_state.get("username", "demo_user")
     
-    cv_reports = load_reports(user_id, "professional_cv")
-    quiz_reports = load_reports(user_id, "professional_career_quiz")
+    # Load CVs from BOTH sources
+    cv_analysis_reports = load_reports(user_id, "professional_cv") or []
+    cv_builder_reports = load_reports(user_id, "cv_builder") or []  # Add this if CV Builder uses different type
+    
+    # Combine all CV reports
+    cv_reports = cv_analysis_reports + cv_builder_reports
+    
+    # Load quizzes
+    quiz_reports = load_reports(user_id, "professional_career_quiz") or []
     
     col1, col2 = st.columns(2)
     with col1:
@@ -129,7 +136,7 @@ def render_resources_chat():
             selected_quiz_data = None
             st.info("⚠︎ No career quiz")
     
-    # data summary
+    # data summary with combined count
     data_summary = f"""Professional Data ({user_id}):
 • CVs: {len(cv_reports)} available
 • Quizzes: {len(quiz_reports)} available"""
