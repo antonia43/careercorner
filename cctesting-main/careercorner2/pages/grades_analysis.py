@@ -236,7 +236,7 @@ def render_file_upload_grades():
         
         if st.button("⟡ Extract Grades", width='stretch', type="primary", key="btn_extract_grades"):
             with st.spinner("Analyzing document and extracting grades... This may take a moment!"):
-                extracted_data = extract_grades_from_file(temp_filename, student_type)
+                extracted_data = (temp_filename, student_type)
             
             if extracted_data:
                 st.success("✓ Grades extracted successfully!")
@@ -302,28 +302,22 @@ def render_file_upload_grades():
 
 
 def extract_grades_from_file(file_path: str, student_type: str):
-    """Extract grades from uploaded file using Gemini vision + multimodal"""
-    
+    """Extract grades from uploaded file using Gemini vision multimodal"""
     try:
-        with open(file_path, "rb") as f:
+        with open(file_path, 'rb') as f:
             file_bytes = f.read()
         
         mime_type, _ = mimetypes.guess_type(file_path)
         if not mime_type:
-            mime_type = "image/jpeg" if file_path.lower().endswith(('.jpg', '.jpeg')) else "image/png"
+            mime_type = 'image/jpeg' if file_path.lower().endswith(('.jpg', '.jpeg')) else 'image/png'
         
-        base64_image = base64.b64encode(file_bytes).decode('utf-8')
-        
-        # Different prompts for Portuguese vs International
         if student_type == "portuguese":
-            prompt = """
-Analyze this PORTUGUESE student transcript and extract ALL grades.
-
+            prompt = """Analyze this PORTUGUESE student transcript and extract ALL grades.
 Return ONLY valid JSON in this exact format:
 {
   "student_type": "portuguese",
-  "current_year": "10th Grade" | "11th Grade" | "12th Grade (In Progress)" | "12th Grade (Completed)",
-  "track": "Ciências e Tecnologias" | "Ciências Socioeconómicas" | "Línguas e Humanidades" | "Artes Visuais",
+  "current_year": "10th Grade / 11th Grade / 12th Grade (In Progress) / 12th Grade (Completed)",
+  "track": "Ciências e Tecnologias / Ciências Socioeconómicas / Línguas e Humanidades / Artes Visuais",
   "grades": {
     "10th": {"Português": 15, "Matemática A": 17, "Inglês": 16, ...},
     "11th": {"Português": 16, "Física e Química A": 18, ...},
@@ -336,16 +330,13 @@ Rules:
 - Extract ALL visible subjects and grades
 - Grades are 0-20 scale for subjects, 0-200 for exams
 - If year or track unclear, make best guess
-- Return ONLY JSON, no explanations
-"""
+- Return ONLY JSON, no explanations"""
         else:
-            prompt = """
-Analyze this INTERNATIONAL student transcript and extract ALL grades.
-
+            prompt = """Analyze this INTERNATIONAL student transcript and extract ALL grades.
 Return ONLY valid JSON in this exact format:
 {
   "student_type": "international",
-  "country": "country name or 'Unknown'",
+  "country": "country name or Unknown",
   "grade_scale": "e.g., 0-100, A-F, 1-5",
   "subjects": [
     {"name": "Mathematics", "grade": "95", "year": "11th Grade"},
@@ -360,15 +351,17 @@ Rules:
 - Extract ALL visible subjects with their exact grades
 - Keep grade format as shown (numbers, letters, GPA)
 - If year not shown, use "N/A"
-- Return ONLY JSON, no explanations
-"""
+- Return ONLY JSON, no explanations"""
         
-        raw = GRADES_MODEL.generate_content(
+        # USE MULTIMODAL METHOD HERE ✅
+        raw = GRADES_MODEL.generate_content_multimodal(
             prompt=prompt,
-            images=[base64_image],
+            file_data=file_bytes,
+            mime_type=mime_type,
             user_id=get_user_id(),
             session_id=get_session_id(),
             temperature=0.1,
+            metadata={"type": "grades_extraction"}
         )
         
         text = raw.strip()
@@ -377,14 +370,14 @@ Rules:
         
         data = json.loads(text)
         
-        # Validate and return
+        # Return structured data based on type
         if data.get("student_type") == "portuguese":
             return {
                 "student_type": "portuguese",
                 "current_year": data.get("current_year", "12th Grade (Completed)"),
                 "track": data.get("track", "Ciências e Tecnologias"),
                 "grades": data.get("grades", {}),
-                "input_method": "upload",
+                "input_method": "upload"
             }
         else:
             return {
@@ -394,7 +387,7 @@ Rules:
                 "grade_scale": data.get("grade_scale", "Unknown"),
                 "subjects": data.get("subjects", []),
                 "current_year": data.get("current_year", ""),
-                "school_type": data.get("school_type", ""),
+                "school_type": data.get("school_type", "")
             }
             
     except json.JSONDecodeError as e:
