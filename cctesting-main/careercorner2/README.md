@@ -676,7 +676,7 @@ SOFTWARE.
 **Project:** AI Capstone Project  
 **Completion:** February 2026
 
-**GitHub:** https://github.com/antonia43/careercorner
+**GitHub:** https://github.com/antonia43/careercorner   
 **Live Application:** https://careercorner.streamlit.app
 
 **Career Corner** by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
