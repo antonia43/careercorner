@@ -199,12 +199,11 @@ def save_international_grades():
 def render_file_upload_grades():
     """Upload and extract grades from file - supports both Portuguese and International"""
     
-    st.subheader("➜] Upload Your Grades Document")
+    st.subheader("➜ Upload Your Grades Document")
     
     if st.button("← Back", key="btn_back_from_file_upload", width='stretch'):
         st.session_state.grades_input_method = None
         st.rerun()
-    
     
     student_type = st.session_state.student_type
     
@@ -233,61 +232,16 @@ def render_file_upload_grades():
         if file_extension in ['jpg', 'jpeg', 'png']:
             st.image(temp_filename, caption="Uploaded Document", width="stretch")
         
-        
+        # Extract button
         if st.button("⟡ Extract Grades", width='stretch', type="primary", key="btn_extract_grades"):
             with st.spinner("Analyzing document and extracting grades... This may take a moment!"):
                 extracted_data = extract_grades_from_file(temp_filename, student_type)
             
             if extracted_data:
+                # ✅ SAVE TO SESSION STATE IMMEDIATELY
+                st.session_state.extracted_grades_preview = extracted_data
                 st.success("✓ Grades extracted successfully!")
-                
-                st.subheader("☰ Extracted Information")
-                
-                # Show preview based on type
-                if extracted_data.get("student_type") == "portuguese":
-                    st.write(f"**Current Year:** {extracted_data.get('current_year', 'Unknown')}")
-                    st.write(f"**Track:** {extracted_data.get('track', 'Unknown')}")
-                    
-                    with st.expander("View Extracted Grades"):
-                        grades = extracted_data.get("grades", {})
-                        for year in ["10th", "11th", "12th"]:
-                            if grades.get(year):
-                                st.write(f"**{year} Grade:**")
-                                for subj, grade in grades[year].items():
-                                    if grade > 0:
-                                        st.write(f"  - {subj}: {grade}")
-                        
-                        if grades.get("exams"):
-                            st.write("**National Exams:**")
-                            for exam, grade in grades["exams"].items():
-                                if grade > 0:
-                                    st.write(f"  - {exam}: {grade}")
-                else:
-                    st.write(f"**Country:** {extracted_data.get('country', 'Unknown')}")
-                    st.write(f"**Grade Scale:** {extracted_data.get('grade_scale', 'Unknown')}")
-                    st.write(f"**Number of Subjects:** {len(extracted_data.get('subjects', []))}")
-                    
-                    with st.expander("View Extracted Subjects"):
-                        for subj in extracted_data.get('subjects', []):
-                            st.write(f"- **{subj['name']}**: {subj['grade']} ({subj.get('year', 'N/A')})")
-                
-                
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    if st.button("✓ Confirm & Continue", width='stretch', type="primary", key="btn_confirm_extracted"):
-                        st.session_state.student_grades_data = extracted_data
-                        st.rerun()
-                
-                with col2:
-                    if st.button("✎ Edit Manually Instead", width='stretch', key="btn_edit_extracted_manually"):
-                        st.session_state.grades_input_method = "manual"
-                        # Pre-fill manual entry with extracted data if possible
-                        if extracted_data.get("student_type") == "portuguese":
-                            st.session_state.temp_grades = extracted_data.get("grades", {})
-                        else:
-                            st.session_state.temp_intl_grades = extracted_data.get("subjects", [])
-                        st.rerun()
+                st.rerun()
             else:
                 st.error("⚠ Could not extract grades from this file.")
                 st.write("**Possible reasons:**")
@@ -295,10 +249,75 @@ def render_file_upload_grades():
                 st.write("- Text is not clear or readable")
                 st.write("- Format is not recognized")
                 
-                
                 if st.button("✎ Try Manual Entry Instead", width='stretch', key="btn_manual_after_failed_extract"):
                     st.session_state.grades_input_method = "manual"
                     st.rerun()
+    
+    # ✅ SHOW PREVIEW IF EXISTS (outside button click)
+    if "extracted_grades_preview" in st.session_state and st.session_state.extracted_grades_preview:
+        extracted_data = st.session_state.extracted_grades_preview
+        
+        st.markdown("---")
+        st.subheader("☰ Extracted Information")
+        
+        # Show preview based on type
+        if extracted_data.get("student_type") == "portuguese":
+            st.write(f"**Current Year:** {extracted_data.get('current_year', 'Unknown')}")
+            st.write(f"**Track:** {extracted_data.get('track', 'Unknown')}")
+            
+            with st.expander("View Extracted Grades"):
+                grades = extracted_data.get("grades", {})
+                for year in ["10th", "11th", "12th"]:
+                    if grades.get(year):
+                        st.write(f"**{year} Grade:**")
+                        for subj, grade in grades[year].items():
+                            if grade > 0:
+                                st.write(f"  - {subj}: {grade}")
+                
+                if grades.get("exams"):
+                    st.write("**National Exams:**")
+                    for exam, grade in grades["exams"].items():
+                        if grade > 0:
+                            st.write(f"  - {exam}: {grade}")
+        else:
+            st.write(f"**Country:** {extracted_data.get('country', 'Unknown')}")
+            st.write(f"**Grade Scale:** {extracted_data.get('grade_scale', 'Unknown')}")
+            st.write(f"**Number of Subjects:** {len(extracted_data.get('subjects', []))}")
+            
+            with st.expander("View Extracted Subjects"):
+                # Group by subject name for cleaner display
+                subjects = extracted_data.get('subjects', [])
+                grouped = {}
+                for subj in subjects:
+                    name = subj['name'].replace(' Q1', '').replace(' Q2', '').replace(' Q3', '')
+                    if name not in grouped:
+                        grouped[name] = []
+                    grouped[name].append(subj['grade'])
+                
+                for subject_name, grades in grouped.items():
+                    st.write(f"- **{subject_name}**: {', '.join(grades)}")
+        
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("✓ Confirm & Continue", width='stretch', type="primary", key="btn_confirm_extracted"):
+                st.session_state.student_grades_data = extracted_data
+                st.session_state.pop("extracted_grades_preview", None)  # Clean up
+                st.rerun()
+        
+        with col2:
+            if st.button("✎ Edit Manually Instead", width='stretch', key="btn_edit_extracted_manually"):
+                st.session_state.grades_input_method = "manual"
+                
+                # Pre-fill manual entry with extracted data
+                if extracted_data.get("student_type") == "portuguese":
+                    st.session_state.temp_grades = extracted_data.get("grades", {})
+                else:
+                    st.session_state.temp_intl_grades = extracted_data.get("subjects", [])
+                
+                st.session_state.pop("extracted_grades_preview", None)  # Clean up
+                st.rerun()
 
 
 def extract_grades_from_file(file_path: str, student_type: str):
