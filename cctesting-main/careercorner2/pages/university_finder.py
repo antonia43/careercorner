@@ -322,7 +322,7 @@ def render_portuguese_finder():
 
     if not has_degree_reports:
         st.info(
-            "Complete the Degree Picker first to get personalized degree ideas, "
+            "ⓘ Complete the Degree Picker first to get personalized degree ideas, "
             "or search universities directly below."
         )
         if st.button("Go to Degree Picker", width="stretch"):
