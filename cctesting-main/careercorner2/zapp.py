@@ -140,11 +140,7 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
             st.query_params.clear()
     except Exception as e:
         st.error(f"OAuth error: {str(e)}")
-        st.code(traceback.format_exc())  # Show full error
         st.query_params.clear()
-        st.rerun()
-    else:
-        st.warning("Google login failed. Please try again.")
 
 # Track if this is first render after login
 if "welcome_animated" not in st.session_state:
