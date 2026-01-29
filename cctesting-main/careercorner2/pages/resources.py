@@ -243,3 +243,10 @@ INSTRUCTIONS:
         if st.button("← Back to Quick Search", width='stretch'):
             st.session_state.resources_mode = "tools"
             st.rerun()
+
+def render_resources():
+    """Main entry point - toggle between tools and chat"""
+    if st.session_state.get("resources_mode") == "chat":
+        render_resources_chat()
+    else:
+        render_main_resources()
