@@ -104,6 +104,26 @@ def require_login():
 def current_user():
     return st.session_state.get("user", None)
 
+
+def get_redirect_uri():
+    """Get the correct redirect URI for current environment"""
+    # If REDIRECT_URI is explicitly set (in Streamlit secrets), use it
+    redirect_from_env = os.getenv("REDIRECT_URI")
+    if redirect_from_env:
+        return redirect_from_env
+    
+    # Otherwise, try to detect environment
+    is_cloud = (
+        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
+        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud" or
+        "streamlit.app" in os.getenv("HOSTNAME", "")
+    )
+    
+    if is_cloud:
+        return "https://careercorner.streamlit.app"
+    else:
+        return "http://localhost:8501"
+
 def google_login_button():
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     if not GOOGLE_CLIENT_ID:
@@ -141,23 +161,3 @@ def google_login_button():
         """,
         unsafe_allow_html=True
     )
-
-
-def get_redirect_uri():
-    """Get the correct redirect URI for current environment"""
-    # If REDIRECT_URI is explicitly set (in Streamlit secrets), use it
-    redirect_from_env = os.getenv("REDIRECT_URI")
-    if redirect_from_env:
-        return redirect_from_env
-    
-    # Otherwise, try to detect environment
-    is_cloud = (
-        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
-        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud" or
-        "streamlit.app" in os.getenv("HOSTNAME", "")
-    )
-    
-    if is_cloud:
-        return "https://careercorner.streamlit.app"
-    else:
-        return "http://localhost:8501"
