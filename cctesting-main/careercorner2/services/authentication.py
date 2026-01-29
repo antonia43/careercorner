@@ -16,6 +16,20 @@ DB_PATH = Path(tempfile.gettempdir()) / "career_corner.db"
 def init_db():
     return init_database()
 
+def get_redirect_uri():
+    """Get the correct redirect URI for current environment"""
+    is_cloud = (
+        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
+        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud" or
+        "streamlit.app" in os.getenv("HOSTNAME", "")
+    )
+    
+    if is_cloud:
+        # Try to get from environment variable first
+        return os.getenv("REDIRECT_URI", "https://careercorner.streamlit.app")
+    else:
+        return "http://localhost:8501"
+
 def get_user_by_username(conn, username):
     cur = conn.cursor()
     cur.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username.lower(), username.lower()))
@@ -111,17 +125,7 @@ def google_login_button():
         st.info("Google login: Add GOOGLE_CLIENT_ID to .env")
         return
     
-    # Detect environment
-    is_cloud = (
-        os.getenv("STREAMLIT_SHARING_MODE") == "1" or 
-        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud"
-    )
-    
-    # Use exact URIs from Google Console
-    if is_cloud:
-        redirect_uri = "https://careercorner.streamlit.app"  # No trailing slash!
-    else:
-        redirect_uri = "http://localhost:8501"  # No trailing slash!
+    redirect_uri = get_redirect_uri()
     
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -132,4 +136,5 @@ def google_login_button():
     )
     
     st.link_button("Sign in with Google", auth_url)
+
 
