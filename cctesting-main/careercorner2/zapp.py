@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
-
+import sqlite3
 import pandas as pd
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from services.authentication import init_db, login_ui, register_ui, google_login_button
+from services.authentication import init_db, login_ui, register_ui, google_login_button, get_redirect_uri
 from services.langfuse_helper import get_user_id
 from pages.student_dashboard import render_student_dashboard
 from pages.professional_dashboard import render_professional_dashboard
@@ -80,52 +80,66 @@ print("hello world!")
 query_params = st.query_params
 
 if "code" in query_params and not st.session_state.get("logged_in", False):
-    code = query_params.get("code")
+    code = query_params["code"]
+    if isinstance(code, list):
+        code = code[0]
 
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    REDIRECT_URI = get_redirect_uri()
 
-    # Auto-detect environment (same logic)
-    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
-        REDIRECT_URI = os.getenv("REDIRECT_URI")
-    else:
-        REDIRECT_URI = "http://localhost:8501"
-
-    token_url = "https://oauth2.googleapis.com/token"
-    token_data = {
-        "code": code,
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": REDIRECT_URI,
-        "grant_type": "authorization_code",
-    }
-
-    token_resp = requests.post(token_url, data=token_data)
-    token_json = token_resp.json()
-
-    if "access_token" in token_json:
-        access_token = token_json["access_token"]
-
-        userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        userinfo_resp = requests.get(userinfo_url, headers=headers)
-        user_data = userinfo_resp.json()
-
-        st.session_state.logged_in = True
-        st.session_state.user = {
-            "display_name": user_data.get("name", "Unknown User"),
-            "email": user_data.get("email", ""),
-            "username": user_data.get("email", "").split("@")[0]
-            if user_data.get("email")
-            else None,
+    try:
+        token_url = "https://oauth2.googleapis.com/token"
+        token_data = {
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": REDIRECT_URI,
+            "grant_type": "authorization_code",
         }
-        st.session_state.username = st.session_state.user["username"]
+
+        token_resp = requests.post(token_url, data=token_data)
+        token_json = token_resp.json()
+
+        if "access_token" in token_json:
+            access_token = token_json["access_token"]
+            userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+            headers = {"Authorization": f"Bearer {access_token}"}
+            userinfo_resp = requests.get(userinfo_url, headers=headers)
+            user_data = userinfo_resp.json()
+
+            email = user_data.get("email", "")
+            username = email.split("@")[0] if email else None
+            display_name = user_data.get("name", "Unknown User")
+            
+            # Save to database if new user
+            with sqlite3.connect(DB_PATH, check_same_thread=False) as conn:
+                from services.authentication import get_user_by_username, create_user
+                existing_user = get_user_by_username(conn, email)
+                if not existing_user:
+                    create_user(conn, username, display_name, email, "google_oauth_placeholder")
+
+            st.session_state.logged_in = True
+            st.session_state.user = {
+                "display_name": display_name,
+                "email": email,
+                "username": username,
+            }
+            st.session_state.username = username
+            st.query_params.clear()
+            st.rerun()
+        else:
+            error_msg = token_json.get('error_description', token_json.get('error', 'Unknown error'))
+            st.error(f"Google login failed: {error_msg}")
+            st.query_params.clear()
+    except Exception as e:
+        st.error(f"OAuth error: {str(e)}")
         st.query_params.clear()
         st.rerun()
     else:
         st.warning("Google login failed. Please try again.")
 
-# NEW: Track if this is first render after login
+# Track if this is first render after login
 if "welcome_animated" not in st.session_state:
     st.session_state.welcome_animated = False
 
