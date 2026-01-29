@@ -1,11 +1,9 @@
 # README
+<img src="data/careercornermini.png" alt="Description" width="50%">
 
 # Career Corner
 
 Helping you build your career, every step of the way.
-
-
-<img src="data/careercornermini.png" alt="Description" width="50%">
 
 
 ## Overview
