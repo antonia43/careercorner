@@ -183,11 +183,6 @@ def save_international_grades():
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button(" Find Universities", width='stretch', type="primary"):
-                    st.session_state.redirect_to = "University Finder"
-                    st.rerun()
-            
-            with col2:
                 if st.button("↻ Add More Grades", width='stretch'):
                     reset_grades_analysis()
                     st.rerun()
