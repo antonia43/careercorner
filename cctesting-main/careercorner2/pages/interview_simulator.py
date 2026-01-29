@@ -111,7 +111,7 @@ def render_interview_personalization():
 
 def render_interview_simulator():
     st.header("🎤︎︎ Interview Simulator")
-    st.session_state.debug_mode = True
+    st.session_state.debug_mode = False
 
     if "interview_mode" not in st.session_state:
         st.session_state.interview_mode = None
