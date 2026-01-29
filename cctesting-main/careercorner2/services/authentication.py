@@ -104,6 +104,24 @@ def require_login():
 def current_user():
     return st.session_state.get("user", None)
 
+def google_login_button():
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    if not GOOGLE_CLIENT_ID:
+        st.info("Google login: Add GOOGLE_CLIENT_ID to .env")
+        return
+    
+    redirect_uri = get_redirect_uri()
+    
+    auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile"
+    )
+    
+    st.link_button("Sign in with Google", auth_url)
+
 def get_redirect_uri():
     """Get the correct redirect URI for current environment"""
     # If REDIRECT_URI is explicitly set (in Streamlit secrets), use it
@@ -122,49 +140,3 @@ def get_redirect_uri():
         return "https://careercorner.streamlit.app"
     else:
         return "http://localhost:8501"
-
-
-def google_login_button():
-    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-    if not GOOGLE_CLIENT_ID:
-        st.info("Google login: Add GOOGLE_CLIENT_ID to .env")
-        return
-    
-    redirect_uri = get_redirect_uri()
-    
-    auth_url = (
-        f"https://accounts.google.com/o/oauth2/v2/auth?"
-        f"client_id={GOOGLE_CLIENT_ID}&"
-        f"redirect_uri={redirect_uri}&"
-        f"response_type=code&"
-        f"scope=openid%20email%20profile"
-    )
-    
-    # Match Streamlit's primary button style
-    st.markdown(
-        f"""
-        <a href="{auth_url}" target="_self" style="text-decoration: none;">
-            <button style="
-                background-color: rgb(255, 75, 75);
-                color: white;
-                padding: 0.375rem 0.75rem;
-                border: 1px solid transparent;
-                border-radius: 0.5rem;
-                cursor: pointer;
-                font-size: 1rem;
-                font-weight: 400;
-                line-height: 1.6;
-                width: 100%;
-                text-align: center;
-                transition: all 0.3s ease;
-                font-family: 'Source Sans Pro', sans-serif;
-            "
-            onmouseover="this.style.backgroundColor='rgb(255, 51, 51)'"
-            onmouseout="this.style.backgroundColor='rgb(255, 75, 75)'"
-            >
-                Sign in with Google
-            </button>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
