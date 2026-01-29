@@ -26,24 +26,21 @@ def go_back_cv_quiz():
         st.session_state.cv_quiz_step -= 1
         st.rerun()
 
+
 def render_cv_builder():
     st.markdown('<div class="cc-fade-in">', unsafe_allow_html=True)
     st.header("✂ CV and Cover Letter Builder")
     st.markdown("</div>", unsafe_allow_html=True)
 
-
     tab1, tab2 = st.tabs(
         ["Build CV Quiz", "Cover Letter"]
     )
 
-
     with tab1:
         render_cv_quiz_builder()
 
-
     with tab2:
         render_cover_letter()
-
 
 
 def render_cv_quiz_builder():
@@ -143,7 +140,7 @@ def render_cv_quiz_builder():
                 st.session_state.cv_quiz_step += 1
                 st.rerun()
 
-    elif step == "achievements":  # ← FIXED: This needs to align with other elif statements
+    elif step == "achievements":
         st.markdown("### Step 5/5: Key Achievements")
         achievements = st.text_area(
             "3 biggest wins (one per line, with numbers):", height=150, key="cv_achievements"
@@ -179,27 +176,31 @@ def render_cv_quiz_builder():
                     polished_cv = polish_quiz_cv(st.session_state.cv_quiz_data)
                     st.session_state.cv_data = polished_cv
                     st.session_state.cv_quiz_step = 0
+                    
+                    # Save to database RIGHT HERE, only once when generated
+                    if "username" in st.session_state and st.session_state.username:
+                        try:
+                            cv_summary = f"Built from CV Builder quiz for {st.session_state.cv_quiz_data.get('target_job', 'Role')} in {st.session_state.cv_quiz_data.get('industry', 'Industry')}"
+                            
+                            save_report(
+                                user_id=st.session_state.username,
+                                report_type="professional_cv",
+                                title=f"CV Builder - {st.session_state.cv_quiz_data.get('name', 'Unnamed')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                                content=cv_summary,
+                                cv_data=st.session_state.cv_data
+                            )
+                            
+                            st.success("CV ready! Saved to My Reports.")
+                        except Exception as e:
+                            st.warning(f"CV generated but could not auto-save: {e}")
+                            st.success("CV ready!")
+                    else:
+                        st.success("CV ready!")
 
-                st.success("CV ready! Saved to My Reports.")
                 st.rerun()
-                
+    
+    # Display CV preview and download buttons if CV exists
     if step == "personal_info" and st.session_state.get("cv_data"):
-        if "username" in st.session_state and st.session_state.username:
-            try:
-                cv_summary = f"Built from CV Builder quiz for {st.session_state.cv_quiz_data.get('target_job', 'Role')} in {st.session_state.cv_quiz_data.get('industry', 'Industry')}"
-                
-                save_report(
-                    user_id=st.session_state.username,
-                    report_type="professional_cv",
-                    title=f"CV Builder - {st.session_state.cv_quiz_data.get('name', 'Unnamed')} - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-                    content=cv_summary,
-                    cv_data=st.session_state.cv_data
-                )
-                
-                st.info("Automatically saved to My Reports!")
-            except Exception as e:
-                st.warning(f"Could not auto-save: {e}")
-        
         st.divider()
         st.subheader("Your CV")
         
@@ -279,6 +280,7 @@ def render_cover_letter():
             width="stretch"
         )
 
+
 def polish_quiz_cv(quiz_data: dict) -> dict:
     prompt = f"""You are a professional CV writer. Convert this quiz data into a structured JSON CV.
 
@@ -323,7 +325,6 @@ Return ONLY the JSON, no markdown formatting."""
         return quiz_data
 
 
-
 def generate_cover_letter(cv_data: dict, job_desc: str, tone: str, length: str) -> dict:
     name = cv_data.get("name") or cv_data.get("full_name", "")
     email = cv_data.get("email", "")
@@ -348,7 +349,7 @@ Requirements:
 Return ONLY valid JSON with this structure:
 {{
   "job_title": "extracted job title from description",
-  "content": "Full cover letter text starting with 'Dear Hiring Manager,' and ending with 'Best regards,\\n{name}'"
+  "content": "Full cover letter text starting with 'Dear Hiring Manager,' and ending with 'Best regards,\\\\n{name}'"
 }}
 
 Return ONLY the JSON, no markdown formatting."""
@@ -371,14 +372,12 @@ Return ONLY the JSON, no markdown formatting."""
         print("Cover letter error:", e)
         return {
             "job_title": "Role",
-            "content": f"Dear Hiring Manager,\n\n[Cover letter based on the job ad goes here.]\n\nBest regards,\n{name}",
+            "content": f"Dear Hiring Manager,\\n\\n[Cover letter based on the job ad goes here.]\\n\\nBest regards,\\n{name}",
         }
-
 
 
 def generate_cv_json(cv_data: dict) -> bytes:
     return json.dumps(cv_data, indent=2, ensure_ascii=False).encode("utf-8")
-
 
 
 def generate_pretty_cv_pdf(cv_data: dict) -> bytes:
