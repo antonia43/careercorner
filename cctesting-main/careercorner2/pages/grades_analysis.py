@@ -1484,7 +1484,7 @@ def render_manual_grades_input():
         exam_status = "Completed" if current_year == "12th Grade (Completed)" else "Not Completed"
         
         if exam_status == "Not Completed":
-            st.info("ⓘ We'll help you predict what grades you need on your exams!")
+            st.info("ⓘ Add your exam grades or grade predictions below!")
         
         COMMON_EXAMS = {
             "Português (639)": "639",
