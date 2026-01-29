@@ -88,9 +88,6 @@ if "code" in query_params and not st.session_state.get("logged_in", False):
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     REDIRECT_URI = get_redirect_uri()
-    
-    # DEBUG - Remove after testing
-    st.write(f"🔍 Using REDIRECT_URI: {REDIRECT_URI}")
 
     try:
         token_url = "https://oauth2.googleapis.com/token"
