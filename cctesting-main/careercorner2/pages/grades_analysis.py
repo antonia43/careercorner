@@ -725,10 +725,15 @@ def calculate_and_save_grade():
             except Exception as e:
                 st.error(f"⚠︎ Could not save: {e}")
 
-
 def show_final_results():
     """Showing final grade and offer course comparison options"""
     
+    # CHECK IF INTERNATIONAL STUDENT - DIFFERENT FLOW
+    if st.session_state.get("student_type") == "international":
+        show_international_final_results()
+        return
+    
+    # REST OF CODE FOR PORTUGUESE STUDENTS
     raw_final_grade = st.session_state.student_final_grade
     # normalizing to 0–20 scale if needed
     final_grade_20 = raw_final_grade / 10.0 if raw_final_grade > 20 else raw_final_grade
@@ -997,6 +1002,61 @@ def show_final_results():
     with col3:
         if st.button("↻ Recalculate", width='stretch', key="ga_to_recalc"):
             reset_grades_analysis()
+            st.rerun()
+
+
+def show_international_final_results():
+    """Show results for international students without grade calculation"""
+    
+    grades_data = st.session_state.student_grades_data
+    
+    st.success("✓ Your grades have been saved!")
+    
+    st.subheader("☰ Your Grades Summary")
+    
+    subjects = grades_data.get("subjects", [])
+    
+    if subjects:
+        st.write(f"**Total Subjects:** {len(subjects)}")
+        st.write(f"**Country:** {grades_data.get('country', 'International')}")
+        st.write(f"**Grade Scale:** {grades_data.get('grade_scale', 'Various')}")
+        
+        with st.expander("View All Subjects"):
+            for subj in subjects:
+                st.write(f"- {subj['name']}: {subj['grade']} ({subj.get('year', 'N/A')})")
+    
+    st.markdown("---")
+    
+    # AI OVERVIEW BUTTON
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("⟡ Get AI Overview", width='stretch', type="primary", key="btn_ai_overview_final"):
+            with st.spinner("Analyzing your grades..."):
+                overview = generate_international_grades_overview(grades_data)
+                if overview:
+                    st.markdown("---")
+                    st.subheader("☰ Your Academic Profile")
+                    st.markdown(overview)
+    
+    with col2:
+        if st.button("↻ Add More Grades", width='stretch', key="btn_add_more_final"):
+            reset_grades_analysis()
+            st.rerun()
+    
+    st.markdown("---")
+    st.subheader("What's Next?")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("𖠿 Find Universities", width='stretch', type='primary', key="intl_to_uni"):
+            st.session_state.redirect_to = "University Finder"
+            st.rerun()
+    
+    with col2:
+        if st.button("← Explore Degrees", width='stretch', key="intl_to_degree"):
+            st.session_state.redirect_to = "Degree Picker"
             st.rerun()
 
 
