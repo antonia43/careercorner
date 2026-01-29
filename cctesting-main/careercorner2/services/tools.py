@@ -260,30 +260,52 @@ FORMATTING RULES:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def fetch_job_description_from_url(url: str) -> dict:
     """Fetch and extract job description from a URL using Gemini's URL context tool"""
     try:
+        # Clean the URL first
+        clean_url = url.strip()
+        if clean_url.startswith('[') and '](' in clean_url:
+            clean_url = clean_url.split('](')[1].rstrip(')')
+        clean_url = clean_url.strip('[]() ')
+        if not clean_url.startswith(('http://', 'https://')):
+            clean_url = 'https://' + clean_url
+        
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"""Extract the complete job description from this URL. 
-            Include: job title, company, responsibilities, requirements, and any other relevant details.
-            Format as clean text.""",
+            contents=f"""Analyze this URL and determine if it contains a job posting or job description.
+            
+            If it IS a job posting:
+            - Extract the complete job description including: job title, company, responsibilities, requirements, and any other relevant details.
+            - Format as clean text.
+            
+            If it is NOT a job posting:
+            - Return exactly: "NOT_A_JOB_POSTING"
+            
+            Be strict - only return job content if this is clearly a job listing or career opportunity.""",
             config=types.GenerateContentConfig(
-                tools=[types.Tool(url_context=types.UrlContext(url=url))]
+                tools=[types.Tool(url_context=types.UrlContext(url=clean_url))]
             )
         )
+        
+        # Check if it's not a job posting
+        if "NOT_A_JOB_POSTING" in response.text:
+            return {
+                "success": False,
+                "error": "This URL does not appear to contain a job posting. Please provide a link to a job description."
+            }
 
         return {
             "success": True, 
             "job_description": response.text,
-            "source_url": url
+            "source_url": clean_url
         }
     except Exception as e:
         return {
             "success": False, 
             "error": str(e)
         }
+
 
 def get_city_guide(city_name: str, country: str = "") -> dict:
     """Get comprehensive city guide for students using Google Search"""
