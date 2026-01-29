@@ -680,4 +680,5 @@ SOFTWARE.
 **Live Application:** https://careercorner.streamlit.app
 
 **Career Corner** by Matilde Maximiano and Antónia Lemos (Nova IMS, February 2026)
+
 ---
