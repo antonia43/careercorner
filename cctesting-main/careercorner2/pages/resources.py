@@ -165,26 +165,26 @@ What's on your mind today?"""
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
     
-    if prompt := st.chat_input("Ask for advice, support, or guidance..."):
+       if prompt := st.chat_input("Ask for advice, support, or guidance..."):
         st.session_state.resources_chat_history.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
             with st.spinner("𖦹 Thinking..."):
-                # NEW: Function calling setup
+                # Try with function calling first
                 contents = [types.Content(role="user", parts=[types.Part(text=f"""{internal_context}
-
-User question: {prompt}
-
-INSTRUCTIONS:
-- Be supportive, empathetic, and encouraging
-- Reference their CV/quiz data specifically when relevant
-- Use tools (get_cv_analysis, analyze_skill_gaps, get_career_roadmap) when helpful
-- Suggest courses/skills by NAME only (e.g., "Consider learning Python" not links)
-- Help them make decisions based on their profile
-- If they ask for job/course links, tell them to go back and use the Quick Search feature
-- Focus on guidance and support, not direct job searches""")])]
+    
+    User question: {prompt}
+    
+    INSTRUCTIONS:
+    - Be supportive, empathetic, and encouraging
+    - Reference their CV/quiz data specifically when relevant
+    - Use tools (get_cv_analysis, analyze_skill_gaps, get_career_roadmap) when helpful
+    - Suggest courses/skills by NAME only (e.g., "Consider learning Python" not links)
+    - Help them make decisions based on their profile
+    - If they ask for job/course links, tell them to go back and use the Quick Search feature
+    - Focus on guidance and support, not direct job searches""")])]
                 
                 config = types.GenerateContentConfig(
                     tools=[PROFESSIONAL_TOOLS],
@@ -197,15 +197,27 @@ INSTRUCTIONS:
                     config=config
                 )
                 
-                # Handle function calls
-                if response.candidates[0].content.parts and hasattr(response.candidates[0].content.parts[0], 'function_call'):
+                response_text = None
+                
+                # ✅ CHECK: Does response have actual content?
+                if not response.candidates or not response.candidates[0].content.parts:
+                    # Empty response - retry without tools
+                    st.caption("⚠ Retrying...")
+                    response_text = GEMINI_CHAT.generate_content(
+                        prompt=f"{internal_context}\n\nUser: {prompt}",
+                        user_id=user_id,
+                        session_id=user_id,
+                        temperature=0.7
+                    )
+                
+                # Handle function calls if present
+                elif hasattr(response.candidates[0].content.parts[0], 'function_call'):
                     function_responses = []
                     for part in response.candidates[0].content.parts:
                         try:
                             if hasattr(part, 'function_call') and part.function_call:
                                 fn_call = part.function_call
                                 
-                                # ✅ Skip if function_call is None or has no name
                                 if not fn_call or not hasattr(fn_call, 'name') or not fn_call.name:
                                     continue
                                 
@@ -218,25 +230,42 @@ INSTRUCTIONS:
                                     )
                                 )
                         except AttributeError:
-                            # Skip invalid function calls silently
                             continue
                         except Exception as e:
                             st.warning(f"⚠ Function call failed: {e}")
                             continue
-
                     
-                    contents.append(response.candidates[0].content)
-                    contents.append(types.Content(role="user", parts=function_responses))
-                    
-                    final_response = GEMINI_CHAT.client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=contents,
-                        config=config
-                    )
-                    
-                    response_text = final_response.text
+                    if function_responses:
+                        contents.append(response.candidates[0].content)
+                        contents.append(types.Content(role="user", parts=function_responses))
+                        
+                        final_response = GEMINI_CHAT.client.models.generate_content(
+                            model="gemini-2.5-flash",
+                            contents=contents,
+                            config=config
+                        )
+                        
+                        response_text = final_response.text
+                    else:
+                        # Function calls failed - fallback
+                        response_text = GEMINI_CHAT.generate_content(
+                            prompt=f"{internal_context}\n\nUser: {prompt}",
+                            user_id=user_id,
+                            session_id=user_id,
+                            temperature=0.7
+                        )
                 else:
+                    # Normal text response
                     response_text = response.text
+                
+                # ✅ FINAL CHECK: If still empty/None, use fallback
+                if not response_text or response_text.strip() == "":
+                    response_text = GEMINI_CHAT.generate_content(
+                        prompt=f"{internal_context}\n\nUser: {prompt}",
+                        user_id=user_id,
+                        session_id=user_id,
+                        temperature=0.7
+                    )
                 
                 st.markdown(response_text)
         
