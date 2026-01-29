@@ -299,53 +299,58 @@ Structure your response exactly like this:
 # {location} Student Guide
 
 ## Overview
-[Brief description of the city, country, population, and general vibe]
+[2-3 sentences: Brief description of the city, population, and general vibe]
 
 ## Universities & Education
-• Major universities and institutions
-• Student population and campus locations
-• Academic reputation and popular programs
+[Short intro sentence, then:]
+- Major university 1
+- Major university 2
+- Student population and academic reputation
 
 ## Cost of Living
-• Average monthly rent (student accommodation)
-• Food and groceries budget
-• Transportation costs
-• Overall affordability rating for students
+[Short intro sentence, then:]
+- Average monthly rent: €XXX-€XXX
+- Food and groceries: €XXX/month
+- Transportation: €XXX/month
+- Overall affordability rating
 
 ## Student Life
-• Popular student neighborhoods
-• Nightlife and entertainment options
-• Student discounts and benefits
-• Social activities and clubs
+[Short intro sentence, then:]
+- Popular student neighborhoods
+- Nightlife and entertainment
+- Student discounts and benefits
 
 ## Transportation
-• Public transport options (metro, bus, train)
-• Student transport passes and prices
-• Bike-friendliness
-• Airport and intercity connections
+[Short intro sentence, then:]
+- Public transport options (metro, bus, train)
+- Student transport passes and prices
+- Bike-friendliness
 
 ## Culture & Activities
-• Museums, theaters, and cultural venues
-• Parks and outdoor spaces
-• Famous landmarks and attractions
-• Events and festivals
+[Short intro sentence, then:]
+- Museums, theaters, cultural venues
+- Parks and outdoor spaces
+- Famous landmarks
 
 ## Practical Information
-• Weather and climate
-• Safety and student safety tips
-• Healthcare and student services
-• Language(s) spoken and difficulty for internationals
-• Visa requirements for international students (if applicable)
+[Short intro sentence, then:]
+- Weather and climate
+- Safety for students
+- Healthcare access
+- Language difficulty for internationals
 
 ---
 
-FORMATTING RULES:
+**CRITICAL FORMATTING RULES:**
 - Use standard markdown headers (##)
-- Use bullet points (•) for lists
-- Write numbers and currency as plain text (e.g., "€400/month", "$800/month")
-- NO code formatting or syntax highlighting
-- Be concise and student-focused
-- Include specific examples and locations""",
+- Each section starts with 1 SHORT intro sentence (max 15 words)
+- Then use bullet points (•) for details
+- Add blank line between sections
+- Add blank line between intro sentence and bullets
+- Keep bullet points short (1 line each)
+- NO code formatting
+- NO walls of text
+- Break up long paragraphs""",
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())],
                 temperature=0.4
@@ -360,7 +365,6 @@ FORMATTING RULES:
         return {"success": True, "answer": response.text, "sources": sources}
     except Exception as e:
         return {"success": False, "error": str(e)}
-
 
 
 
